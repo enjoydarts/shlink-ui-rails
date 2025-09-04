@@ -63,6 +63,10 @@ group :test do
   gem "shoulda-matchers", "~> 6.0"
   gem "capybara", "~> 3.40"
   gem "selenium-webdriver", "~> 4.26"
+
+  # CI/CD レポート用
+  gem "rspec_junit_formatter", "~> 0.6"
+  gem "simplecov", "~> 0.22", require: false
 end
 
 group :development do
