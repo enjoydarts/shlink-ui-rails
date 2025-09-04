@@ -15,7 +15,7 @@ module App
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
-    
+
     # Ensure all app subdirectories are autoloaded
     config.autoload_paths += Dir["#{Rails.root}/app/**/"]
 

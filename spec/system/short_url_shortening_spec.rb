@@ -42,7 +42,7 @@ RSpec.describe 'URL短縮機能', type: :system do
 
       it '送信成功時にルートにリダイレクトする' do
         visit root_path
-        
+
         fill_in 'shorten_form[long_url]', with: 'https://example.com'
         click_button '短縮する'
 
@@ -54,7 +54,7 @@ RSpec.describe 'URL短縮機能', type: :system do
     context '無効なURLの場合' do
       it 'バリデーションエラーを表示する' do
         visit root_path
-        
+
         fill_in 'shorten_form[long_url]', with: 'invalid-url'
         click_button '短縮する'
 
@@ -66,7 +66,7 @@ RSpec.describe 'URL短縮機能', type: :system do
     context '空のURLの場合' do
       it 'バリデーションエラーを表示する' do
         visit root_path
-        
+
         fill_in 'shorten_form[long_url]', with: ''
         click_button '短縮する'
 
@@ -85,7 +85,7 @@ RSpec.describe 'URL短縮機能', type: :system do
 
       it 'APIエラーメッセージを表示する' do
         visit root_path
-        
+
         fill_in 'shorten_form[long_url]', with: 'https://example.com'
         click_button '短縮する'
 

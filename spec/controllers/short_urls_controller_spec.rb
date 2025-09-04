@@ -211,7 +211,7 @@ RSpec.describe ShortUrlsController, type: :controller do
 
       it 'shorten_formからlong_urlとslugのみを許可する' do
         permitted_params = controller.send(:shorten_params)
-        
+
         expect(permitted_params).to eq(
           ActionController::Parameters.new(
             long_url: 'https://example.com',

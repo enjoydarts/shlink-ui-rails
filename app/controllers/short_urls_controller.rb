@@ -12,7 +12,7 @@ class ShortUrlsController < ApplicationController
     @shorten = ShortenForm.new(shorten_params)
     Rails.logger.info "Form valid: #{@shorten.valid?}"
     Rails.logger.info "Form errors: #{@shorten.errors.full_messages}"
-    
+
     if @shorten.valid?
       Rails.logger.info "Calling Shlink API with URL: #{@shorten.long_url}, slug: #{@shorten.slug}"
       result = Shlink::Client.new.create_short_url(@shorten.long_url, @shorten.slug)
