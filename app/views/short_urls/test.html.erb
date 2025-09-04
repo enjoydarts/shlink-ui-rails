@@ -1,0 +1,10 @@
+<h1>Turbo Stream Test</h1>
+
+<%= form_with scope: :shorten_form, url: short_urls_path, local: false, data: { turbo: true } do |f| %>
+  <%= f.text_field :long_url, value: "https://example.com" %>
+  <%= f.submit "テスト送信" %>
+<% end %>
+
+<div id="result">
+  初期状態
+</div>

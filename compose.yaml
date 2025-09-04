@@ -22,14 +22,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    environment:
-      RAILS_ENV: development
-      DATABASE_HOST: db
-      DATABASE_NAME: shlink_ui_rails_development
-      DATABASE_USER: app
-      DATABASE_PASSWORD: apppass
-      SHLINK_BASE_URL: "https://your-shlink.example.com"
-      SHLINK_API_KEY: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
     ports:
       - "3000:3000"
     volumes:
@@ -38,7 +30,14 @@ services:
     tty: true
     stdin_open: true
 
+  css:
+    build: .
+    command: bin/rails tailwindcss:watch
+    volumes:
+      - ./:/app
+      - bundle:/usr/local/bundle
+    tty: true
+
 volumes:
   dbdata:
   bundle:
-
