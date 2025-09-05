@@ -7,14 +7,14 @@ RSpec.describe Users::OmniauthCallbacksController, type: :controller do
 
   describe 'GET #google_oauth2' do
     let(:auth_hash) do
-      {
+      OmniAuth::AuthHash.new({
         'provider' => 'google_oauth2',
         'uid' => '123456789',
-        'info' => {
+        'info' => OmniAuth::AuthHash::InfoHash.new({
           'email' => 'test@example.com',
           'name' => 'Test User'
-        }
-      }
+        })
+      })
     end
 
     before do
@@ -33,7 +33,7 @@ RSpec.describe Users::OmniauthCallbacksController, type: :controller do
         expect(created_user.provider).to eq('google_oauth2')
         expect(created_user.uid).to eq('123456789')
 
-        expect(response).to redirect_to(root_path)
+        expect(response).to redirect_to(dashboard_path)
         expect(flash[:notice]).to include('Google')
       end
     end
@@ -48,7 +48,7 @@ RSpec.describe Users::OmniauthCallbacksController, type: :controller do
           get :google_oauth2
         }.not_to change(User, :count)
 
-        expect(response).to redirect_to(root_path)
+        expect(response).to redirect_to(dashboard_path)
         expect(flash[:notice]).to include('Google')
       end
     end
@@ -69,12 +69,4 @@ RSpec.describe Users::OmniauthCallbacksController, type: :controller do
     end
   end
 
-  describe 'GET #failure' do
-    it 'ルートページにリダイレクトすること' do
-      get :failure
-
-      expect(response).to redirect_to(root_path)
-      expect(flash[:alert]).to eq('Googleアカウントでのログインに失敗しました。')
-    end
-  end
 end

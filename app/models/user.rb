@@ -16,14 +16,21 @@ class User < ApplicationRecord
 
   # OAuth methods
   def self.from_omniauth(auth)
-    where(email: auth.info.email).first_or_create do |user|
-      user.email = auth.info.email
-      user.password = Devise.friendly_token[0, 20]
-      user.name = auth.info.name
-      user.provider = auth.provider
-      user.uid = auth.uid
-      user.skip_confirmation!
+    user = where(email: auth.info.email).first_or_initialize do |u|
+      u.email = auth.info.email
+      u.password = Devise.friendly_token[0, 20]
+      u.password_confirmation = u.password
+      u.name = auth.info.name
+      u.provider = auth.provider
+      u.uid = auth.uid
     end
+    
+    if user.new_record?
+      user.skip_confirmation!
+      user.save!
+    end
+    
+    user
   end
 
   def from_omniauth?

@@ -1,8 +1,11 @@
 require 'rails_helper'
 
 RSpec.describe "QRコード機能のシステムテスト", type: :system do
+  let!(:user) { create(:user) }
+
   before do
     driven_by(:rack_test)
+    sign_in user, scope: :user
 
     # Shlink APIのモック設定
     allow_any_instance_of(Shlink::CreateShortUrlService).to receive(:call)
@@ -21,14 +24,14 @@ RSpec.describe "QRコード機能のシステムテスト", type: :system do
 
   describe "QRコード生成オプション" do
     it "QRコードチェックボックスが表示されること", js: true do
-      visit root_path
+      visit dashboard_path
 
       expect(page).to have_field("QRコードも生成する", type: "checkbox")
       expect(page).to have_text("モバイルでの共有に便利です")
     end
 
     it "QRコードチェックボックスがデフォルトでオフであること" do
-      visit root_path
+      visit dashboard_path
 
       checkbox = find_field("QRコードも生成する", type: "checkbox")
       expect(checkbox).not_to be_checked
@@ -38,7 +41,7 @@ RSpec.describe "QRコード機能のシステムテスト", type: :system do
   describe "QRコード付きURL短縮" do
     context "QRコードオプションを有効にして短縮した場合", js: true do
       it "QRコードが表示されること" do
-        visit root_path
+        visit dashboard_path
 
         fill_in "shorten_form[long_url]", with: "https://example.com/very/long/url/path"
         fill_in "shorten_form[slug]", with: "test-slug"
@@ -47,14 +50,14 @@ RSpec.describe "QRコード機能のシステムテスト", type: :system do
         click_button "短縮する"
 
         # リダイレクト先で成功が確認できること
-        expect(page).to have_current_path(root_path)
+        expect(page).to have_current_path(dashboard_path)
         expect(page).to have_text("URL短縮ツール")
       end
     end
 
     context "QRコードオプションを無効にして短縮した場合", js: true do
       it "QRコードが表示されないこと" do
-        visit root_path
+        visit dashboard_path
 
         fill_in "shorten_form[long_url]", with: "https://example.com/test"
         uncheck "QRコードも生成する"  # 明示的にオフにする
@@ -62,7 +65,7 @@ RSpec.describe "QRコード機能のシステムテスト", type: :system do
         click_button "短縮する"
 
         # リダイレクト先で成功が確認できること
-        expect(page).to have_current_path(root_path)
+        expect(page).to have_current_path(dashboard_path)
         expect(page).to have_text("URL短縮ツール")
       end
     end
@@ -116,14 +119,14 @@ RSpec.describe "QRコード機能のシステムテスト", type: :system do
   describe "UIのレスポンシブ対応" do
     context "デスクトップ表示", js: true do
       it "QRコードが横並びで表示されること" do
-        visit root_path
+        visit dashboard_path
 
         fill_in "shorten_form[long_url]", with: "https://example.com/test"
         check "QRコードも生成する"
         click_button "短縮する"
 
         # リダイレクト先で成功が確認できること
-        expect(page).to have_current_path(root_path)
+        expect(page).to have_current_path(dashboard_path)
         expect(page).to have_text("URL短縮ツール")
       end
     end

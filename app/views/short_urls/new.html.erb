@@ -51,6 +51,22 @@
           </p>
         </div>
 
+        <!-- QR Code Option -->
+        <div class="space-y-2">
+          <div class="flex items-center space-x-3 p-4 rounded-2xl bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200/50">
+            <%= f.check_box :include_qr_code, 
+                  class: "w-5 h-5 text-purple-600 border-2 border-purple-300 rounded focus:ring-purple-500 focus:ring-2 transition-all duration-200" %>
+            <%= f.label :include_qr_code, "📱 QRコードも生成する", 
+                  class: "text-sm font-semibold text-purple-700 flex items-center space-x-2 cursor-pointer" %>
+          </div>
+          <p class="text-sm text-gray-500 flex items-center space-x-1 ml-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path>
+            </svg>
+            <span>モバイルでの共有に便利です</span>
+          </p>
+        </div>
+
         <!-- Advanced Options Accordion -->
         <div class="border-t border-gray-200 pt-6" data-controller="accordion">
           <button type="button" 
@@ -118,21 +134,6 @@
                 <% end %>
               </div>
 
-              <!-- QR Code Option -->
-              <div class="space-y-2">
-                <div class="flex items-center space-x-3 p-4 rounded-2xl bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200/50">
-                  <%= f.check_box :include_qr_code, 
-                        class: "w-5 h-5 text-purple-600 border-2 border-purple-300 rounded focus:ring-purple-500 focus:ring-2 transition-all duration-200" %>
-                  <%= f.label :include_qr_code, "📱 QRコードも生成する", 
-                        class: "text-sm font-semibold text-purple-700 flex items-center space-x-2 cursor-pointer" %>
-                </div>
-                <p class="text-sm text-gray-500 flex items-center space-x-1 ml-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path>
-                  </svg>
-                  <span>モバイルでの共有に便利です</span>
-                </p>
-              </div>
             </div>
           </div>
         </div>

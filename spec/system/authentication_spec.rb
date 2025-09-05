@@ -18,7 +18,7 @@ RSpec.describe 'ユーザー認証機能', type: :system do
 
       click_button '新規登録'
 
-      expect(page).to have_content('アカウント登録が完了しました')
+      expect(page).to have_content('確認リンクを記載したメールをお送りしました')
       expect(page).to have_current_path(root_path)
     end
 
@@ -28,7 +28,7 @@ RSpec.describe 'ユーザー認証機能', type: :system do
       click_button '新規登録'
 
       expect(page).to have_content('エラーが発生しました')
-      expect(page).to have_content("Email can't be blank")
+      expect(page).to have_content('メールアドレス を入力してください')
     end
   end
 
@@ -47,7 +47,7 @@ RSpec.describe 'ユーザー認証機能', type: :system do
       click_button 'ログイン'
 
       expect(page).to have_content('ログインしました')
-      expect(page).to have_current_path(root_path)
+      expect(page).to have_current_path(dashboard_path)
     end
 
     it '間違った認証情報でログインできないこと' do
@@ -58,7 +58,7 @@ RSpec.describe 'ユーザー認証機能', type: :system do
 
       click_button 'ログイン'
 
-      expect(page).to have_content('メールアドレスまたはパスワードが違います')
+      expect(page).to have_content('メールアドレスまたはパスワードが正しくありません')
       expect(page).to have_current_path(new_user_session_path)
     end
   end
@@ -68,7 +68,7 @@ RSpec.describe 'ユーザー認証機能', type: :system do
 
     before do
       sign_in user
-      visit root_path
+      visit dashboard_path
     end
 
     it 'ログアウトできること' do
@@ -83,11 +83,11 @@ RSpec.describe 'ユーザー認証機能', type: :system do
 
   describe 'アクセス制御' do
     context 'ログインしていない場合' do
-      it 'ルートページにアクセスするとログインページにリダイレクトされること' do
+      it 'ルートページにアクセスするとホームページが表示されること' do
         visit root_path
 
-        expect(page).to have_current_path(new_user_session_path)
-        expect(page).to have_content('アカウント登録もしくはログインしてください')
+        expect(page).to have_current_path(root_path)
+        expect(page).to have_content('URL短縮サービス Shlink UI')
       end
 
       it 'QRコードページにアクセスするとログインページにリダイレクトされること' do
@@ -101,22 +101,21 @@ RSpec.describe 'ユーザー認証機能', type: :system do
       let!(:user) { create(:user) }
 
       before do
-        sign_in user
+        sign_in user, scope: :user
       end
 
-      it 'ルートページにアクセスできること' do
-        visit root_path
+      it 'ダッシュボードにアクセスできること' do
+        visit dashboard_path
 
         expect(page).to have_content('URL短縮ツール')
-        expect(page).to have_current_path(root_path)
+        expect(page).to have_current_path(dashboard_path)
       end
 
       it 'ナビゲーションバーが表示されること' do
-        visit root_path
+        visit dashboard_path
 
         expect(page).to have_content('Shlink-UI-Rails')
         expect(page).to have_content(user.display_name)
-        expect(page).to have_content('Normal user')
         expect(page).to have_button('ログアウト')
       end
     end
@@ -127,12 +126,13 @@ RSpec.describe 'ユーザー認証機能', type: :system do
       let!(:user) { create(:user) }
 
       before do
-        sign_in user
-        visit root_path
+        sign_in user, scope: :user
+        visit dashboard_path
       end
 
-      it 'Normal userと表示されること' do
-        expect(page).to have_content('Normal user')
+      it 'ロール表示がないこと' do
+        expect(page).not_to have_content('Normal user')
+        expect(page).not_to have_content('通常ユーザ')
       end
     end
 
@@ -140,12 +140,12 @@ RSpec.describe 'ユーザー認証機能', type: :system do
       let!(:admin) { create(:user, :admin) }
 
       before do
-        sign_in admin
-        visit root_path
+        sign_in admin, scope: :user
+        visit dashboard_path
       end
 
-      it 'Adminと表示されること' do
-        expect(page).to have_content('Admin')
+      it '管理者ユーザと表示されること' do
+        expect(page).to have_content('管理者ユーザ')
       end
     end
   end
