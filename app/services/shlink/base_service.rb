@@ -2,6 +2,8 @@ require "faraday"
 require "json"
 
 module Shlink
+  class Error < StandardError; end
+
   class BaseService
     attr_reader :base_url, :api_key, :conn
 

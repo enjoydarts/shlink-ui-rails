@@ -358,9 +358,9 @@ RSpec.describe Shlink::CreateShortUrlService, "短縮URL作成サービス" do
           valid_until = 1.day.from_now
           max_visits = 15
           payload = service.send(:build_payload, long_url, "test-slug", valid_until, max_visits)
-          expect(payload).to eq({ 
-            longUrl: long_url, 
-            customSlug: "test-slug", 
+          expect(payload).to eq({
+            longUrl: long_url,
+            customSlug: "test-slug",
             validUntil: valid_until.iso8601,
             maxVisits: max_visits
           })
