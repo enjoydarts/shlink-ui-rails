@@ -41,3 +41,6 @@
 
 # テストカバレッジレポート
 /coverage/
+
+# .claude/
+.claude/
