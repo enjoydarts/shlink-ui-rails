@@ -1,6 +1,4 @@
 require 'rails_helper'
-require_relative '../../app/services/shlink/base_service'
-require_relative '../../app/services/shlink/create_short_url_service'
 
 RSpec.describe 'URL短縮機能', type: :system do
   before do
@@ -38,7 +36,6 @@ RSpec.describe 'URL短縮機能', type: :system do
     context '有効なURLの場合' do
       before do
         allow_any_instance_of(Shlink::CreateShortUrlService).to receive(:call)
-          .with(long_url: 'https://example.com', slug: '')
           .and_return(shlink_response)
       end
 

@@ -1,6 +1,4 @@
 require 'rails_helper'
-require_relative '../../../app/services/shlink/base_service'
-require_relative '../../../app/services/shlink/get_qr_code_service'
 
 RSpec.describe Shlink::GetQrCodeService, "QRコード取得サービス" do
   let(:service) { Shlink::GetQrCodeService.new(base_url: "https://test.example.com", api_key: "test-key") }

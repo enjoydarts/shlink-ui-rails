@@ -90,7 +90,9 @@ RSpec.describe ShortUrlsController, "QRコード機能" do
     end
 
     before do
-      allow_any_instance_of(Shlink::CreateShortUrlService).to receive(:call)
+      mock_service = instance_double(Shlink::CreateShortUrlService)
+      allow(Shlink::CreateShortUrlService).to receive(:new).and_return(mock_service)
+      allow(mock_service).to receive(:call)
         .and_return({
           "shortUrl" => "https://test.example.com/custom",
           "shortCode" => "custom"

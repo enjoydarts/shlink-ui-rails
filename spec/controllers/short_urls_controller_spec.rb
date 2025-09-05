@@ -1,7 +1,4 @@
 require 'rails_helper'
-require_relative '../../app/services/shlink/base_service'
-require_relative '../../app/services/shlink/create_short_url_service'
-require_relative '../../app/services/shlink/get_qr_code_service'
 
 RSpec.describe ShortUrlsController, type: :controller do
   describe 'GET #new' do
@@ -73,7 +70,7 @@ RSpec.describe ShortUrlsController, type: :controller do
       before do
         allow(Shlink::CreateShortUrlService).to receive(:new).and_return(mock_client)
         allow(mock_client).to receive(:call)
-          .with(long_url: 'https://example.com/very/long/url', slug: 'custom-slug')
+          .with(long_url: 'https://example.com/very/long/url', slug: 'custom-slug', valid_until: nil, max_visits: nil)
           .and_return(shlink_response)
       end
 
@@ -111,7 +108,7 @@ RSpec.describe ShortUrlsController, type: :controller do
 
         before do
           allow(mock_client).to receive(:call)
-            .with(long_url: 'https://example.com/very/long/url', slug: '')
+            .with(long_url: 'https://example.com/very/long/url', slug: '', valid_until: nil, max_visits: nil)
             .and_return(shlink_response)
         end
 

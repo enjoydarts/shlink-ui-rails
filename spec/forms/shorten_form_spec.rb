@@ -52,7 +52,7 @@ RSpec.describe ShortenForm, type: :model do
   end
 
   describe '属性' do
-    let(:attributes) { { long_url: 'https://example.com', slug: 'custom-slug' } }
+    let(:attributes) { { long_url: 'https://example.com', slug: 'custom-slug', valid_until: 1.day.from_now, max_visits: 100 } }
 
     it 'long_url属性を持つ' do
       expect(subject.long_url).to eq('https://example.com')
@@ -60,6 +60,14 @@ RSpec.describe ShortenForm, type: :model do
 
     it 'slug属性を持つ' do
       expect(subject.slug).to eq('custom-slug')
+    end
+
+    it 'valid_until属性を持つ' do
+      expect(subject.valid_until).to be_within(1.second).of(1.day.from_now)
+    end
+
+    it 'max_visits属性を持つ' do
+      expect(subject.max_visits).to eq(100)
     end
   end
 
@@ -125,6 +133,94 @@ RSpec.describe ShortenForm, type: :model do
 
       it '有効である' do
         expect(subject).to be_valid
+      end
+    end
+  end
+
+  describe 'valid_untilのバリデーション（JST対応）' do
+    around do |example|
+      Time.use_zone('Asia/Tokyo') do
+        example.run
+      end
+    end
+
+    context 'valid_untilが空の場合' do
+      let(:attributes) { { long_url: 'https://example.com', valid_until: nil } }
+
+      it '有効である（valid_untilは任意）' do
+        expect(subject).to be_valid
+      end
+    end
+
+    context 'valid_untilが現在時刻（JST）より後の場合' do
+      let(:attributes) { { long_url: 'https://example.com', valid_until: 1.hour.from_now } }
+
+      it '有効である' do
+        expect(subject).to be_valid
+      end
+    end
+
+    context 'valid_untilが現在時刻（JST）より前の場合' do
+      let(:attributes) { { long_url: 'https://example.com', valid_until: 1.hour.ago } }
+
+      it '無効である' do
+        expect(subject).not_to be_valid
+        expect(subject.errors[:valid_until]).to include(a_string_matching(/must be greater than/))
+      end
+    end
+
+    context 'valid_untilが現在時刻（JST）より少し前の場合' do
+      let(:past_time) { 1.minute.ago }
+      let(:attributes) { { long_url: 'https://example.com', valid_until: past_time } }
+
+      it '無効である' do
+        expect(subject).not_to be_valid
+        expect(subject.errors[:valid_until]).to include(a_string_matching(/must be greater than/))
+      end
+    end
+  end
+
+  describe 'max_visitsのバリデーション' do
+    context 'max_visitsが空の場合' do
+      let(:attributes) { { long_url: 'https://example.com', max_visits: nil } }
+
+      it '有効である（max_visitsは任意）' do
+        expect(subject).to be_valid
+      end
+    end
+
+    context 'max_visitsが正の整数の場合' do
+      let(:attributes) { { long_url: 'https://example.com', max_visits: 100 } }
+
+      it '有効である' do
+        expect(subject).to be_valid
+      end
+    end
+
+    context 'max_visitsが0の場合' do
+      let(:attributes) { { long_url: 'https://example.com', max_visits: 0 } }
+
+      it '無効である' do
+        expect(subject).not_to be_valid
+        expect(subject.errors[:max_visits]).to include('must be greater than 0')
+      end
+    end
+
+    context 'max_visitsが負の数の場合' do
+      let(:attributes) { { long_url: 'https://example.com', max_visits: -1 } }
+
+      it '無効である' do
+        expect(subject).not_to be_valid
+        expect(subject.errors[:max_visits]).to include('must be greater than 0')
+      end
+    end
+
+    context 'max_visitsが小数の場合' do
+      let(:attributes) { { long_url: 'https://example.com', max_visits: 10.5 } }
+
+      it '小数は整数に変換されるため有効である' do
+        expect(subject).to be_valid
+        expect(subject.max_visits).to eq(10)
       end
     end
   end
