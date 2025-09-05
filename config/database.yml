@@ -45,7 +45,7 @@ development:
 
 test:
   <<: *default
-  database: shlink_ui_rails_test
+  database: <%= ENV["DATABASE_NAME"] || "shlink_ui_rails_test" %>
 
 
 

@@ -81,7 +81,12 @@ jobs:
       - name: Setup database
         run: |
           bundle exec rails db:create
-          bundle exec ridgepole --config config/database.yml --env test --file db/Schemafile --apply
+          echo "=== Database created, now applying schema with ridgepole ==="
+          RAILS_ENV=test bundle exec ridgepole --config config/database.yml --env test --file db/Schemafile --apply
+          echo "=== Schema applied, verifying tables exist ==="
+          RAILS_ENV=test bundle exec rails runner "puts 'Tables: ' + ActiveRecord::Base.connection.tables.join(', ')"
+          echo "=== Checking users table specifically ==="
+          RAILS_ENV=test bundle exec rails runner "puts 'Users table exists: ' + ActiveRecord::Base.connection.table_exists?('users').to_s"
 
       - name: Precompile assets
         run: bundle exec rails assets:precompile
