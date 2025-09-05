@@ -1,6 +1,6 @@
 module Shlink
   class GetQrCodeService < BaseService
-    def call(short_code:, size: 300, format: 'png', margin: nil)
+    def call(short_code:, size: 300, format: "png", margin: nil)
       options = { size: size, format: format }
       options[:margin] = margin if margin
 
@@ -15,7 +15,7 @@ module Shlink
       raise Shlink::Error, "HTTP error: #{e.message}"
     end
 
-    def call!(short_code:, size: 300, format: 'png', margin: nil)
+    def call!(short_code:, size: 300, format: "png", margin: nil)
       call(short_code: short_code, size: size, format: format, margin: margin)
     end
 
@@ -36,7 +36,7 @@ module Shlink
     end
 
     def build_url(path, options)
-      query_string = options.compact.map { |k, v| "#{k}=#{v}" }.join('&')
+      query_string = options.compact.map { |k, v| "#{k}=#{v}" }.join("&")
       query_string.empty? ? path : "#{path}?#{query_string}"
     end
 
@@ -48,7 +48,7 @@ module Shlink
 
     def build_qr_response(response, format)
       {
-        content_type: response.headers['content-type'],
+        content_type: response.headers["content-type"],
         data: response.body,
         format: format
       }

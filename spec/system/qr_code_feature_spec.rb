@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe "QRコード機能のシステムテスト", type: :system do
   before do
     driven_by(:rack_test)
-    
+
     # Shlink APIのモック設定
     allow_any_instance_of(Shlink::Client).to receive(:create_short_url)
       .and_return({
