@@ -1,3 +1,6 @@
+require "faraday"
+require "json"
+
 module Shlink
   class Error < StandardError; end
 

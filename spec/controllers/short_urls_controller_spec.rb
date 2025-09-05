@@ -1,4 +1,7 @@
 require 'rails_helper'
+require_relative '../../app/services/shlink/base_service'
+require_relative '../../app/services/shlink/create_short_url_service'
+require_relative '../../app/services/shlink/get_qr_code_service'
 
 RSpec.describe ShortUrlsController, type: :controller do
   describe 'GET #new' do
@@ -65,12 +68,12 @@ RSpec.describe ShortUrlsController, type: :controller do
     end
 
     context '有効なパラメータの場合' do
-      let(:mock_client) { instance_double(Shlink::Client) }
+      let(:mock_client) { instance_double(Shlink::CreateShortUrlService) }
 
       before do
-        allow(Shlink::Client).to receive(:new).and_return(mock_client)
-        allow(mock_client).to receive(:create_short_url)
-          .with('https://example.com/very/long/url', 'custom-slug')
+        allow(Shlink::CreateShortUrlService).to receive(:new).and_return(mock_client)
+        allow(mock_client).to receive(:call)
+          .with(long_url: 'https://example.com/very/long/url', slug: 'custom-slug')
           .and_return(shlink_response)
       end
 
@@ -107,8 +110,8 @@ RSpec.describe ShortUrlsController, type: :controller do
         end
 
         before do
-          allow(mock_client).to receive(:create_short_url)
-            .with('https://example.com/very/long/url', '')
+          allow(mock_client).to receive(:call)
+            .with(long_url: 'https://example.com/very/long/url', slug: '')
             .and_return(shlink_response)
         end
 
@@ -145,11 +148,11 @@ RSpec.describe ShortUrlsController, type: :controller do
     end
 
     context 'Shlink APIがエラーを返す場合' do
-      let(:mock_client) { instance_double(Shlink::Client) }
+      let(:mock_client) { instance_double(Shlink::CreateShortUrlService) }
 
       before do
-        allow(Shlink::Client).to receive(:new).and_return(mock_client)
-        allow(mock_client).to receive(:create_short_url)
+        allow(Shlink::CreateShortUrlService).to receive(:new).and_return(mock_client)
+        allow(mock_client).to receive(:call)
           .and_raise(Shlink::Error, 'API connection failed')
       end
 
@@ -175,11 +178,11 @@ RSpec.describe ShortUrlsController, type: :controller do
     end
 
     context 'Shlink APIが特定のエラーメッセージを返す場合' do
-      let(:mock_client) { instance_double(Shlink::Client) }
+      let(:mock_client) { instance_double(Shlink::CreateShortUrlService) }
 
       before do
-        allow(Shlink::Client).to receive(:new).and_return(mock_client)
-        allow(mock_client).to receive(:create_short_url)
+        allow(Shlink::CreateShortUrlService).to receive(:new).and_return(mock_client)
+        allow(mock_client).to receive(:call)
           .and_raise(Shlink::Error, 'Custom slug already exists')
       end
 

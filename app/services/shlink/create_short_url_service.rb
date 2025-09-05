@@ -1,5 +1,5 @@
 module Shlink
-  class CreateShortUrlService < BaseService
+  class CreateShortUrlService < Shlink::BaseService
     def call(long_url:, slug: nil)
       payload = build_payload(long_url, slug)
       response = make_request(payload)

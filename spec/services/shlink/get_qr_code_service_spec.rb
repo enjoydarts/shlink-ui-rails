@@ -1,4 +1,6 @@
 require 'rails_helper'
+require_relative '../../../app/services/shlink/base_service'
+require_relative '../../../app/services/shlink/get_qr_code_service'
 
 RSpec.describe Shlink::GetQrCodeService, "QRコード取得サービス" do
   let(:service) { Shlink::GetQrCodeService.new(base_url: "https://test.example.com", api_key: "test-key") }
@@ -108,12 +110,14 @@ RSpec.describe Shlink::GetQrCodeService, "QRコード取得サービス" do
       before do
         stub_request(:get, "https://test.example.com/#{short_code}/qr-code")
           .to_raise(Faraday::ConnectionFailed.new("接続失敗"))
+        stub_request(:get, "https://test.example.com/rest/v3/short-urls/#{short_code}/qr-code")
+          .to_raise(Faraday::ConnectionFailed.new("接続失敗"))
       end
 
       it "Shlink::Errorを発生させること" do
         expect {
           service.call(short_code: short_code)
-        }.to raise_error(Shlink::Error, /HTTP error/)
+        }.to raise_error(Shlink::Error, /QR Code API error/)
       end
     end
   end
@@ -121,6 +125,10 @@ RSpec.describe Shlink::GetQrCodeService, "QRコード取得サービス" do
   describe "#call!" do
     it "callメソッドと同じ動作をすること" do
       stub_request(:get, "https://test.example.com/#{short_code}/qr-code")
+        .with(
+          query: { size: "300", format: "png" },
+          headers: { "X-Api-Key" => "test-key" }
+        )
         .to_return(
           status: 200,
           body: "test-data",

@@ -1,5 +1,5 @@
 module Shlink
-  class GetQrCodeService < BaseService
+  class GetQrCodeService < Shlink::BaseService
     def call(short_code:, size: 300, format: "png", margin: nil)
       options = { size: size, format: format }
       options[:margin] = margin if margin

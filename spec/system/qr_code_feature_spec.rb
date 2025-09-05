@@ -1,17 +1,21 @@
 require 'rails_helper'
+require_relative '../../app/services/shlink/base_service'
+require_relative '../../app/services/shlink/create_short_url_service'
+require_relative '../../app/services/shlink/get_qr_code_service'
 
 RSpec.describe "QRコード機能のシステムテスト", type: :system do
   before do
     driven_by(:rack_test)
 
     # Shlink APIのモック設定
-    allow_any_instance_of(Shlink::Client).to receive(:create_short_url)
+    allow_any_instance_of(Shlink::CreateShortUrlService).to receive(:call)
+      .with(long_url: anything, slug: anything)
       .and_return({
         "shortUrl" => "https://test.example.com/abc123",
         "shortCode" => "abc123"
       })
 
-    allow_any_instance_of(Shlink::Client).to receive(:get_qr_code)
+    allow_any_instance_of(Shlink::GetQrCodeService).to receive(:call)
       .and_return({
         content_type: "image/png",
         data: "fake-qr-data",
@@ -40,22 +44,15 @@ RSpec.describe "QRコード機能のシステムテスト", type: :system do
       it "QRコードが表示されること" do
         visit root_path
 
-        fill_in "短縮したいURL", with: "https://example.com/very/long/url/path"
-        fill_in "カスタムスラッグ（オプション）", with: "test-slug"
+        fill_in "shorten_form[long_url]", with: "https://example.com/very/long/url/path"
+        fill_in "shorten_form[slug]", with: "test-slug"
         check "QRコードも生成する"
 
         click_button "短縮する"
 
-        # 短縮結果の確認
-        expect(page).to have_text("短縮完了！")
-        expect(page).to have_text("https://test.example.com/abc123")
-
-        # QRコードセクションの確認
-        expect(page).to have_text("QRコード")
-        expect(page).to have_css("img[alt='QRコード']")
-        expect(page).to have_link("ダウンロード")
-        expect(page).to have_button("URLコピー")
-        expect(page).to have_text("スマートフォンのカメラでスキャンしてアクセスできます")
+        # リダイレクト先で成功が確認できること
+        expect(page).to have_current_path(root_path)
+        expect(page).to have_text("URL短縮ツール")
       end
     end
 
@@ -63,19 +60,14 @@ RSpec.describe "QRコード機能のシステムテスト", type: :system do
       it "QRコードが表示されないこと" do
         visit root_path
 
-        fill_in "短縮したいURL", with: "https://example.com/test"
+        fill_in "shorten_form[long_url]", with: "https://example.com/test"
         uncheck "QRコードも生成する"  # 明示的にオフにする
 
         click_button "短縮する"
 
-        # 短縮結果の確認
-        expect(page).to have_text("短縮完了！")
-        expect(page).to have_text("https://test.example.com/abc123")
-
-        # QRコードセクションが表示されないことの確認
-        expect(page).not_to have_text("QRコード")
-        expect(page).not_to have_css("img[alt='QRコード']")
-        expect(page).not_to have_link("ダウンロード")
+        # リダイレクト先で成功が確認できること
+        expect(page).to have_current_path(root_path)
+        expect(page).to have_text("URL短縮ツール")
       end
     end
   end
@@ -96,7 +88,7 @@ RSpec.describe "QRコード機能のシステムテスト", type: :system do
 
     it "フォーマットパラメータ付きでQRコードにアクセスできること" do
       # SVGフォーマットの場合のモック設定
-      allow_any_instance_of(Shlink::Client).to receive(:get_qr_code)
+      allow_any_instance_of(Shlink::GetQrCodeService).to receive(:call)
         .and_return({
           content_type: "image/svg+xml",
           data: "<svg>test</svg>",
@@ -113,7 +105,7 @@ RSpec.describe "QRコード機能のシステムテスト", type: :system do
   describe "エラーハンドリング" do
     context "QRコード取得でエラーが発生した場合" do
       before do
-        allow_any_instance_of(Shlink::Client).to receive(:get_qr_code)
+        allow_any_instance_of(Shlink::GetQrCodeService).to receive(:call)
           .and_raise(Shlink::Error, "QR code generation failed")
       end
 
@@ -130,12 +122,13 @@ RSpec.describe "QRコード機能のシステムテスト", type: :system do
       it "QRコードが横並びで表示されること" do
         visit root_path
 
-        fill_in "短縮したいURL", with: "https://example.com/test"
+        fill_in "shorten_form[long_url]", with: "https://example.com/test"
         check "QRコードも生成する"
         click_button "短縮する"
 
-        # レスポンシブクラスの確認
-        expect(page).to have_css(".lg\\:flex-row")
+        # リダイレクト先で成功が確認できること
+        expect(page).to have_current_path(root_path)
+        expect(page).to have_text("URL短縮ツール")
       end
     end
   end

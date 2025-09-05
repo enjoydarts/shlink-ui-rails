@@ -1,4 +1,6 @@
 require 'rails_helper'
+require_relative '../../../app/services/shlink/base_service'
+require_relative '../../../app/services/shlink/create_short_url_service'
 
 RSpec.describe Shlink::CreateShortUrlService, "短縮URL作成サービス" do
   let(:service) { Shlink::CreateShortUrlService.new(base_url: "https://test.example.com", api_key: "test-key") }
@@ -90,7 +92,7 @@ RSpec.describe Shlink::CreateShortUrlService, "短縮URL作成サービス" do
         service.call(long_url: long_url, slug: "")
 
         expect(WebMock).to have_requested(:post, "https://test.example.com/rest/v3/short-urls")
-          .with(body: hash_not_including(:customSlug))
+          .with(body: { longUrl: long_url }.to_json)
       end
     end
 
