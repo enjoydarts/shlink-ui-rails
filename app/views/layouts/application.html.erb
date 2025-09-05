@@ -26,6 +26,99 @@
   </head>
 
   <body data-turbo-action="replace">
+    <!-- Navigation Bar -->
+    <% if user_signed_in? %>
+      <nav class="bg-white/90 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between items-center h-16">
+            <!-- Logo -->
+            <div class="flex items-center">
+              <%= link_to root_path, class: "flex items-center space-x-2" do %>
+                <div class="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.102m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                  </svg>
+                </div>
+                <span class="font-bold text-gray-900">Shlink-UI-Rails</span>
+              <% end %>
+            </div>
+
+            <!-- User Menu -->
+            <div class="flex items-center space-x-4">
+              <div class="flex items-center space-x-3 px-3 py-2 rounded-xl bg-gray-50">
+                <div class="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
+                  <span class="text-white text-sm font-semibold">
+                    <%= current_user.display_name.first.upcase %>
+                  </span>
+                </div>
+                <div class="text-sm">
+                  <p class="text-gray-900 font-medium"><%= current_user.display_name %></p>
+                  <% if current_user.admin? %>
+                    <p class="text-gray-500">管理者ユーザ</p>
+                  <% end %>
+                </div>
+              </div>
+
+              <%= button_to destroy_user_session_path, method: :delete, 
+                    class: "inline-flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-colors duration-200",
+                    data: { confirm: "ログアウトしますか？" } do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                <span>ログアウト</span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </nav>
+    <% end %>
+
+    <!-- Toast Messages -->
+    <% if notice %>
+      <div class="fixed top-4 right-4 z-50 max-w-sm w-full" 
+           data-controller="flash" 
+           data-flash-auto-hide-value="true" 
+           data-flash-delay-value="5000">
+        <div class="rounded-2xl border border-green-200/50 bg-green-50/95 backdrop-blur-lg text-green-700 p-4 shadow-xl shadow-green-500/10 flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="text-sm font-medium"><%= notice %></span>
+          </div>
+          <button type="button" 
+                  data-action="click->flash#dismiss"
+                  class="text-green-400 hover:text-green-600 transition-colors duration-200 flex-shrink-0 ml-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    <% end %>
+
+    <% if alert %>
+      <div class="fixed top-4 right-4 z-50 max-w-sm w-full" 
+           data-controller="flash" 
+           data-flash-auto-hide-value="false">
+        <div class="rounded-2xl border border-red-200/50 bg-red-50/95 backdrop-blur-lg text-red-700 p-4 shadow-xl shadow-red-500/10 flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="text-sm font-medium"><%= alert %></span>
+          </div>
+          <button type="button" 
+                  data-action="click->flash#dismiss"
+                  class="text-red-400 hover:text-red-600 transition-colors duration-200 flex-shrink-0 ml-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    <% end %>
+
     <%= yield %>
   </body>
 </html>

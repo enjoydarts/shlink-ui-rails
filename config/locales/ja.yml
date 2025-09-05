@@ -1,0 +1,168 @@
+ja:
+  activemodel:
+    attributes:
+      shorten_form:
+        long_url: "URL"
+        valid_until: "有効期限"
+        max_visits: "最大訪問回数"
+    errors:
+      models:
+        shorten_form:
+          attributes:
+            long_url:
+              blank: "を入力してください"
+              invalid: "は無効なURLです"
+            valid_until:
+              greater_than: "は現在時刻より後の時間を入力してください"
+            max_visits:
+              greater_than: "は0より大きい値を入力してください"
+  activerecord:
+    errors:
+      messages:
+        record_invalid: "バリデーションに失敗しました: %{errors}"
+        restrict_dependent_destroy:
+          has_one: "%{record}が存在しているので削除できません"
+          has_many: "%{record}が存在しているので削除できません"
+        blank: "を入力してください"
+        confirmation: "と%{attribute}の入力が一致しません"
+        empty: "を入力してください"
+        equal_to: "は%{count}にしてください"
+        even: "は偶数にしてください"
+        exclusion: "は予約されています"
+        greater_than: "は%{count}より大きい値にしてください"
+        greater_than_or_equal_to: "は%{count}以上の値にしてください"
+        inclusion: "は一覧にありません"
+        invalid: "は不正な値です"
+        less_than: "は%{count}より小さい値にしてください"
+        less_than_or_equal_to: "は%{count}以下の値にしてください"
+        not_a_number: "は数値で入力してください"
+        not_an_integer: "は整数で入力してください"
+        odd: "は奇数にしてください"
+        other_than: "は%{count}以外の値にしてください"
+        present: "は入力しないでください"
+        required: "を入力してください"
+        taken: "はすでに存在します"
+        too_long: "は%{count}文字以内で入力してください"
+        too_short: "は%{count}文字以上で入力してください"
+        wrong_length: "は%{count}文字で入力してください"
+      models:
+        user:
+          attributes:
+            email:
+              blank: "を入力してください"
+              taken: "はすでに登録されています"
+              invalid: "の形式が正しくありません"
+            password:
+              blank: "を入力してください"
+              too_short: "は%{count}文字以上で入力してください"
+              confirmation: "が一致しません"
+            password_confirmation:
+              blank: "を入力してください"
+              confirmation: "が一致しません"
+    attributes:
+      user:
+        email: "メールアドレス"
+        password: "パスワード"
+        password_confirmation: "パスワード（確認）"
+        current_password: "現在のパスワード"
+        name: "お名前"
+        role: "権限"
+        remember_me: "ログイン状態を記憶する"
+  errors:
+    format: "%{attribute}%{message}"
+    attributes:
+      email:
+        blank: "を入力してください"
+      password:
+        blank: "を入力してください"
+    messages:
+      accepted: "を受諾してください"
+      blank: "を入力してください"
+      confirmation: "と%{attribute}の入力が一致しません"
+      empty: "を入力してください"
+      equal_to: "は%{count}にしてください"
+      even: "は偶数にしてください"
+      exclusion: "は予約されています"
+      greater_than: "は%{count}より大きい値にしてください"
+      greater_than_or_equal_to: "は%{count}以上の値にしてください"
+      in: "は%{count}の範囲に含めてください"
+      inclusion: "は一覧にありません"
+      invalid: "は不正な値です"
+      less_than: "は%{count}より小さい値にしてください"
+      less_than_or_equal_to: "は%{count}以下の値にしてください"
+      model_invalid: "バリデーションに失敗しました: %{errors}"
+      not_a_number: "は数値で入力してください"
+      not_an_integer: "は整数で入力してください"
+      odd: "は奇数にしてください"
+      other_than: "は%{count}以外の値にしてください"
+      present: "は入力しないでください"
+      required: "を入力してください"
+      taken: "はすでに存在します"
+      too_long: "は%{count}文字以内で入力してください"
+      too_short: "は%{count}文字以上で入力してください"
+      wrong_length: "は%{count}文字で入力してください"
+    template:
+      body: "次の項目を確認してください"
+      header: "%{model}に%{count}個のエラーが発生しました"
+  devise:
+    confirmations:
+      confirmed: "メールアドレスが正常に確認されました。"
+      send_instructions: "メールアドレス確認の手順を記載したメールを数分以内にお送りします。"
+      send_paranoid_instructions: "メールアドレスが当サイトに登録済みの場合、メールアドレス確認の手順を記載したメールをお送りします。"
+    failure:
+      already_authenticated: "既にログインしています。"
+      inactive: "アカウントが有効になっていません。"
+      invalid: "メールアドレスまたはパスワードが正しくありません。"
+      locked: "アカウントがロックされています。"
+      last_attempt: "あと1回失敗するとアカウントがロックされます。"
+      not_found_in_database: "メールアドレスまたはパスワードが正しくありません。"
+      timeout: "セッションがタイムアウトしました。続行するには再度ログインしてください。"
+      unauthenticated: "続行するにはログインまたは登録してください。"
+      unconfirmed: "続行するにはメールアドレスを確認してください。"
+    mailer:
+      confirmation_instructions:
+        subject: "メールアドレス確認手順"
+      reset_password_instructions:
+        subject: "パスワードリセット手順"
+      unlock_instructions:
+        subject: "アカウントロック解除手順"
+      email_changed:
+        subject: "メールアドレス変更完了"
+      password_change:
+        subject: "パスワード変更完了"
+    omniauth_callbacks:
+      failure: "Google認証に失敗しました: %{reason}"
+      success: "Googleアカウントでの認証に成功しました。"
+    passwords:
+      no_token: "パスワードリセットメールからのアクセスでない限り、このページにはアクセスできません。パスワードリセットメールからのアクセスの場合は、完全なURLを使用してください。"
+      send_instructions: "パスワードリセット手順を記載したメールを数分以内にお送りします。"
+      send_paranoid_instructions: "メールアドレスが当サイトに登録済みの場合、パスワードリセット手順を記載したメールをお送りします。"
+      updated: "パスワードが正常に変更されました。"
+      updated_not_active: "パスワードが正常に変更されました。"
+    registrations:
+      destroyed: "アカウントが正常に削除されました。またのご利用をお待ちしております。"
+      signed_up: "アカウント登録が完了しました。"
+      signed_up_but_inactive: "アカウントは登録されましたが、まだ有効になっていません。"
+      signed_up_but_locked: "アカウントは登録されましたが、ロックされています。"
+      signed_up_but_unconfirmed: "確認リンクを記載したメールをお送りしました。リンクをクリックしてアカウントを有効にしてください。"
+      update_needs_confirmation: "アカウントが正常に更新されました。新しいメールアドレスの確認が必要です。"
+      updated: "アカウントが正常に更新されました。"
+      updated_but_not_signed_in: "アカウントは正常に更新されましたが、パスワードが変更されたため、再度ログインしてください。"
+    sessions:
+      signed_in: "ログインしました。"
+      signed_out: "ログアウトしました。"
+      already_signed_out: "既にログアウトしています。"
+    unlocks:
+      send_instructions: "アカウントのロック解除手順を記載したメールを数分以内にお送りします。"
+      send_paranoid_instructions: "アカウントが存在する場合、アカウントのロック解除手順を記載したメールをお送りします。"
+      unlocked: "アカウントが正常にロック解除されました。"
+  errors:
+    messages:
+      already_confirmed: "は既に登録済みです。ログインしてください。"
+      confirmation_period_expired: "の期限が切れました。%{period} までに確認する必要があります。 新しくリクエストしてください。"
+      expired: "の有効期限が切れました。新しくリクエストしてください。"
+      not_found: "は見つかりませんでした。"
+      not_locked: "はロックされていません。"
+      not_saved:
+        one: "エラーが発生したため %{resource} は保存されませんでした:"
+        other: "%{count} 件のエラーが発生したため %{resource} は保存されませんでした:"

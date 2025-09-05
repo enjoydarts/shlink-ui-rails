@@ -1,0 +1,23 @@
+FactoryBot.define do
+  factory :user do
+    sequence(:email) { |n| "user#{n}@example.com" }
+    password { "password123" }
+    password_confirmation { "password123" }
+    role { "normal_user" }
+    confirmed_at { Time.current }
+
+    trait :admin do
+      role { "admin" }
+    end
+
+    trait :from_oauth do
+      provider { "google_oauth2" }
+      sequence(:uid) { |n| "google_uid_#{n}" }
+      name { "OAuth User" }
+    end
+
+    trait :unconfirmed do
+      confirmed_at { nil }
+    end
+  end
+end

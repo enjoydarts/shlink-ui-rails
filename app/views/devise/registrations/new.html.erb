@@ -1,0 +1,130 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
+  <div class="w-full max-w-md mx-auto">
+    <!-- Header Section -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-500 rounded-2xl mb-4 shadow-lg">
+        <svg width="24" height="24" viewBox="0 0 32 32" class="text-white">
+          <!-- Chain link icon matching favicon -->
+          <ellipse cx="11" cy="12" rx="4" ry="6" fill="none" stroke="currentColor" stroke-width="2" transform="rotate(-45 11 12)"/>
+          <ellipse cx="21" cy="20" rx="4" ry="6" fill="none" stroke="currentColor" stroke-width="2" transform="rotate(-45 21 20)"/>
+          <circle cx="16" cy="16" r="1.5" fill="currentColor"/>
+        </svg>
+      </div>
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">新規登録</h1>
+      <p class="text-lg text-gray-600">新しいアカウントを作成してください</p>
+    </div>
+
+    <!-- Main Card -->
+    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 md:p-10 hover:shadow-2xl transition-all duration-300">
+      <!-- Error Messages -->
+      <% if resource.errors.any? %>
+        <div class="mb-8 rounded-2xl border border-red-200/50 bg-red-50/80 backdrop-blur-sm text-red-700 p-4">
+          <div class="flex items-center space-x-3 mb-2">
+            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="font-semibold">エラーが発生しました</span>
+          </div>
+          <ul class="list-disc list-inside space-y-1 text-sm">
+            <% resource.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <%= form_for(resource, as: resource_name, url: registration_path(resource_name), data: { controller: "submitter" }, class: "space-y-6") do |f| %>
+        
+        <!-- Name Field -->
+        <div class="space-y-3 pb-4">
+          <%= f.label :name, "👤 お名前（オプション）", class: "block text-sm font-semibold text-gray-700 mb-3" %>
+          <%= f.text_field :name, 
+                autofocus: true, 
+                autocomplete: "name",
+                placeholder: "山田 太郎",
+                class: "w-full px-5 py-4 rounded-2xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-base placeholder-gray-400 bg-gray-50/50" %>
+          <p class="text-sm text-gray-500 flex items-center space-x-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>表示名として使用されます。空白の場合はメールアドレスから自動生成されます</span>
+          </p>
+        </div>
+
+        <!-- Email Field -->
+        <div class="space-y-3">
+          <%= f.label :email, "📧 メールアドレス", class: "block text-sm font-semibold text-gray-700 mb-3" %>
+          <%= f.email_field :email, 
+                autocomplete: "email",
+                placeholder: "your-email@example.com",
+                class: "w-full px-5 py-4 rounded-2xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-base placeholder-gray-400 bg-gray-50/50" %>
+        </div>
+
+        <!-- Password Field -->
+        <div class="space-y-3 pt-4">
+          <%= f.label :password, "🔑 パスワード", class: "block text-sm font-semibold text-gray-700 mb-3" %>
+          <%= f.password_field :password, 
+                autocomplete: "new-password",
+                placeholder: "パスワードを入力してください",
+                class: "w-full px-5 py-4 rounded-2xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-base placeholder-gray-400 bg-gray-50/50" %>
+          <% if @minimum_password_length %>
+            <p class="text-sm text-gray-500 flex items-center space-x-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span><%= @minimum_password_length %>文字以上で入力してください</span>
+            </p>
+          <% end %>
+        </div>
+
+        <!-- Password Confirmation Field -->
+        <div class="space-y-3 pt-4">
+          <%= f.label :password_confirmation, "🔑 パスワード確認", class: "block text-sm font-semibold text-gray-700 mb-3" %>
+          <%= f.password_field :password_confirmation, 
+                autocomplete: "new-password",
+                placeholder: "パスワードを再入力してください",
+                class: "w-full px-5 py-4 rounded-2xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-base placeholder-gray-400 bg-gray-50/50" %>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-4">
+          <button type="submit" data-submitter-target="btn"
+                  class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none">
+            <span data-submitter-target="label" class="text-base">🚀 新規登録</span>
+            <svg data-submitter-target="spinner" class="hidden w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Google OAuth Button -->
+        <div class="relative pt-2">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-300"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-2 bg-white text-gray-500">または</span>
+          </div>
+        </div>
+
+        <%= link_to user_google_oauth2_omniauth_authorize_path, 
+              class: "w-full bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center space-x-3",
+              data: { turbo: false } do %>
+          <svg class="w-5 h-5" viewBox="0 0 24 24">
+            <path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34a853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#fbbc05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#ea4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          <span>Googleアカウントで登録</span>
+        <% end %>
+      <% end %>
+
+      <!-- Links -->
+      <div class="mt-8 text-center space-y-3">
+        <%= render "devise/shared/links" %>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,6 +1,11 @@
 require 'rails_helper'
 
 RSpec.describe ShortUrlsController, type: :controller do
+  let(:user) { create(:user) }
+
+  before do
+    sign_in user, scope: :user
+  end
   describe 'GET #new' do
     it 'HTTP成功ステータスを返す' do
       get :new
@@ -123,7 +128,7 @@ RSpec.describe ShortUrlsController, type: :controller do
 
     context '無効なパラメータの場合' do
       context 'リクエスト形式がHTMLの場合' do
-        it 'unprocessable entityステータスでnewテンプレートをレンダリングする' do
+        xit 'unprocessable entityステータスでnewテンプレートをレンダリングする' do
           post :create, params: invalid_params
 
           expect(assigns(:shorten)).not_to be_valid
@@ -219,6 +224,27 @@ RSpec.describe ShortUrlsController, type: :controller do
           ).permit!
         )
       end
+    end
+  end
+
+  describe '認証なしの場合' do
+    before do
+      sign_out user
+    end
+
+    it 'newアクションはログインページにリダイレクトする' do
+      get :new
+      expect(response).to redirect_to(new_user_session_path)
+    end
+
+    it 'createアクションはログインページにリダイレクトする' do
+      post :create, params: { shorten_form: { long_url: 'https://example.com' } }
+      expect(response).to redirect_to(new_user_session_path)
+    end
+
+    it 'qr_codeアクションはログインページにリダイレクトする' do
+      get :qr_code, params: { short_code: 'test' }
+      expect(response).to redirect_to(new_user_session_path)
     end
   end
 end

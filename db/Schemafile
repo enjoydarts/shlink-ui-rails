@@ -1,0 +1,43 @@
+# frozen_string_literal: true
+
+create_table "users", force: :cascade do |t|
+  # Database authenticatable
+  t.string "email", default: "", null: false
+  t.string "encrypted_password", default: "", null: false
+
+  # Recoverable
+  t.string "reset_password_token"
+  t.datetime "reset_password_sent_at"
+
+  # Rememberable
+  t.datetime "remember_created_at"
+
+  # Confirmable
+  t.string "confirmation_token"
+  t.datetime "confirmed_at"
+  t.datetime "confirmation_sent_at"
+  t.string "unconfirmed_email"
+
+  # Trackable (enabled for security)
+  t.integer "sign_in_count", default: 0, null: false
+  t.datetime "current_sign_in_at"
+  t.datetime "last_sign_in_at"
+  t.string "current_sign_in_ip"
+  t.string "last_sign_in_ip"
+
+  # OAuth provider information
+  t.string "provider"
+  t.string "uid"
+  t.string "name"
+
+  # User role (normal_user, admin)
+  t.string "role", default: "normal_user", null: false
+
+  t.timestamps null: false
+end
+
+add_index "users", [ "email" ], name: "index_users_on_email", unique: true
+add_index "users", [ "reset_password_token" ], name: "index_users_on_reset_password_token", unique: true
+add_index "users", [ "confirmation_token" ], name: "index_users_on_confirmation_token", unique: true
+add_index "users", [ "provider", "uid" ], name: "index_users_on_provider_and_uid", unique: true
+add_index "users", [ "role" ], name: "index_users_on_role"

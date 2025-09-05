@@ -18,7 +18,7 @@ RSpec.describe ShortenForm, type: :model do
 
         it '無効である' do
           expect(subject).not_to be_valid
-          expect(subject.errors[:long_url]).to include("can't be blank")
+          expect(subject.errors[:long_url]).to include('を入力してください')
         end
       end
 
@@ -27,7 +27,7 @@ RSpec.describe ShortenForm, type: :model do
 
         it '無効である' do
           expect(subject).not_to be_valid
-          expect(subject.errors[:long_url]).to include("can't be blank")
+          expect(subject.errors[:long_url]).to include('を入力してください')
         end
       end
 
@@ -36,7 +36,7 @@ RSpec.describe ShortenForm, type: :model do
 
         it '無効である' do
           expect(subject).not_to be_valid
-          expect(subject.errors[:long_url]).to include('is invalid')
+          expect(subject.errors[:long_url]).to include('は無効なURLです')
         end
       end
 
@@ -45,7 +45,7 @@ RSpec.describe ShortenForm, type: :model do
 
         it '無効である' do
           expect(subject).not_to be_valid
-          expect(subject.errors[:long_url]).to include('is invalid')
+          expect(subject.errors[:long_url]).to include('は無効なURLです')
         end
       end
     end
@@ -105,7 +105,7 @@ RSpec.describe ShortenForm, type: :model do
 
         it '無効である' do
           expect(subject).not_to be_valid
-          expect(subject.errors[:long_url]).to include('is invalid')
+          expect(subject.errors[:long_url]).to include('は無効なURLです')
         end
       end
     end
@@ -165,7 +165,7 @@ RSpec.describe ShortenForm, type: :model do
 
       it '無効である' do
         expect(subject).not_to be_valid
-        expect(subject.errors[:valid_until]).to include(a_string_matching(/must be greater than/))
+        expect(subject.errors[:valid_until]).to include('は現在時刻より後の時間を入力してください')
       end
     end
 
@@ -175,7 +175,7 @@ RSpec.describe ShortenForm, type: :model do
 
       it '無効である' do
         expect(subject).not_to be_valid
-        expect(subject.errors[:valid_until]).to include(a_string_matching(/must be greater than/))
+        expect(subject.errors[:valid_until]).to include('は現在時刻より後の時間を入力してください')
       end
     end
   end
@@ -202,7 +202,7 @@ RSpec.describe ShortenForm, type: :model do
 
       it '無効である' do
         expect(subject).not_to be_valid
-        expect(subject.errors[:max_visits]).to include('must be greater than 0')
+        expect(subject.errors[:max_visits]).to include('は0より大きい値を入力してください')
       end
     end
 
@@ -211,7 +211,7 @@ RSpec.describe ShortenForm, type: :model do
 
       it '無効である' do
         expect(subject).not_to be_valid
-        expect(subject.errors[:max_visits]).to include('must be greater than 0')
+        expect(subject.errors[:max_visits]).to include('は0より大きい値を入力してください')
       end
     end
 

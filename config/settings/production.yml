@@ -1,0 +1,10 @@
+# SMTP Configuration for production
+mailer:
+  host: <%= ENV['MAILER_HOST'] || 'localhost' %>
+  port: <%= ENV['MAILER_PORT'] || 587 %>
+  address: <%= ENV['SMTP_ADDRESS'] %>
+  domain: <%= ENV['SMTP_DOMAIN'] %>
+  user_name: <%= ENV['SMTP_USERNAME'] %>
+  password: <%= ENV['SMTP_PASSWORD'] %>
+  authentication: <%= ENV['SMTP_AUTHENTICATION'] || 'login' %>
+  enable_starttls_auto: <%= ENV['SMTP_ENABLE_STARTTLS_AUTO'] || true %>

@@ -1,6 +1,12 @@
 require 'rails_helper'
 
 RSpec.describe ShortUrlsController, "QRコード機能" do
+  let!(:user) { create(:user) }
+
+  before do
+    sign_in user, scope: :user
+  end
+
   describe "GET #qr_code" do
     let(:short_code) { "abc123" }
     let(:fake_qr_data) { "fake-qr-image-binary-data" }
