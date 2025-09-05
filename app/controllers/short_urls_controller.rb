@@ -15,9 +15,20 @@ class ShortUrlsController < ApplicationController
 
     if @shorten.valid?
       Rails.logger.info "Calling Shlink API with URL: #{@shorten.long_url}, slug: #{@shorten.slug}"
-      result = Shlink::Client.new.create_short_url(@shorten.long_url, @shorten.slug)
+      result = Shlink::CreateShortUrlService.new.call(
+        long_url: @shorten.long_url,
+        slug: @shorten.slug
+      )
       Rails.logger.info "Shlink API result: #{result.inspect}"
+
       @result = { short_url: result["shortUrl"] }
+
+      # QRコードが要求された場合は取得
+      if @shorten.include_qr_code
+        short_code = result["shortCode"]
+        @result[:qr_code_url] = qr_code_path(short_code: short_code)
+      end
+
       Rails.logger.info "Setting @result: #{@result.inspect}"
       respond_to do |f|
         f.turbo_stream
@@ -38,9 +49,29 @@ class ShortUrlsController < ApplicationController
     end
   end
 
+  def qr_code
+    short_code = params[:short_code]
+    size = params[:size]&.to_i || 300
+    format = params[:format] || "png"
+
+    qr_data = Shlink::GetQrCodeService.new.call(
+      short_code: short_code,
+      size: size,
+      format: format
+    )
+
+    send_data qr_data[:data],
+      type: qr_data[:content_type],
+      disposition: "inline",
+      filename: "qr-#{short_code}.#{format}"
+
+  rescue Shlink::Error => e
+    render json: { error: e.message }, status: :bad_gateway
+  end
+
   private
 
   def shorten_params
-    params.require(:shorten_form).permit(:long_url, :slug)
+    params.require(:shorten_form).permit(:long_url, :slug, :include_qr_code)
   end
 end
