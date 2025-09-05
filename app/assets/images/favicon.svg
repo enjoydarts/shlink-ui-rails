@@ -1,0 +1,14 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="16" cy="16" r="15" fill="#3b82f6" stroke="#1e40af" stroke-width="1"/>
+  
+  <!-- Chain link icon -->
+  <!-- First link -->
+  <ellipse cx="11" cy="12" rx="4" ry="6" fill="none" stroke="white" stroke-width="2" transform="rotate(-45 11 12)"/>
+  
+  <!-- Second link -->
+  <ellipse cx="21" cy="20" rx="4" ry="6" fill="none" stroke="white" stroke-width="2" transform="rotate(-45 21 20)"/>
+  
+  <!-- Connection indicator -->
+  <circle cx="16" cy="16" r="1.5" fill="white"/>
+</svg>
