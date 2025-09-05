@@ -2,6 +2,12 @@ Rails.application.routes.draw do
   devise_for :users, controllers: {
     omniauth_callbacks: 'users/omniauth_callbacks'
   }
+  
+  # Email preview in development
+  if Rails.env.development?
+    mount LetterOpenerWeb::Engine, at: "/letter_opener"
+  end
+  
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
@@ -12,11 +18,15 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
-  # Defines the root path route ("/")
-  # root "posts#index"
+  # Authentication required pages
+  authenticate :user do
+    resource :short_urls, only: [ :new, :create ]
+    get "test", to: "short_urls#test"
+    get "qr/:short_code", to: "short_urls#qr_code", as: :qr_code
+    get "dashboard", to: "short_urls#new", as: :dashboard
+  end
 
-  resource :short_urls, only: [ :new, :create ]
-  get "test", to: "short_urls#test"
-  get "qr/:short_code", to: "short_urls#qr_code", as: :qr_code
-  root "short_urls#new"
+  # Public pages
+  get "home", to: "pages#home"
+  root "pages#home"
 end

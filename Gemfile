@@ -46,6 +46,9 @@ gem "omniauth-rails_csrf_protection"
 # DB schema management
 gem "ridgepole"
 
+# Configuration management
+gem "config"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri mingw mswin x64_mingw ], require: "debug/prelude"
@@ -81,6 +84,9 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+  
+  # Email testing in development
+  gem "letter_opener_web"
 end
 
 gem "importmap-rails", "~> 2.2"

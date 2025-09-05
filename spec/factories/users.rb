@@ -4,6 +4,7 @@ FactoryBot.define do
     password { "password123" }
     password_confirmation { "password123" }
     role { "normal_user" }
+    confirmed_at { Time.current }
 
     trait :admin do
       role { "admin" }
@@ -13,6 +14,10 @@ FactoryBot.define do
       provider { "google_oauth2" }
       sequence(:uid) { |n| "google_uid_#{n}" }
       name { "OAuth User" }
+    end
+
+    trait :unconfirmed do
+      confirmed_at { nil }
     end
   end
 end

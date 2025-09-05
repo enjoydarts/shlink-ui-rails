@@ -3,7 +3,7 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
-         :trackable, :omniauthable, omniauth_providers: [:google_oauth2]
+         :confirmable, :trackable, :omniauthable, omniauth_providers: [:google_oauth2]
 
   # User roles
   enum :role, {
@@ -22,6 +22,7 @@ class User < ApplicationRecord
       user.name = auth.info.name
       user.provider = auth.provider
       user.uid = auth.uid
+      user.skip_confirmation!
     end
   end
 
