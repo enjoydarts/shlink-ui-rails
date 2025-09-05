@@ -1,0 +1,154 @@
+{
+  "RSpec": {
+    "coverage": {
+      "/app/app/helpers/application_helper.rb": {
+        "lines": [
+          1,
+          null
+        ]
+      },
+      "/app/app/controllers/short_urls_controller.rb": {
+        "lines": [
+          1,
+          1,
+          11,
+          11,
+          null,
+          null,
+          1,
+          null,
+          null,
+          null,
+          1,
+          12,
+          12,
+          12,
+          null,
+          12,
+          8,
+          8,
+          4,
+          4,
+          4,
+          4,
+          4,
+          7,
+          null,
+          null,
+          4,
+          4,
+          7,
+          null,
+          null,
+          null,
+          4,
+          4,
+          4,
+          4,
+          7,
+          null,
+          null,
+          null,
+          1,
+          null,
+          1,
+          13,
+          null,
+          null
+        ]
+      },
+      "/app/app/controllers/application_controller.rb": {
+        "lines": [
+          1,
+          null,
+          1,
+          null
+        ]
+      },
+      "/app/app/forms/shorten_form.rb": {
+        "lines": [
+          1,
+          1,
+          1,
+          null,
+          1,
+          1,
+          null,
+          1,
+          null
+        ]
+      },
+      "/app/app/services/shlink.rb": {
+        "lines": [
+          1,
+          1,
+          null,
+          1,
+          1,
+          null,
+          1,
+          1,
+          13,
+          13,
+          13,
+          13,
+          null,
+          13,
+          null,
+          null,
+          1,
+          9,
+          9,
+          null,
+          9,
+          9,
+          9,
+          null,
+          null,
+          7,
+          null,
+          4,
+          null,
+          3,
+          3,
+          null,
+          null,
+          2,
+          null,
+          null,
+          null
+        ]
+      },
+      "/app/app/jobs/application_job.rb": {
+        "lines": [
+          0,
+          null,
+          null,
+          null,
+          null,
+          null,
+          0
+        ],
+        "branches": {}
+      },
+      "/app/app/mailers/application_mailer.rb": {
+        "lines": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "branches": {}
+      },
+      "/app/app/models/application_record.rb": {
+        "lines": [
+          0,
+          0,
+          0
+        ],
+        "branches": {}
+      }
+    },
+    "timestamp": 1756998979
+  }
+}

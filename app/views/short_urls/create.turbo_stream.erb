@@ -34,6 +34,59 @@
           </div>
         </div>
 
+        <% if @result[:qr_code_url].present? %>
+          <div class="mt-4 bg-white/80 backdrop-blur-sm rounded-2xl p-4 border border-white/50">
+            <p class="text-sm font-medium text-gray-700 mb-3 flex items-center space-x-2">
+              <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path>
+              </svg>
+              <span>QRコード</span>
+            </p>
+            
+            <div class="flex flex-col lg:flex-row items-start lg:items-center space-y-4 lg:space-y-0 lg:space-x-6">
+              <!-- QR Code Image -->
+              <div class="mx-auto lg:mx-0">
+                <div class="bg-white rounded-2xl p-4 shadow-lg border-2 border-gray-100">
+                  <img src="<%= @result[:qr_code_url] %>" 
+                       alt="QRコード" 
+                       class="w-32 h-32 block mx-auto"
+                       loading="lazy">
+                </div>
+              </div>
+              
+              <!-- QR Code Actions -->
+              <div class="flex-1 w-full space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <a href="<%= @result[:qr_code_url] %>" 
+                     download="qr-code.png"
+                     class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-xl font-medium transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    <span>ダウンロード</span>
+                  </a>
+                  
+                  <button data-controller="clipboard"
+                          data-clipboard-text="<%= request.base_url %><%= @result[:qr_code_url] %>"
+                          class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded-xl font-medium transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    <span>QRコピー</span>
+                  </button>
+                </div>
+                
+                <p class="text-sm text-gray-600 flex items-center space-x-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span>スマートフォンのカメラでスキャンしてアクセスできます</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
         <div class="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between text-sm space-y-2 sm:space-y-0">
           <div class="flex items-center space-x-2 text-green-600">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

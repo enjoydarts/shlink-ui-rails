@@ -14,5 +14,6 @@ Rails.application.routes.draw do
 
   resource :short_urls, only: [ :new, :create ]
   get "test", to: "short_urls#test"
+  get "qr/:short_code", to: "short_urls#qr_code", as: :qr_code
   root "short_urls#new"
 end
