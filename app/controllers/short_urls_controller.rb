@@ -1,4 +1,5 @@
 class ShortUrlsController < ApplicationController
+  before_action :authenticate_user!
   def new
     @shorten = ShortenForm.new
     @result  = nil
