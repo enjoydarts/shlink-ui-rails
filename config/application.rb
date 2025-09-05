@@ -16,15 +16,14 @@ module App
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
-    # Ensure all app subdirectories are autoloaded
-    config.autoload_paths += Dir["#{Rails.root}/app/**/"]
+    # Rails 8 autoloads app/ directory by default, no need to add subdirectories manually
 
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    # config.time_zone = "Central Time (US & Canada)"
+    config.time_zone = "Asia/Tokyo"
     # config.eager_load_paths << Rails.root.join("extras")
 
     # Don't generate system test files.

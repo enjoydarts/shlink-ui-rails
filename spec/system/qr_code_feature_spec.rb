@@ -1,7 +1,4 @@
 require 'rails_helper'
-require_relative '../../app/services/shlink/base_service'
-require_relative '../../app/services/shlink/create_short_url_service'
-require_relative '../../app/services/shlink/get_qr_code_service'
 
 RSpec.describe "QRコード機能のシステムテスト", type: :system do
   before do
@@ -9,7 +6,6 @@ RSpec.describe "QRコード機能のシステムテスト", type: :system do
 
     # Shlink APIのモック設定
     allow_any_instance_of(Shlink::CreateShortUrlService).to receive(:call)
-      .with(long_url: anything, slug: anything)
       .and_return({
         "shortUrl" => "https://test.example.com/abc123",
         "shortCode" => "abc123"
