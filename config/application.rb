@@ -16,8 +16,7 @@ module App
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
-    # Ensure all app subdirectories are autoloaded
-    config.autoload_paths += Dir["#{Rails.root}/app/**/"]
+    # Rails 8 autoloads app/ directory by default, no need to add subdirectories manually
 
     # Configuration for the application, engines, and railties goes here.
     #
