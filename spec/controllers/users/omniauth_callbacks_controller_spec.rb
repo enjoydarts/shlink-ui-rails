@@ -56,7 +56,7 @@ RSpec.describe Users::OmniauthCallbacksController, type: :controller do
     context 'ユーザー作成に失敗した場合' do
       before do
         allow(User).to receive(:from_omniauth).and_return(
-          double(persisted?: false, errors: double(full_messages: ['Error occurred']))
+          double(persisted?: false, errors: double(full_messages: [ 'Error occurred' ]))
         )
       end
 
@@ -68,5 +68,4 @@ RSpec.describe Users::OmniauthCallbacksController, type: :controller do
       end
     end
   end
-
 end

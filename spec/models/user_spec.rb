@@ -11,14 +11,14 @@ RSpec.describe User, type: :model do
     it 'roleの値が適切に設定されること' do
       user = build(:user, role: 'normal_user')
       expect(user.role).to eq('normal_user')
-      
+
       user = build(:user, role: 'admin')
       expect(user.role).to eq('admin')
     end
 
     context 'OAuthユーザーの場合' do
       subject { build(:user, :from_oauth) }
-      
+
       it { should validate_presence_of(:name) }
     end
   end

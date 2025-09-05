@@ -87,13 +87,13 @@ Rails.application.configure do
   #
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
-  
+
   # Devise and Mail settings for production
-  config.action_mailer.default_url_options = { 
+  config.action_mailer.default_url_options = {
     host: Settings.mailer.host,
     port: Settings.mailer.port
   }
-  
+
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.perform_deliveries = true
   config.action_mailer.smtp_settings = {
