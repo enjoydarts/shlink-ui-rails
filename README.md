@@ -257,8 +257,8 @@ app/
 
 3. **Database Setup**
    ```bash
-   docker-compose exec web bin/rails db:create RAILS_ENV=production
-   docker-compose exec web bin/rails db:migrate RAILS_ENV=production
+   # Apply database schema with Ridgepole
+   docker-compose exec web bundle exec ridgepole -c config/database.yml -E production --apply -f db/Schemafile
    ```
 
 ### Docker Deployment
