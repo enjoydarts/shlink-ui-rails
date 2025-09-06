@@ -43,6 +43,16 @@
               <% end %>
             </div>
 
+            <!-- Navigation Links -->
+            <div class="hidden md:flex items-center space-x-6">
+              <%= link_to dashboard_path, class: "text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200" do %>
+                ダッシュボード
+              <% end %>
+              <%= link_to mypage_path, class: "text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200" do %>
+                マイページ
+              <% end %>
+            </div>
+
             <!-- User Menu -->
             <div class="flex items-center space-x-4">
               <div class="flex items-center space-x-3 px-3 py-2 rounded-xl bg-gray-50">

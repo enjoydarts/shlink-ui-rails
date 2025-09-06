@@ -24,6 +24,7 @@ Rails.application.routes.draw do
     get "test", to: "short_urls#test"
     get "qr/:short_code", to: "short_urls#qr_code", as: :qr_code
     get "dashboard", to: "short_urls#new", as: :dashboard
+    get "mypage", to: "mypage#index", as: :mypage
   end
 
   # Public pages
