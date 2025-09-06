@@ -7,45 +7,97 @@ module Shlink
     end
 
     def call
-      list_service = Shlink::ListShortUrlsService.new
-      page = 1
+      # ユーザーが既に持っている短縮URLのみを同期
+      # 新しいURLの発見ではなく、既存URLの統計情報更新に限定
+      existing_short_codes = user.short_urls.pluck(:short_code)
+      
+      if existing_short_codes.empty?
+        Rails.logger.info "User #{user.id} has no existing short URLs to sync"
+        return 0
+      end
+
       total_synced = 0
-
-      loop do
-        response = list_service.call(page: page, items_per_page: 100)
-        short_urls_data = response["shortUrls"]["data"]
-
-        break if short_urls_data.empty?
-
-        short_urls_data.each do |short_url_data|
-          sync_short_url(short_url_data)
-          total_synced += 1
+      list_service = Shlink::ListShortUrlsService.new
+      
+      # 既存の短縮URLの情報を個別に更新
+      existing_short_codes.each do |short_code|
+        begin
+          # 個別URL情報を取得する機能は未実装のため、
+          # 全URL一覧から該当するものを探す（一時的な実装）
+          updated = sync_existing_short_url(short_code, list_service)
+          total_synced += 1 if updated
+        rescue => e
+          Rails.logger.warn "Failed to sync short URL #{short_code} for user #{user.id}: #{e.message}"
+          # 個別エラーは続行
         end
-
-        # Check if we've reached the last page
-        pagination = response["shortUrls"]["pagination"]
-        break if pagination["currentPage"] >= pagination["pagesCount"]
-
-        page += 1
       end
 
       total_synced
     rescue Shlink::Error => e
-      Rails.logger.error "Failed to sync short URLs: #{e.message}"
+      Rails.logger.error "Failed to sync short URLs for user #{user.id}: #{e.message}"
       raise e
     end
 
     private
 
+    def sync_existing_short_url(short_code, list_service)
+      # Shlink APIから該当する短縮URLの情報を検索
+      # 注意: これは非効率的な実装（全URL取得して検索）
+      # 本来はShlink APIに個別URL取得エンドポイントが必要
+      
+      page = 1
+      found_url_data = nil
+      
+      loop do
+        response = list_service.call(page: page, items_per_page: 100)
+        short_urls_data = response["shortUrls"]["data"]
+        
+        break if short_urls_data.empty?
+        
+        # 該当するshort_codeを探す
+        found_url_data = short_urls_data.find { |url_data| url_data["shortCode"] == short_code }
+        break if found_url_data
+        
+        # ページネーション確認
+        pagination = response["shortUrls"]["pagination"]
+        break if pagination["currentPage"] >= pagination["pagesCount"]
+        
+        page += 1
+      end
+      
+      if found_url_data
+        sync_short_url(found_url_data)
+        return true
+      else
+        Rails.logger.warn "Short URL #{short_code} not found in Shlink API for user #{user.id}"
+        return false
+      end
+    end
+
     def sync_short_url(data)
       short_url_attrs = extract_short_url_attributes(data)
 
-      short_url = user.short_urls.find_or_initialize_by(short_code: short_url_attrs[:short_code])
-      short_url.assign_attributes(short_url_attrs)
+      # セキュリティチェック: 既にこのユーザーが所有しているURLのみ更新
+      short_url = user.short_urls.find_by(short_code: short_url_attrs[:short_code])
+      
+      unless short_url
+        Rails.logger.error "Attempted to sync URL #{short_url_attrs[:short_code]} not owned by user #{user.id}"
+        return
+      end
+
+      # 統計情報のみ更新（訪問数、メタデータなど）
+      # 基本情報（URL、タイトルなど）は変更しない
+      stats_only_attrs = {
+        visit_count: short_url_attrs[:visit_count],
+        meta: short_url_attrs[:meta],
+        title: short_url_attrs[:title] # タイトルは後から更新される可能性がある
+      }
+
+      short_url.assign_attributes(stats_only_attrs)
 
       if short_url.changed?
         short_url.save!
-        Rails.logger.info "Synced short URL: #{short_url.short_code}"
+        Rails.logger.info "Synced stats for short URL: #{short_url.short_code} for user #{user.id} (visits: #{short_url.visit_count})"
       end
     end
 
