@@ -24,6 +24,9 @@ class ShortUrlsController < ApplicationController
       )
       Rails.logger.info "Shlink API result: #{result.inspect}"
 
+      # Save the short URL to the database with user association
+      save_short_url_to_database(result)
+
       @result = { short_url: result["shortUrl"] }
 
       # QRコードが要求された場合は取得
@@ -76,5 +79,43 @@ class ShortUrlsController < ApplicationController
 
   def shorten_params
     params.require(:shorten_form).permit(:long_url, :slug, :include_qr_code, :valid_until, :max_visits)
+  end
+
+  def save_short_url_to_database(shlink_result)
+    short_url_data = {
+      short_code: shlink_result["shortCode"],
+      short_url: shlink_result["shortUrl"],
+      long_url: shlink_result["longUrl"],
+      domain: shlink_result["domain"],
+      title: shlink_result["title"],
+      tags: shlink_result["tags"]&.to_json,
+      meta: shlink_result["meta"]&.to_json,
+      visit_count: 0,
+      valid_since: parse_date(shlink_result["validSince"]),
+      valid_until: parse_date(shlink_result["validUntil"]),
+      max_visits: shlink_result["maxVisits"],
+      crawlable: shlink_result["crawlable"] != false,
+      forward_query: shlink_result["forwardQuery"] != false,
+      date_created: parse_date(shlink_result["dateCreated"]) || Time.current,
+      user: current_user
+    }
+
+    short_url = current_user.short_urls.find_or_initialize_by(short_code: short_url_data[:short_code])
+    short_url.assign_attributes(short_url_data.except(:user))
+    short_url.save!
+
+    Rails.logger.info "Saved short URL to database: #{short_url.short_code}"
+  rescue => e
+    Rails.logger.error "Failed to save short URL to database: #{e.message}"
+    # Don't fail the request if database save fails
+  end
+
+  def parse_date(date_string)
+    return nil if date_string.blank?
+
+    Time.zone.parse(date_string)
+  rescue => e
+    Rails.logger.warn "Failed to parse date: #{date_string} - #{e.message}"
+    nil
   end
 end

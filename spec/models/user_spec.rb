@@ -112,4 +112,30 @@ RSpec.describe User, type: :model do
       end
     end
   end
+
+  describe 'アソシエーション' do
+    it { should have_many(:short_urls).dependent(:destroy) }
+  end
+
+  describe '#recent_short_urls' do
+    let(:user) { create(:user) }
+    let!(:old_url) { create(:short_url, user: user, date_created: 2.days.ago) }
+    let!(:new_url) { create(:short_url, user: user, date_created: 1.day.ago) }
+    let!(:newest_url) { create(:short_url, user: user, date_created: Time.current) }
+    let!(:other_user_url) { create(:short_url) }
+
+    context 'limitを指定しない場合' do
+      it 'ユーザーの全短縮URLを作成日時の降順で返すこと' do
+        expect(user.recent_short_urls).to eq([ newest_url, new_url, old_url ])
+        expect(user.recent_short_urls).not_to include(other_user_url)
+      end
+    end
+
+    context 'limitを指定した場合' do
+      it '指定した件数の短縮URLを返すこと' do
+        expect(user.recent_short_urls(2)).to eq([ newest_url, new_url ])
+        expect(user.recent_short_urls(2).count).to eq(2)
+      end
+    end
+  end
 end

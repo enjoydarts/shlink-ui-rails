@@ -41,3 +41,40 @@ add_index "users", [ "reset_password_token" ], name: "index_users_on_reset_passw
 add_index "users", [ "confirmation_token" ], name: "index_users_on_confirmation_token", unique: true
 add_index "users", [ "provider", "uid" ], name: "index_users_on_provider_and_uid", unique: true
 add_index "users", [ "role" ], name: "index_users_on_role"
+
+create_table "short_urls", force: :cascade do |t|
+  # Shlink API response data
+  t.string "short_code", null: false
+  t.string "short_url", null: false
+  t.text "long_url", null: false
+  t.string "domain"
+  t.string "title"
+  t.text "tags", comment: "JSON array of tags"
+  t.text "meta", comment: "JSON metadata"
+
+  # Visit statistics
+  t.integer "visit_count", default: 0, null: false
+
+  # Date controls
+  t.datetime "valid_since"
+  t.datetime "valid_until"
+
+  # Visit limits
+  t.integer "max_visits"
+
+  # Crawlability
+  t.boolean "crawlable", default: true, null: false
+
+  # Forward query parameters
+  t.boolean "forward_query", default: true, null: false
+
+  # User association
+  t.references :user, null: false, foreign_key: true
+
+  # Timestamps
+  t.datetime "date_created", null: false
+  t.timestamps null: false
+end
+
+add_index "short_urls", [ "short_code" ], name: "index_short_urls_on_short_code", unique: true
+add_index "short_urls", [ "user_id", "date_created" ], name: "index_short_urls_on_user_id_and_date_created"

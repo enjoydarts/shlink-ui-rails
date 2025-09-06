@@ -40,4 +40,13 @@ class User < ApplicationRecord
   def display_name
     name.presence || email.split("@").first
   end
+
+  # Association with short URLs
+  has_many :short_urls, dependent: :destroy
+
+  # Get user's short URLs ordered by creation date
+  def recent_short_urls(limit = nil)
+    scope = short_urls.recent
+    limit ? scope.limit(limit) : scope
+  end
 end

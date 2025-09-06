@@ -24,6 +24,9 @@ Rails.application.routes.draw do
     get "test", to: "short_urls#test"
     get "qr/:short_code", to: "short_urls#qr_code", as: :qr_code
     get "dashboard", to: "short_urls#new", as: :dashboard
+    get "mypage", to: "mypage#index", as: :mypage
+    post "mypage/sync", to: "mypage#sync", as: :mypage_sync
+    delete "short_urls/:short_code", to: "mypage#destroy", as: :delete_short_url
   end
 
   # Public pages
