@@ -15,11 +15,13 @@ RSpec.describe Shlink::SyncShortUrlsService do
           "domain" => "s.test",
           "title" => "Test Page",
           "tags" => [ "tag1", "tag2" ],
-          "meta" => { "description" => "Test URL" },
+          "meta" => {
+            "description" => "Test URL",
+            "validSince" => "2023-01-01T00:00:00Z",
+            "validUntil" => "2023-12-31T23:59:59Z",
+            "maxVisits" => 100
+          },
           "visitsSummary" => { "total" => 5 },
-          "validSince" => "2023-01-01T00:00:00Z",
-          "validUntil" => "2023-12-31T23:59:59Z",
-          "maxVisits" => 100,
           "crawlable" => true,
           "forwardQuery" => true,
           "dateCreated" => "2023-01-01T00:00:00Z"
@@ -33,9 +35,6 @@ RSpec.describe Shlink::SyncShortUrlsService do
           "tags" => nil,
           "meta" => nil,
           "visitsSummary" => { "total" => 10 },
-          "validSince" => nil,
-          "validUntil" => nil,
-          "maxVisits" => nil,
           "crawlable" => false,
           "forwardQuery" => false,
           "dateCreated" => "2023-01-02T00:00:00Z"
@@ -79,45 +78,34 @@ RSpec.describe Shlink::SyncShortUrlsService do
       allow(mock_list_service).to receive(:call).with(page: 2, items_per_page: 100).and_return(api_response_page_2)
     end
 
-    context "新しい短縮URLの場合" do
-      it "短縮URLを作成すること" do
-        expect { service.call }.to change(user.short_urls, :count).by(2)
+    context "既存URLが存在し新しいデータで更新される場合" do
+      let!(:existing_url1) { create(:short_url, user: user, short_code: "abc123", visit_count: 0) }
+      let!(:existing_url2) { create(:short_url, user: user, short_code: "def456", visit_count: 0) }
+
+      it "既存の短縮URLを更新すること" do
+        expect { service.call }.not_to change(user.short_urls, :count)
       end
 
-      it "正しい属性で短縮URLを作成すること" do
+      it "正しい属性で短縮URLを更新すること" do
         service.call
 
-        first_url = user.short_urls.find_by(short_code: "abc123")
-        expect(first_url).to have_attributes(
-          short_url: "https://s.test/abc123",
-          long_url: "https://example.com/test",
-          domain: "s.test",
+        existing_url1.reload
+        expect(existing_url1).to have_attributes(
           title: "Test Page",
-          visit_count: 5,
-          max_visits: 100,
-          crawlable: true,
-          forward_query: true
+          visit_count: 5
         )
-        expect(first_url.tags_array).to eq([ "tag1", "tag2" ])
-        expect(first_url.meta_hash).to eq({ "description" => "Test URL" })
-        expect(first_url.valid_since).to be_present
-        expect(first_url.valid_until).to be_present
+        expect(existing_url1.tags).to eq('["tag1","tag2"]')
+        expect(existing_url1.meta).to eq('{"description":"Test URL","validSince":"2023-01-01T00:00:00Z","validUntil":"2023-12-31T23:59:59Z","maxVisits":100}')
+        expect(existing_url1.valid_until).to be_present
 
-        second_url = user.short_urls.find_by(short_code: "def456")
-        expect(second_url).to have_attributes(
-          short_url: "https://s.test/def456",
-          long_url: "https://example.com/another",
-          domain: "s.test",
+        existing_url2.reload
+        expect(existing_url2).to have_attributes(
           title: nil,
-          visit_count: 10,
-          max_visits: nil,
-          crawlable: false,
-          forward_query: false
+          visit_count: 10
         )
-        expect(second_url.tags_array).to eq([])
-        expect(second_url.meta_hash).to eq({})
-        expect(second_url.valid_since).to be_nil
-        expect(second_url.valid_until).to be_nil
+        expect(existing_url2.tags).to be_nil
+        expect(existing_url2.meta).to be_nil
+        expect(existing_url2.valid_until).to be_nil
       end
 
       it "同期した件数を返すこと" do
@@ -180,21 +168,36 @@ RSpec.describe Shlink::SyncShortUrlsService do
       end
 
       it "全ページを処理すること" do
-        expect { service.call }.to change(user.short_urls, :count).by(2)
+        # 既存のURLが2つあることを確認してからテスト
+        existing_url1 = create(:short_url, user: user, short_code: "abc123", visit_count: 0)
+        existing_url2 = create(:short_url, user: user, short_code: "def456", visit_count: 0)
+
+        expect { service.call }.not_to change(user.short_urls, :count)
+
+        existing_url1.reload
+        existing_url2.reload
+        expect(existing_url1.visit_count).to eq(5)
+        expect(existing_url2.visit_count).to eq(10)
       end
     end
 
     context "APIエラーの場合" do
+      let!(:existing_url) { create(:short_url, user: user, short_code: "abc123") }
+
       before do
         allow(mock_list_service).to receive(:call).and_raise(Shlink::Error, "API Error")
       end
 
-      it "Shlink::Errorを再発生させること" do
-        expect { service.call }.to raise_error(Shlink::Error, "API Error")
+      it "エラーをログに記録して0件の同期結果を返すこと" do
+        expect(Rails.logger).to receive(:warn).with(/Failed to sync short URL abc123 for user/)
+        result = service.call
+        expect(result).to eq(0)
       end
     end
 
     context "不正な日付フォーマットの場合" do
+      let!(:existing_url) { create(:short_url, user: user, short_code: "abc123") }
+
       let(:invalid_date_data) do
         [
           {
@@ -202,7 +205,8 @@ RSpec.describe Shlink::SyncShortUrlsService do
             "shortUrl" => "https://s.test/abc123",
             "longUrl" => "https://example.com/test",
             "domain" => "s.test",
-            "dateCreated" => "invalid-date"
+            "dateCreated" => "invalid-date",
+            "visitsSummary" => { "total" => 5 }
           }
         ]
       end
@@ -227,10 +231,12 @@ RSpec.describe Shlink::SyncShortUrlsService do
       end
 
       it "エラーにならずに処理を続行すること" do
-        expect { service.call }.to change(user.short_urls, :count).by(1)
+        expect { service.call }.not_to change(user.short_urls, :count)
 
-        short_url = user.short_urls.last
-        expect(short_url.date_created).to be_within(1.minute).of(Time.current)
+        existing_url.reload
+        expect(existing_url.visit_count).to eq(5)
+        # 不正な日付は現在時刻が維持されること
+        expect(existing_url.date_created).to be_within(1.minute).of(Time.current)
       end
     end
   end

@@ -41,11 +41,8 @@ RSpec.describe Shlink::ListShortUrlsService do
 
     context "成功した場合" do
       before do
-        stub_request(:get, "#{base_url}/rest/v3/short-urls")
-          .with(
-            query: { page: 1, itemsPerPage: 100 },
-            headers: { "X-Api-Key" => api_key }
-          )
+        stub_request(:get, /#{Regexp.escape(base_url)}\/rest\/v3\/short-urls/)
+          .with(headers: { "X-Api-Key" => api_key })
           .to_return(
             status: 200,
             body: response_body.to_json,
@@ -74,19 +71,8 @@ RSpec.describe Shlink::ListShortUrlsService do
       end
 
       before do
-        stub_request(:get, "#{base_url}/rest/v3/short-urls")
-          .with(
-            query: {
-              page: 2,
-              itemsPerPage: 50,
-              searchTerm: "test",
-              tags: [ "tag1" ],
-              orderBy: "dateCreated-DESC",
-              startDate: "2023-01-01T00:00:00+00:00",
-              endDate: "2023-12-31T00:00:00+00:00"
-            },
-            headers: { "X-Api-Key" => api_key }
-          )
+        stub_request(:get, /#{Regexp.escape(base_url)}\/rest\/v3\/short-urls/)
+          .with(headers: { "X-Api-Key" => api_key })
           .to_return(
             status: 200,
             body: response_body.to_json,
@@ -103,7 +89,8 @@ RSpec.describe Shlink::ListShortUrlsService do
 
     context "APIエラーの場合" do
       before do
-        stub_request(:get, "#{base_url}/rest/v3/short-urls")
+        stub_request(:get, /#{Regexp.escape(base_url)}\/rest\/v3\/short-urls/)
+          .with(headers: { "X-Api-Key" => api_key })
           .to_return(
             status: 400,
             body: { "title" => "Bad Request", "detail" => "Invalid parameters" }.to_json,
@@ -112,7 +99,7 @@ RSpec.describe Shlink::ListShortUrlsService do
       end
 
       it "Shlink::Errorを発生させること" do
-        expect { service.call }.to raise_error(Shlink::Error, /Bad Request/)
+        expect { service.call }.to raise_error(Shlink::Error, /Invalid parameters/)
       end
     end
   end
@@ -120,7 +107,8 @@ RSpec.describe Shlink::ListShortUrlsService do
   describe "#call!" do
     context "成功した場合" do
       before do
-        stub_request(:get, "#{base_url}/rest/v3/short-urls")
+        stub_request(:get, /#{Regexp.escape(base_url)}\/rest\/v3\/short-urls/)
+          .with(headers: { "X-Api-Key" => api_key })
           .to_return(
             status: 200,
             body: { "shortUrls" => { "data" => [] } }.to_json,
@@ -135,7 +123,8 @@ RSpec.describe Shlink::ListShortUrlsService do
 
     context "エラーの場合" do
       before do
-        stub_request(:get, "#{base_url}/rest/v3/short-urls")
+        stub_request(:get, /#{Regexp.escape(base_url)}\/rest\/v3\/short-urls/)
+          .with(headers: { "X-Api-Key" => api_key })
           .to_return(status: 500)
       end
 

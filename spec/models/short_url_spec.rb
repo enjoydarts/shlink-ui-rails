@@ -25,7 +25,7 @@ RSpec.describe ShortUrl, type: :model do
 
     describe '.recent' do
       it '作成日時の降順で返すこと' do
-        expect(ShortUrl.recent).to eq([ newest_url, new_url, old_url ])
+        expect(ShortUrl.by_user(user).recent.to_a).to eq([ newest_url, new_url, old_url ])
       end
     end
 

@@ -1,0 +1,200 @@
+<script>
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(function() {
+    // Simple toast notification
+    const toast = document.createElement('div');
+    toast.innerHTML = 'URLをクリップボードにコピーしました！';
+    toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300';
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => document.body.removeChild(toast), 300);
+    }, 2000);
+  });
+}
+
+async function syncShortUrls() {
+  const button = document.getElementById('sync-button');
+  const icon = document.getElementById('sync-icon');
+  const spinner = document.getElementById('sync-spinner');
+  const text = document.getElementById('sync-text');
+  
+  // ボタンを無効化し、ローディング状態に変更
+  button.disabled = true;
+  icon.classList.add('hidden');
+  spinner.classList.remove('hidden');
+  text.textContent = '同期中...';
+  
+  try {
+    const response = await fetch('<%= mypage_sync_path %>', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      }
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      showToast(data.message, 'success');
+      // 成功時はページをリロードして最新データを表示
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } else {
+      showToast(data.message, 'error');
+    }
+  } catch (error) {
+    console.error('Sync error:', error);
+    showToast('ネットワークエラーが発生しました', 'error');
+  } finally {
+    // ボタンを元の状態に戻す
+    button.disabled = false;
+    icon.classList.remove('hidden');
+    spinner.classList.add('hidden');
+    text.textContent = 'データを同期';
+  }
+}
+
+// 削除対象の情報を保存する変数
+let pendingDeleteData = null;
+
+function deleteShortUrl(shortCode, title) {
+  // 削除対象の情報を保存
+  pendingDeleteData = { shortCode, title };
+  
+  // モーダルに情報を設定
+  document.getElementById('delete-modal-title').textContent = title;
+  document.getElementById('delete-modal-url').textContent = window.location.origin + '/' + shortCode;
+  
+  // モーダルを表示
+  openDeleteModal();
+}
+
+function openDeleteModal() {
+  const modal = document.getElementById('delete-modal');
+  const content = document.getElementById('delete-modal-content');
+  
+  // ボタンの状態をリセット（ダイアログ開いた時はスピナーを非表示に）
+  resetDeleteButton();
+  
+  modal.classList.remove('hidden');
+  
+  // アニメーション用の少し遅延
+  setTimeout(() => {
+    content.style.transform = 'scale(1)';
+    content.style.opacity = '1';
+  }, 10);
+  
+  // ESCキーでモーダルを閉じる
+  document.addEventListener('keydown', handleEscapeKey);
+}
+
+function closeDeleteModal() {
+  const modal = document.getElementById('delete-modal');
+  const content = document.getElementById('delete-modal-content');
+  
+  content.style.transform = 'scale(0.95)';
+  content.style.opacity = '0';
+  
+  setTimeout(() => {
+    modal.classList.add('hidden');
+    pendingDeleteData = null;
+    resetDeleteButton();
+  }, 300);
+  
+  // ESCキーリスナーを削除
+  document.removeEventListener('keydown', handleEscapeKey);
+}
+
+function handleEscapeKey(event) {
+  if (event.key === 'Escape') {
+    closeDeleteModal();
+  }
+}
+
+async function confirmDelete() {
+  if (!pendingDeleteData) {
+    return;
+  }
+  
+  const { shortCode, title } = pendingDeleteData;
+  const confirmBtn = document.getElementById('confirm-delete-btn');
+  const btnText = document.getElementById('delete-btn-text');
+  const btnSpinner = document.getElementById('delete-btn-spinner');
+  
+  // ボタンをローディング状態に
+  confirmBtn.disabled = true;
+  btnText.textContent = '削除中...';
+  btnSpinner.classList.remove('hidden');
+  btnSpinner.classList.add('inline');
+  
+  try {
+    const response = await fetch(`/short_urls/${shortCode}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      }
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      showToast(data.message, 'success');
+      closeDeleteModal();
+      // 成功時はページをリロードして最新データを表示
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } else {
+      showToast(data.message, 'error');
+      resetDeleteButton();
+    }
+  } catch (error) {
+    console.error('Delete error:', error);
+    showToast('ネットワークエラーが発生しました', 'error');
+    resetDeleteButton();
+  }
+}
+
+function resetDeleteButton() {
+  const confirmBtn = document.getElementById('confirm-delete-btn');
+  const btnText = document.getElementById('delete-btn-text');
+  const btnSpinner = document.getElementById('delete-btn-spinner');
+  
+  // 要素が存在することを確認してから操作
+  if (confirmBtn) confirmBtn.disabled = false;
+  if (btnText) btnText.textContent = '削除する';
+  if (btnSpinner) {
+    btnSpinner.classList.add('hidden');
+    btnSpinner.classList.remove('inline'); // inline クラスも削除
+  }
+}
+
+function showToast(message, type = 'info') {
+  const toast = document.createElement('div');
+  toast.innerHTML = message;
+  
+  let bgColor = 'bg-blue-500';
+  if (type === 'success') {
+    bgColor = 'bg-green-500';
+  } else if (type === 'error') {
+    bgColor = 'bg-red-500';
+  }
+  
+  toast.className = `fixed top-4 right-4 ${bgColor} text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300 max-w-sm`;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => {
+      if (document.body.contains(toast)) {
+        document.body.removeChild(toast);
+      }
+    }, 300);
+  }, type === 'success' ? 2000 : 4000);
+}
+</script>

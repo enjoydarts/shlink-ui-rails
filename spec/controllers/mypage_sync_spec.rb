@@ -19,7 +19,7 @@ RSpec.describe MypageController, type: :controller do
 
         expect(response).to have_http_status(:success)
         expect(response.content_type).to include('application/json')
-        
+
         json_response = JSON.parse(response.body)
         expect(json_response['success']).to be true
         expect(json_response['message']).to eq('3件の短縮URLを同期しました')
@@ -49,7 +49,7 @@ RSpec.describe MypageController, type: :controller do
 
         expect(response).to have_http_status(:bad_gateway)
         expect(response.content_type).to include('application/json')
-        
+
         json_response = JSON.parse(response.body)
         expect(json_response['success']).to be false
         expect(json_response['message']).to eq("同期に失敗しました: #{error_message}")
@@ -76,7 +76,7 @@ RSpec.describe MypageController, type: :controller do
 
         expect(response).to have_http_status(:internal_server_error)
         expect(response.content_type).to include('application/json')
-        
+
         json_response = JSON.parse(response.body)
         expect(json_response['success']).to be false
         expect(json_response['message']).to eq("予期しないエラーが発生しました")

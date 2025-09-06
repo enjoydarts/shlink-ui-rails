@@ -10,7 +10,7 @@ module Shlink
       # ユーザーが既に持っている短縮URLのみを同期
       # 新しいURLの発見ではなく、既存URLの統計情報更新に限定
       existing_short_codes = user.short_urls.pluck(:short_code)
-      
+
       if existing_short_codes.empty?
         Rails.logger.info "User #{user.id} has no existing short URLs to sync"
         return 0
@@ -18,7 +18,7 @@ module Shlink
 
       total_synced = 0
       list_service = Shlink::ListShortUrlsService.new
-      
+
       # 既存の短縮URLの情報を個別に更新
       existing_short_codes.each do |short_code|
         begin
@@ -44,33 +44,33 @@ module Shlink
       # Shlink APIから該当する短縮URLの情報を検索
       # 注意: これは非効率的な実装（全URL取得して検索）
       # 本来はShlink APIに個別URL取得エンドポイントが必要
-      
+
       page = 1
       found_url_data = nil
-      
+
       loop do
         response = list_service.call(page: page, items_per_page: 100)
         short_urls_data = response["shortUrls"]["data"]
-        
+
         break if short_urls_data.empty?
-        
+
         # 該当するshort_codeを探す
         found_url_data = short_urls_data.find { |url_data| url_data["shortCode"] == short_code }
         break if found_url_data
-        
+
         # ページネーション確認
         pagination = response["shortUrls"]["pagination"]
         break if pagination["currentPage"] >= pagination["pagesCount"]
-        
+
         page += 1
       end
-      
+
       if found_url_data
         sync_short_url(found_url_data)
-        return true
+        true
       else
         Rails.logger.warn "Short URL #{short_code} not found in Shlink API for user #{user.id}"
-        return false
+        false
       end
     end
 
@@ -79,7 +79,7 @@ module Shlink
 
       # セキュリティチェック: 既にこのユーザーが所有しているURLのみ更新
       short_url = user.short_urls.find_by(short_code: short_url_attrs[:short_code])
-      
+
       unless short_url
         Rails.logger.error "Attempted to sync URL #{short_url_attrs[:short_code]} not owned by user #{user.id}"
         return
@@ -114,9 +114,9 @@ module Shlink
         tags: data["tags"]&.to_json,
         meta: data["meta"]&.to_json,
         visit_count: data["visitsSummary"]&.dig("total") || 0,
-        valid_since: parse_date(data["validSince"]),
-        valid_until: parse_date(data["validUntil"]),
-        max_visits: data["maxVisits"],
+        valid_since: parse_date(data.dig("meta", "validSince")),
+        valid_until: parse_date(data.dig("meta", "validUntil")),
+        max_visits: data.dig("meta", "maxVisits"),
         crawlable: data["crawlable"] != false,
         forward_query: data["forwardQuery"] != false,
         date_created: parse_date(data["dateCreated"]) || Time.current
