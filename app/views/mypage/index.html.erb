@@ -179,6 +179,11 @@
                         </p>
                       </div>
                     </div>
+                  <% else %>
+                    <div class="flex items-center justify-between bg-gray-50 rounded-xl p-3">
+                      <span class="text-sm font-medium text-gray-600">有効期限</span>
+                      <span class="text-sm text-gray-500">無制限</span>
+                    </div>
                   <% end %>
 
                   <!-- Visit Limit -->
@@ -186,6 +191,11 @@
                     <div class="flex items-center justify-between bg-purple-50 rounded-xl p-3">
                       <span class="text-sm font-medium text-purple-700">残り回数</span>
                       <span class="text-lg font-bold text-purple-900"><%= short_url.remaining_visits %></span>
+                    </div>
+                  <% else %>
+                    <div class="flex items-center justify-between bg-gray-50 rounded-xl p-3">
+                      <span class="text-sm font-medium text-gray-600">訪問制限</span>
+                      <span class="text-sm text-gray-500">無制限</span>
                     </div>
                   <% end %>
                 </div>

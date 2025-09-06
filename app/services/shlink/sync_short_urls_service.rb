@@ -85,15 +85,18 @@ module Shlink
         return
       end
 
-      # 統計情報のみ更新（訪問数、メタデータなど）
-      # 基本情報（URL、タイトルなど）は変更しない
-      stats_only_attrs = {
+      # 統計情報と制限情報を更新
+      # 基本URL情報（short_url、long_url、short_code）は変更しない
+      updatable_attrs = {
         visit_count: short_url_attrs[:visit_count],
         meta: short_url_attrs[:meta],
-        title: short_url_attrs[:title] # タイトルは後から更新される可能性がある
+        title: short_url_attrs[:title],
+        valid_until: short_url_attrs[:valid_until],
+        max_visits: short_url_attrs[:max_visits],
+        tags: short_url_attrs[:tags]
       }
 
-      short_url.assign_attributes(stats_only_attrs)
+      short_url.assign_attributes(updatable_attrs)
 
       if short_url.changed?
         short_url.save!
