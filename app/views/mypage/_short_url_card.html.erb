@@ -56,11 +56,21 @@
 
       </div>
       
-      <!-- Creation Date (Fixed at bottom) -->
+      <!-- Creation Date and Tags (Fixed at bottom) -->
       <div class="mt-4 pt-3 border-t border-gray-100">
-        <p class="text-xs text-gray-500">
-          作成日: <%= short_url.date_created.strftime("%Y年%m月%d日 %H:%M") %>
-        </p>
+        <div class="flex items-center justify-between gap-3">
+          <!-- 左側: タグ（status_badgeから表示される場合はここは非表示） -->
+          <div class="flex-1 min-w-0">
+            <!-- タグは status_badge で表示されるため、ここでは非表示 -->
+          </div>
+          
+          <!-- 右側: 作成日時 -->
+          <div class="flex-shrink-0">
+            <p class="text-xs text-gray-500">
+              作成日: <%= short_url.date_created.strftime("%Y年%m月%d日 %H:%M") %>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
 
