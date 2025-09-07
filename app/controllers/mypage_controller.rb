@@ -4,8 +4,8 @@ class MypageController < ApplicationController
   def index
     @search_query = params[:search]
 
-    # 基本のクエリを構築
-    base_scope = current_user.short_urls.recent
+    # 基本のクエリを構築（削除済みを除外）
+    base_scope = current_user.short_urls.active.recent
 
     # 検索機能
     if @search_query.present?
@@ -17,11 +17,11 @@ class MypageController < ApplicationController
       @short_urls = base_scope.page(params[:page])
     end
 
-    # 統計情報は全URLから計算
-    all_urls = current_user.short_urls
-    @total_urls = all_urls.count
-    @total_visits = all_urls.sum(:visit_count)
-    @active_urls = all_urls.select(&:active?).count
+    # 統計情報はアクティブなURLから計算
+    active_urls = current_user.short_urls.active
+    @total_urls = active_urls.count
+    @total_visits = active_urls.sum(:visit_count)
+    @active_urls = active_urls.select(&:active?).count
   end
 
   def sync
@@ -53,7 +53,7 @@ class MypageController < ApplicationController
     short_code = params[:short_code]
 
     # セキュリティチェック: 現在のユーザーが所有するURLのみ削除可能
-    short_url = current_user.short_urls.find_by(short_code: short_code)
+    short_url = current_user.short_urls.active.find_by(short_code: short_code)
 
     unless short_url
       render json: {
@@ -68,10 +68,10 @@ class MypageController < ApplicationController
       delete_service = Shlink::DeleteShortUrlService.new(short_code)
       delete_service.call
 
-      # ローカルDBからも削除
-      short_url.destroy!
+      # ローカルDBでソフト削除
+      short_url.soft_delete!
 
-      Rails.logger.info "Successfully deleted short URL #{short_code} for user #{current_user.id}"
+      Rails.logger.info "Successfully soft deleted short URL #{short_code} for user #{current_user.id}"
 
       render json: {
         success: true,

@@ -9,6 +9,8 @@ class ShortUrl < ApplicationRecord
 
   scope :recent, -> { order(date_created: :desc) }
   scope :by_user, ->(user) { where(user: user) }
+  scope :active, -> { where(deleted_at: nil) }
+  scope :deleted, -> { where.not(deleted_at: nil) }
 
   # JSON serialization for tags
   def tags_array
@@ -75,5 +77,18 @@ class ShortUrl < ApplicationRecord
   # Check if URL is active (not expired and not reached visit limit)
   def active?
     !expired? && !visit_limit_reached?
+  end
+
+  # Soft delete methods
+  def soft_delete!
+    update!(deleted_at: Time.current)
+  end
+
+  def deleted?
+    deleted_at.present?
+  end
+
+  def restore!
+    update!(deleted_at: nil)
   end
 end

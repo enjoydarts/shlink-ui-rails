@@ -71,6 +71,9 @@ create_table "short_urls", force: :cascade do |t|
   # User association
   t.references :user, null: false, foreign_key: true
 
+  # Soft delete support
+  t.datetime "deleted_at"
+
   # Timestamps
   t.datetime "date_created", null: false
   t.timestamps null: false
@@ -78,3 +81,4 @@ end
 
 add_index "short_urls", [ "short_code" ], name: "index_short_urls_on_short_code", unique: true
 add_index "short_urls", [ "user_id", "date_created" ], name: "index_short_urls_on_user_id_and_date_created"
+add_index "short_urls", [ "deleted_at" ], name: "index_short_urls_on_deleted_at"
