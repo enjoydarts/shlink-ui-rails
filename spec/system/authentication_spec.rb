@@ -77,7 +77,7 @@ RSpec.describe 'ユーザー認証機能', type: :system do
       click_button 'ログアウト'
 
       expect(page).to have_content('ログアウトしました')
-      expect(page).to have_current_path(new_user_session_path)
+      expect(page).to have_current_path(root_path)
     end
   end
 

@@ -9,6 +9,8 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 - **Custom Slugs**: Optional custom short codes for branded links
 - **QR Code Generation**: Automatic QR code creation for each shortened URL
 - **One-click Copy**: Instant clipboard copying with visual feedback
+- **Tag Management**: Organize URLs with custom tags for easy categorization
+- **Advanced Options**: Access to expiration dates, visit limits, and tagging features
 
 ### 👤 User Management
 - **User Authentication**: Secure registration and login system powered by Devise
@@ -23,14 +25,17 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 - **Pagination**: Organized display with 10 URLs per page for easy browsing
 - **Real-time Sync**: Manual synchronization with Shlink API to update statistics
 - **URL Management**: Edit, delete, and organize your links with confirmation dialogs
+- **Tag Display**: Visual tag indicators next to each URL for easy organization
+- **Status Indicators**: Clear visual feedback for URL status and tag information
 
 ### 🎨 Modern UI/UX
 - **Responsive Design**: Works perfectly on desktop, tablet, and mobile devices
 - **Glass-morphism Design**: Modern, translucent interface elements with blur effects
-- **Gradient Backgrounds**: Beautiful color transitions throughout the interface
+- **Clean Interface**: Removed excessive gradients for better readability and accessibility
 - **Smooth Animations**: Fade-in effects and hover interactions
 - **Status Indicators**: Visual feedback for active, expired, and limited URLs
 - **Modal Dialogs**: Clean confirmation dialogs for destructive actions
+- **Tag Visualization**: Distinct tag design with proper mobile responsiveness
 
 ### 🔧 Technical Features
 - **Shlink API Integration**: Full integration with Shlink REST API v3
@@ -111,6 +116,7 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 ### Homepage
 - Clean, modern landing page with URL shortening form
 - Real-time validation and error handling
+- Advanced options including tag management, expiration dates, and visit limits
 - Immediate QR code generation for created URLs
 - One-click copy functionality with visual feedback
 
@@ -120,6 +126,8 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 - Pagination for large URL collections
 - Statistics display (total URLs, visits, active links)
 - Manual sync button to update data from Shlink API
+- Tag visualization with responsive design for mobile devices
+- Organized tag display positioned appropriately for better mobile experience
 
 ### URL Management
 - Individual URL editing and customization

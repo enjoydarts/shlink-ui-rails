@@ -61,9 +61,9 @@ RSpec.describe MypageController, type: :controller do
       end
 
       context "検索機能" do
-        let!(:search_url1) { create(:short_url, user: user, title: "検索テスト1", short_code: "test123") }
-        let!(:search_url2) { create(:short_url, user: user, long_url: "https://example.com/test", short_code: "abc456") }
-        let!(:other_url) { create(:short_url, user: user, title: "その他", short_code: "xyz789") }
+        let!(:search_url1) { create(:short_url, user: user, title: "検索テスト1") }
+        let!(:search_url2) { create(:short_url, user: user, long_url: "https://example.com/test") }
+        let!(:other_url) { create(:short_url, user: user, title: "その他") }
 
         it "タイトルで検索できること" do
           get :index, params: { search: "検索テスト" }
@@ -78,7 +78,7 @@ RSpec.describe MypageController, type: :controller do
         end
 
         it "短縮コードで検索できること" do
-          get :index, params: { search: "test123" }
+          get :index, params: { search: search_url1.short_code }
           expect(assigns(:short_urls)).to include(search_url1)
           expect(assigns(:short_urls)).not_to include(search_url2, other_url)
         end
@@ -102,15 +102,36 @@ RSpec.describe MypageController, type: :controller do
           expect(assigns(:short_urls).count).to eq(5)
         end
       end
+
+      context "タグ付きURL表示" do
+        let!(:url_with_tags) { create(:short_url, user: user, tags: [ 'tag1', 'tag2', 'important' ]) }
+        let!(:url_without_tags) { create(:short_url, :without_tags, user: user) }
+
+        before { get :index }
+
+        it "タグ付きURLが正常に表示されること" do
+          expect(assigns(:short_urls)).to include(url_with_tags, url_without_tags)
+        end
+
+        it "タグ配列が正しく設定されていること" do
+          displayed_url_with_tags = assigns(:short_urls).find { |url| url.id == url_with_tags.id }
+          expect(displayed_url_with_tags.tags_array).to eq([ 'tag1', 'tag2', 'important' ])
+        end
+
+        it "タグなしURLはタグ配列が空であること" do
+          displayed_url_without_tags = assigns(:short_urls).find { |url| url.id == url_without_tags.id }
+          expect(displayed_url_without_tags.tags_array).to eq([])
+        end
+      end
     end
   end
 
   describe "DELETE #destroy" do
-    let!(:user_url) { create(:short_url, user: user, short_code: 'test123') }
-    let!(:other_user_url) { create(:short_url, short_code: 'other456') }
+    let!(:user_url) { create(:short_url, user: user) }
+    let!(:other_user_url) { create(:short_url) }
 
     context "認証されていない場合" do
-      before { delete :destroy, params: { short_code: 'test123' } }
+      before { delete :destroy, params: { short_code: user_url.short_code } }
 
       it "リダイレクトされること" do
         expect(response).to have_http_status(:redirect)
@@ -124,23 +145,23 @@ RSpec.describe MypageController, type: :controller do
         let(:delete_service) { instance_double(Shlink::DeleteShortUrlService) }
 
         before do
-          allow(Shlink::DeleteShortUrlService).to receive(:new).with('test123').and_return(delete_service)
+          allow(Shlink::DeleteShortUrlService).to receive(:new).with(user_url.short_code).and_return(delete_service)
           allow(delete_service).to receive(:call).and_return(true)
         end
 
         it "削除サービスが呼ばれること" do
           expect(delete_service).to receive(:call)
-          delete :destroy, params: { short_code: 'test123' }
+          delete :destroy, params: { short_code: user_url.short_code }
         end
 
         it "ローカルDBからも削除されること" do
           expect {
-            delete :destroy, params: { short_code: 'test123' }
+            delete :destroy, params: { short_code: user_url.short_code }
           }.to change(ShortUrl, :count).by(-1)
         end
 
         it "成功のJSONレスポンスを返すこと" do
-          delete :destroy, params: { short_code: 'test123' }
+          delete :destroy, params: { short_code: user_url.short_code }
           expect(response).to have_http_status(:success)
 
           json_response = JSON.parse(response.body)
@@ -162,7 +183,7 @@ RSpec.describe MypageController, type: :controller do
 
       context "他のユーザーのURLを削除しようとする場合" do
         it "404エラーを返すこと" do
-          delete :destroy, params: { short_code: 'other456' }
+          delete :destroy, params: { short_code: other_user_url.short_code }
           expect(response).to have_http_status(:not_found)
 
           json_response = JSON.parse(response.body)
@@ -172,7 +193,7 @@ RSpec.describe MypageController, type: :controller do
 
         it "URLが削除されないこと" do
           expect {
-            delete :destroy, params: { short_code: 'other456' }
+            delete :destroy, params: { short_code: other_user_url.short_code }
           }.not_to change(ShortUrl, :count)
         end
       end
@@ -181,12 +202,12 @@ RSpec.describe MypageController, type: :controller do
         let(:delete_service) { instance_double(Shlink::DeleteShortUrlService) }
 
         before do
-          allow(Shlink::DeleteShortUrlService).to receive(:new).with('test123').and_return(delete_service)
+          allow(Shlink::DeleteShortUrlService).to receive(:new).with(user_url.short_code).and_return(delete_service)
           allow(delete_service).to receive(:call).and_raise(Shlink::Error.new("APIエラー"))
         end
 
         it "エラーのJSONレスポンスを返すこと" do
-          delete :destroy, params: { short_code: 'test123' }
+          delete :destroy, params: { short_code: user_url.short_code }
           expect(response).to have_http_status(:bad_gateway)
 
           json_response = JSON.parse(response.body)
@@ -196,7 +217,7 @@ RSpec.describe MypageController, type: :controller do
 
         it "ローカルDBからは削除されないこと" do
           expect {
-            delete :destroy, params: { short_code: 'test123' }
+            delete :destroy, params: { short_code: user_url.short_code }
           }.not_to change(ShortUrl, :count)
         end
       end

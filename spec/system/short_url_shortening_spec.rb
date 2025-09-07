@@ -77,6 +77,53 @@ RSpec.describe 'URL短縮機能', type: :system do
     end
   end
 
+  describe 'タグ機能（高度なオプション）' do
+    let(:shlink_response_with_tags) do
+      {
+        'shortUrl' => 'https://kty.at/abc123',
+        'shortCode' => 'abc123',
+        'longUrl' => 'https://example.com/very/long/url',
+        'dateCreated' => '2025-01-01T00:00:00+00:00',
+        'tags' => [ 'tag1', 'tag2', 'tag3' ]
+      }
+    end
+
+    before do
+      allow_any_instance_of(Shlink::CreateShortUrlService).to receive(:call)
+        .and_return(shlink_response_with_tags)
+    end
+
+    it '高度なオプションとしてタグ入力フィールドが存在する' do
+      visit dashboard_path
+
+      expect(page).to have_content('高度なオプション')
+      expect(page).to have_field('shorten_form[tags]', visible: false)
+    end
+
+    it 'タグ付きでURL短縮ができる' do
+      visit dashboard_path
+
+      fill_in 'shorten_form[long_url]', with: 'https://example.com'
+
+      # 高度なオプションを開く
+      page.find('button[data-action="click->accordion#toggle"]').click
+
+      fill_in 'shorten_form[tags]', with: 'tag1, tag2, tag3'
+      click_button '短縮する'
+
+      expect(page).to have_content('短縮しました')
+    end
+
+    it 'タグ入力時の説明が表示される' do
+      visit dashboard_path
+
+      # 高度なオプションを開く
+      page.find('button[data-action="click->accordion#toggle"]').click
+
+      expect(page).to have_content('カンマ区切りで入力（最大10個、各20文字以内）')
+    end
+  end
+
   describe 'エラーハンドリング' do
     context 'Shlink APIがエラーを返す場合' do
       before do
