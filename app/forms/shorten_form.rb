@@ -27,12 +27,12 @@ class ShortenForm
     return if tags.blank?
 
     tag_array = tags_array
-    
+
     # タグの数制限 (最大10個)
     if tag_array.length > 10
       errors.add(:tags, "タグは最大10個まで設定できます")
     end
-    
+
     # 個々のタグの長さ制限 (最大20文字)
     tag_array.each do |tag|
       if tag.length > 20

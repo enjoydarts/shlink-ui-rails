@@ -51,6 +51,16 @@ RSpec.describe ShortUrlsController, type: :controller do
       }
     end
 
+    let(:valid_params_with_tags) do
+      {
+        shorten_form: {
+          long_url: 'https://example.com/very/long/url',
+          slug: 'custom-slug',
+          tags: 'tag1, tag2, tag3'
+        }
+      }
+    end
+
     let(:invalid_params) do
       {
         shorten_form: {
@@ -75,7 +85,7 @@ RSpec.describe ShortUrlsController, type: :controller do
       before do
         allow(Shlink::CreateShortUrlService).to receive(:new).and_return(mock_client)
         allow(mock_client).to receive(:call)
-          .with(long_url: 'https://example.com/very/long/url', slug: 'custom-slug', valid_until: nil, max_visits: nil)
+          .with(long_url: 'https://example.com/very/long/url', slug: 'custom-slug', valid_until: nil, max_visits: nil, tags: [])
           .and_return(shlink_response)
       end
 
@@ -113,12 +123,60 @@ RSpec.describe ShortUrlsController, type: :controller do
 
         before do
           allow(mock_client).to receive(:call)
-            .with(long_url: 'https://example.com/very/long/url', slug: '', valid_until: nil, max_visits: nil)
+            .with(long_url: 'https://example.com/very/long/url', slug: '', valid_until: nil, max_visits: nil, tags: [])
             .and_return(shlink_response)
         end
 
         it '空のslugで短縮URLを作成する' do
           post :create, params: params_with_empty_slug
+
+          expect(assigns(:result)).to eq(short_url: 'https://shlink.example.com/abc123')
+          expect(response).to redirect_to(root_path)
+        end
+      end
+
+      context 'タグ付きパラメータの場合' do
+        let(:mock_client_with_tags) { instance_double(Shlink::CreateShortUrlService) }
+
+        before do
+          allow(Shlink::CreateShortUrlService).to receive(:new).and_return(mock_client_with_tags)
+          allow(mock_client_with_tags).to receive(:call)
+            .with(long_url: 'https://example.com/very/long/url', slug: 'custom-slug', valid_until: nil, max_visits: nil, tags: [ 'tag1', 'tag2', 'tag3' ])
+            .and_return(shlink_response)
+        end
+
+        it 'タグ付きで短縮URLを作成する' do
+          post :create, params: valid_params_with_tags
+
+          expect(assigns(:shorten)).to be_valid
+          expect(assigns(:result)).to eq(short_url: 'https://shlink.example.com/abc123')
+          expect(response).to redirect_to(root_path)
+          expect(flash[:notice]).to eq('短縮しました')
+        end
+      end
+
+      context '空のタグパラメータの場合' do
+        let(:params_with_empty_tags) do
+          {
+            shorten_form: {
+              long_url: 'https://example.com/very/long/url',
+              slug: 'custom-slug',
+              tags: ''
+            }
+          }
+        end
+
+        let(:mock_client_empty_tags) { instance_double(Shlink::CreateShortUrlService) }
+
+        before do
+          allow(Shlink::CreateShortUrlService).to receive(:new).and_return(mock_client_empty_tags)
+          allow(mock_client_empty_tags).to receive(:call)
+            .with(long_url: 'https://example.com/very/long/url', slug: 'custom-slug', valid_until: nil, max_visits: nil, tags: [])
+            .and_return(shlink_response)
+        end
+
+        it '空のタグで短縮URLを作成する' do
+          post :create, params: params_with_empty_tags
 
           expect(assigns(:result)).to eq(short_url: 'https://shlink.example.com/abc123')
           expect(response).to redirect_to(root_path)
@@ -204,6 +262,7 @@ RSpec.describe ShortUrlsController, type: :controller do
           shorten_form: {
             long_url: 'https://example.com',
             slug: 'test-slug',
+            tags: 'tag1, tag2',
             other_param: 'should_be_filtered'
           },
           other_key: 'should_be_filtered'
@@ -214,13 +273,14 @@ RSpec.describe ShortUrlsController, type: :controller do
         allow(controller).to receive(:params).and_return(params)
       end
 
-      it 'shorten_formからlong_urlとslugのみを許可する' do
+      it 'shorten_formからlong_url、slug、tagsを許可する' do
         permitted_params = controller.send(:shorten_params)
 
         expect(permitted_params).to eq(
           ActionController::Parameters.new(
             long_url: 'https://example.com',
-            slug: 'test-slug'
+            slug: 'test-slug',
+            tags: 'tag1, tag2'
           ).permit!
         )
       end

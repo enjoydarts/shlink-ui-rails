@@ -205,7 +205,66 @@ RSpec.describe Shlink::CreateShortUrlService, "短縮URL作成サービス" do
       end
     end
 
-    context "有効期限、カスタムスラッグ、最大訪問回数をすべて指定した場合（JST対応）" do
+    context "タグを指定した場合" do
+      let(:tags) { [ "tag1", "tag2", "tag3" ] }
+
+      before do
+        stub_request(:post, "https://test.example.com/rest/v3/short-urls")
+          .with(
+            headers: { "X-Api-Key" => "test-key" },
+            body: { longUrl: long_url, tags: tags }
+          )
+          .to_return(
+            status: 201,
+            body: {
+              shortUrl: "https://test.example.com/abc123",
+              shortCode: "abc123",
+              longUrl: long_url,
+              tags: tags
+            }.to_json,
+            headers: { "content-type" => "application/json" }
+          )
+      end
+
+      it "タグ付きで短縮URLを作成すること" do
+        result = service.call(long_url: long_url, tags: tags)
+
+        expect(result).to include(
+          "shortUrl" => "https://test.example.com/abc123",
+          "shortCode" => "abc123",
+          "longUrl" => long_url,
+          "tags" => tags
+        )
+      end
+    end
+
+    context "空のタグ配列を指定した場合" do
+      before do
+        stub_request(:post, "https://test.example.com/rest/v3/short-urls")
+          .with(
+            headers: { "X-Api-Key" => "test-key" },
+            body: { longUrl: long_url }
+          )
+          .to_return(
+            status: 201,
+            body: {
+              shortUrl: "https://test.example.com/abc123",
+              shortCode: "abc123",
+              longUrl: long_url
+            }.to_json,
+            headers: { "content-type" => "application/json" }
+          )
+      end
+
+      it "tagsパラメータを送信しないこと" do
+        service.call(long_url: long_url, tags: [])
+
+        expect(WebMock).to have_requested(:post, "https://test.example.com/rest/v3/short-urls")
+          .with(body: { longUrl: long_url }.to_json)
+      end
+    end
+
+    context "有効期限、カスタムスラッグ、最大訪問回数、タグをすべて指定した場合（JST対応）" do
       around do |example|
         Time.use_zone('Asia/Tokyo') do
           example.run
@@ -215,12 +274,13 @@ RSpec.describe Shlink::CreateShortUrlService, "短縮URL作成サービス" do
       let(:custom_slug) { "custom-slug" }
       let(:valid_until) { 1.week.from_now }
       let(:max_visits) { 25 }
+      let(:tags) { [ "important", "work" ] }
 
       before do
         stub_request(:post, "https://test.example.com/rest/v3/short-urls")
           .with(
             headers: { "X-Api-Key" => "test-key" },
-            body: { longUrl: long_url, customSlug: custom_slug, validUntil: valid_until.iso8601, maxVisits: max_visits }
+            body: { longUrl: long_url, customSlug: custom_slug, validUntil: valid_until.iso8601, maxVisits: max_visits, tags: tags }
           )
           .to_return(
             status: 201,
@@ -229,20 +289,22 @@ RSpec.describe Shlink::CreateShortUrlService, "短縮URL作成サービス" do
               shortCode: custom_slug,
               longUrl: long_url,
               validUntil: valid_until.iso8601,
-              maxVisits: max_visits
+              maxVisits: max_visits,
+              tags: tags
             }.to_json,
             headers: { "content-type" => "application/json" }
           )
       end
 
       it "すべてのオプションで短縮URLを作成すること" do
-        result = service.call(long_url: long_url, slug: custom_slug, valid_until: valid_until, max_visits: max_visits)
+        result = service.call(long_url: long_url, slug: custom_slug, valid_until: valid_until, max_visits: max_visits, tags: tags)
 
         expect(result).to include(
           "shortCode" => custom_slug,
           "shortUrl" => "https://test.example.com/#{custom_slug}",
           "validUntil" => valid_until.iso8601,
-          "maxVisits" => max_visits
+          "maxVisits" => max_visits,
+          "tags" => tags
         )
       end
     end
@@ -325,57 +387,70 @@ RSpec.describe Shlink::CreateShortUrlService, "短縮URL作成サービス" do
   describe "プライベートメソッド" do
     describe "#build_payload" do
       it "スラッグなしの場合はlongUrlのみを含むこと" do
-        payload = service.send(:build_payload, long_url, nil, nil, nil)
+        payload = service.send(:build_payload, long_url, nil, nil, nil, [])
         expect(payload).to eq({ longUrl: long_url })
       end
 
       it "スラッグありの場合はcustomSlugも含むこと" do
-        payload = service.send(:build_payload, long_url, "test-slug", nil, nil)
+        payload = service.send(:build_payload, long_url, "test-slug", nil, nil, [])
         expect(payload).to eq({ longUrl: long_url, customSlug: "test-slug" })
       end
 
       it "空文字のスラッグは無視されること" do
-        payload = service.send(:build_payload, long_url, "", nil, nil)
+        payload = service.send(:build_payload, long_url, "", nil, nil, [])
         expect(payload).to eq({ longUrl: long_url })
       end
 
       it "有効期限ありの場合はvalidUntilも含むこと（JST対応）" do
         Time.use_zone('Asia/Tokyo') do
           valid_until = 1.day.from_now
-          payload = service.send(:build_payload, long_url, nil, valid_until, nil)
+          payload = service.send(:build_payload, long_url, nil, valid_until, nil, [])
           expect(payload).to eq({ longUrl: long_url, validUntil: valid_until.iso8601 })
         end
       end
 
       it "最大訪問回数ありの場合はmaxVisitsも含むこと" do
         max_visits = 20
-        payload = service.send(:build_payload, long_url, nil, nil, max_visits)
+        payload = service.send(:build_payload, long_url, nil, nil, max_visits, [])
         expect(payload).to eq({ longUrl: long_url, maxVisits: max_visits })
+      end
+
+      it "タグありの場合はtagsも含むこと" do
+        tags = [ 'tag1', 'tag2', 'tag3' ]
+        payload = service.send(:build_payload, long_url, nil, nil, nil, tags)
+        expect(payload).to eq({ longUrl: long_url, tags: tags })
+      end
+
+      it "空のタグ配列の場合はtagsを含まないこと" do
+        payload = service.send(:build_payload, long_url, nil, nil, nil, [])
+        expect(payload).to eq({ longUrl: long_url })
       end
 
       it "すべてのオプションがある場合はすべて含むこと（JST対応）" do
         Time.use_zone('Asia/Tokyo') do
           valid_until = 1.day.from_now
           max_visits = 15
-          payload = service.send(:build_payload, long_url, "test-slug", valid_until, max_visits)
+          tags = [ 'tag1', 'tag2' ]
+          payload = service.send(:build_payload, long_url, "test-slug", valid_until, max_visits, tags)
           expect(payload).to eq({
             longUrl: long_url,
             customSlug: "test-slug",
             validUntil: valid_until.iso8601,
-            maxVisits: max_visits
+            maxVisits: max_visits,
+            tags: tags
           })
         end
       end
 
       it "有効期限がnilの場合はvalidUntilを含まないこと" do
-        payload = service.send(:build_payload, long_url, "test-slug", nil, 10)
+        payload = service.send(:build_payload, long_url, "test-slug", nil, 10, [])
         expect(payload).to eq({ longUrl: long_url, customSlug: "test-slug", maxVisits: 10 })
       end
 
       it "最大訪問回数がnilの場合はmaxVisitsを含まないこと" do
         Time.use_zone('Asia/Tokyo') do
           valid_until = 1.day.from_now
-          payload = service.send(:build_payload, long_url, "test-slug", valid_until, nil)
+          payload = service.send(:build_payload, long_url, "test-slug", valid_until, nil, [])
           expect(payload).to eq({ longUrl: long_url, customSlug: "test-slug", validUntil: valid_until.iso8601 })
         end
       end

@@ -224,4 +224,116 @@ RSpec.describe ShortenForm, type: :model do
       end
     end
   end
+
+  describe 'tagsのバリデーション' do
+    context 'tagsが空の場合' do
+      let(:attributes) { { long_url: 'https://example.com', tags: '' } }
+
+      it '有効である（tagsは任意）' do
+        expect(subject).to be_valid
+      end
+    end
+
+    context 'tagsがnilの場合' do
+      let(:attributes) { { long_url: 'https://example.com', tags: nil } }
+
+      it '有効である（tagsは任意）' do
+        expect(subject).to be_valid
+      end
+    end
+
+    context '有効なタグの場合' do
+      let(:attributes) { { long_url: 'https://example.com', tags: 'tag1, tag2, tag3' } }
+
+      it '有効である' do
+        expect(subject).to be_valid
+      end
+    end
+
+    context '10個以下のタグの場合' do
+      let(:attributes) { { long_url: 'https://example.com', tags: (1..10).map { |i| "tag#{i}" }.join(', ') } }
+
+      it '有効である' do
+        expect(subject).to be_valid
+      end
+    end
+
+    context '11個以上のタグの場合' do
+      let(:attributes) { { long_url: 'https://example.com', tags: (1..11).map { |i| "tag#{i}" }.join(', ') } }
+
+      it '無効である' do
+        expect(subject).not_to be_valid
+        expect(subject.errors[:tags]).to include('タグは最大10個まで設定できます')
+      end
+    end
+
+    context '20文字以内のタグの場合' do
+      let(:attributes) { { long_url: 'https://example.com', tags: 'a' * 20 } }
+
+      it '有効である' do
+        expect(subject).to be_valid
+      end
+    end
+
+    context '21文字以上のタグが含まれる場合' do
+      let(:attributes) { { long_url: 'https://example.com', tags: 'a' * 21 } }
+
+      it '無効である' do
+        expect(subject).not_to be_valid
+        expect(subject.errors[:tags]).to include('各タグは20文字以内で入力してください')
+      end
+    end
+  end
+
+  describe '#tags_array' do
+    subject { described_class.new(attributes).tags_array }
+
+    context 'カンマ区切りのタグの場合' do
+      let(:attributes) { { tags: 'tag1, tag2, tag3' } }
+
+      it 'タグの配列を返す' do
+        expect(subject).to eq([ 'tag1', 'tag2', 'tag3' ])
+      end
+    end
+
+    context '前後にスペースがあるタグの場合' do
+      let(:attributes) { { tags: ' tag1 , tag2 , tag3 ' } }
+
+      it 'スペースを除去したタグの配列を返す' do
+        expect(subject).to eq([ 'tag1', 'tag2', 'tag3' ])
+      end
+    end
+
+    context '重複するタグの場合' do
+      let(:attributes) { { tags: 'tag1, tag2, tag1, tag3' } }
+
+      it '重複を除去したタグの配列を返す' do
+        expect(subject).to eq([ 'tag1', 'tag2', 'tag3' ])
+      end
+    end
+
+    context '空のタグが含まれる場合' do
+      let(:attributes) { { tags: 'tag1, , tag2, , tag3' } }
+
+      it '空のタグを除去したタグの配列を返す' do
+        expect(subject).to eq([ 'tag1', 'tag2', 'tag3' ])
+      end
+    end
+
+    context 'tagsが空の場合' do
+      let(:attributes) { { tags: '' } }
+
+      it '空の配列を返す' do
+        expect(subject).to eq([])
+      end
+    end
+
+    context 'tagsがnilの場合' do
+      let(:attributes) { { tags: nil } }
+
+      it '空の配列を返す' do
+        expect(subject).to eq([])
+      end
+    end
+  end
 end
