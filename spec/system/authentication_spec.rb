@@ -27,7 +27,7 @@ RSpec.describe 'ユーザー認証機能', type: :system do
 
       click_button '新規登録'
 
-      expect(page).to have_content('エラーが発生しました')
+      expect(page).to have_content('入力エラー')
       expect(page).to have_content('メールアドレス を入力してください')
     end
   end

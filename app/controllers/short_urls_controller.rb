@@ -48,7 +48,7 @@ class ShortUrlsController < ApplicationController
     end
   rescue Shlink::Error => e
     Rails.logger.error "Shlink error: #{e.message}"
-    @error = e.message
+    flash.now[:alert] = e.message
     respond_to do |f|
       f.turbo_stream
       f.html { render :new, status: :bad_gateway }

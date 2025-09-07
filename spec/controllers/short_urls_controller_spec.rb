@@ -162,7 +162,7 @@ RSpec.describe ShortUrlsController, type: :controller do
         it 'bad gatewayステータスでnewテンプレートをレンダリングする' do
           post :create, params: valid_params
 
-          expect(assigns(:error)).to eq('API connection failed')
+          expect(flash[:alert]).to eq('API connection failed')
           expect(response).to have_http_status(:bad_gateway)
           expect(response).to render_template('new')
         end
@@ -172,7 +172,7 @@ RSpec.describe ShortUrlsController, type: :controller do
         it 'エラーメッセージでturbo streamをレンダリングする' do
           post :create, params: valid_params, format: :turbo_stream
 
-          expect(assigns(:error)).to eq('API connection failed')
+          expect(flash[:alert]).to eq('API connection failed')
           expect(response).to have_http_status(:success)
           expect(response.media_type).to eq('text/vnd.turbo-stream.html')
         end
@@ -191,7 +191,7 @@ RSpec.describe ShortUrlsController, type: :controller do
       it '特定のエラーメッセージを表示する' do
         post :create, params: valid_params
 
-        expect(assigns(:error)).to eq('Custom slug already exists')
+        expect(flash[:alert]).to eq('Custom slug already exists')
         expect(response).to have_http_status(:bad_gateway)
       end
     end

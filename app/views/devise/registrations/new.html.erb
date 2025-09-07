@@ -17,21 +17,7 @@
     <!-- Main Card -->
     <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 md:p-10 hover:shadow-2xl transition-all duration-300">
       <!-- Error Messages -->
-      <% if resource.errors.any? %>
-        <div class="mb-8 rounded-2xl border border-red-200/50 bg-red-50/80 backdrop-blur-sm text-red-700 p-4">
-          <div class="flex items-center space-x-3 mb-2">
-            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <span class="font-semibold">エラーが発生しました</span>
-          </div>
-          <ul class="list-disc list-inside space-y-1 text-sm">
-            <% resource.errors.full_messages.each do |message| %>
-              <li><%= message %></li>
-            <% end %>
-          </ul>
-        </div>
-      <% end %>
+      <%= render_form_errors(resource) %>
 
       <%= form_for(resource, as: resource_name, url: registration_path(resource_name), data: { controller: "submitter" }, class: "space-y-6") do |f| %>
         
