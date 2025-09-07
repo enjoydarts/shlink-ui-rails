@@ -17,7 +17,7 @@
     <!-- Main Card -->
     <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 md:p-10 hover:shadow-2xl transition-all duration-300">
       <!-- Error Messages -->
-      <%= render "devise/shared/error_messages", resource: resource %>
+      <%= render "shared/form_errors", errors: resource.errors %>
 
       <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put }, data: { controller: "submitter" }, class: "space-y-6") do |f| %>
         <%= f.hidden_field :reset_password_token %>
