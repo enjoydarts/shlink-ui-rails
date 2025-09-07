@@ -15,12 +15,13 @@ class ShortUrlsController < ApplicationController
     Rails.logger.info "Form errors: #{@shorten.errors.full_messages}"
 
     if @shorten.valid?
-      Rails.logger.info "Calling Shlink API with URL: #{@shorten.long_url}, slug: #{@shorten.slug}, valid_until: #{@shorten.valid_until}, max_visits: #{@shorten.max_visits}"
+      Rails.logger.info "Calling Shlink API with URL: #{@shorten.long_url}, slug: #{@shorten.slug}, valid_until: #{@shorten.valid_until}, max_visits: #{@shorten.max_visits}, tags: #{@shorten.tags_array}"
       result = Shlink::CreateShortUrlService.new.call(
         long_url: @shorten.long_url,
         slug: @shorten.slug,
         valid_until: @shorten.valid_until,
-        max_visits: @shorten.max_visits
+        max_visits: @shorten.max_visits,
+        tags: @shorten.tags_array
       )
       Rails.logger.info "Shlink API result: #{result.inspect}"
 
@@ -78,7 +79,7 @@ class ShortUrlsController < ApplicationController
   private
 
   def shorten_params
-    params.require(:shorten_form).permit(:long_url, :slug, :include_qr_code, :valid_until, :max_visits)
+    params.require(:shorten_form).permit(:long_url, :slug, :include_qr_code, :valid_until, :max_visits, :tags)
   end
 
   def save_short_url_to_database(shlink_result)
