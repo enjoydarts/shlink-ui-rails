@@ -126,7 +126,7 @@ RSpec.describe ShortUrlsController, "QRコード機能" do
       end
 
       it "@resultにqr_code_urlが含まれないこと" do
-        post :create, params: params_without_qr, xhr: true
+        post :create, params: params_without_qr, format: :turbo_stream
 
         expect(assigns(:result)).not_to include(:qr_code_url)
       end
