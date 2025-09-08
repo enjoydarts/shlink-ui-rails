@@ -4,8 +4,32 @@
 
 ## 開発コマンド
 
-### Docker ベース開発
-すべての開発は Docker コンテナ内で行います：
+### Makefile による簡単コマンド（推奨）
+このプロジェクトではMakefileによる開発ワークフローの簡素化を提供しています：
+
+```bash
+# 初回セットアップ
+make setup
+
+# 日常的な開発作業
+make up                    # サービス起動
+make down                  # サービス停止
+make console              # Railsコンソール
+make test                 # 全テスト実行
+make lint                 # RuboCop実行
+make lint-fix             # RuboCop自動修正
+
+# データベース操作
+make db-reset             # DB初期化
+make db-migrate           # 開発環境マイグレーション
+make db-migrate-test      # テスト環境マイグレーション
+
+# ヘルプ
+make help                 # 全コマンド一覧表示
+```
+
+### Docker Compose による直接実行
+Makefileを使わない場合の従来方法：
 
 ```bash
 # 全サービス開始（初回ビルド付き）
@@ -34,16 +58,18 @@ docker-compose logs -f css
 
 ### テストと品質管理
 ```bash
-# 全テスト実行（RSpec）
+# Makefileを使用（推奨）
+make test                 # 全テスト実行
+make test-system          # システムテスト実行
+make test-coverage        # カバレッジ付きテスト
+make lint                 # RuboCop実行
+make lint-fix             # RuboCop自動修正
+make security             # Brakemanセキュリティチェック
+
+# 直接実行
 docker-compose exec web bundle exec rspec
-
-# 特定のテストファイル実行
 docker-compose exec web bundle exec rspec spec/path/to/file_spec.rb
-
-# Lint実行（RuboCop with Rails Omakase）
 docker-compose exec web bundle exec rubocop
-
-# セキュリティチェック
 docker-compose exec web bundle exec brakeman
 ```
 
