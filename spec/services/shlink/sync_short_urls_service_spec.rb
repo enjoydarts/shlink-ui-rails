@@ -238,5 +238,138 @@ RSpec.describe Shlink::SyncShortUrlsService do
         expect(existing_url.date_created).to be_within(1.minute).of(Time.current)
       end
     end
+
+    context "APIから削除されたURLの場合" do
+      let!(:existing_url1) { create(:short_url, user: user, short_code: "abc123", visit_count: 5) }
+      let!(:existing_url2) { create(:short_url, user: user, short_code: "missing", visit_count: 3) }
+
+      let(:api_response_missing_url) do
+        {
+          "shortUrls" => {
+            "data" => [ short_urls_data[0] ], # abc123のみ返す（missingは含まない）
+            "pagination" => {
+              "currentPage" => 1,
+              "pagesCount" => 1,
+              "itemsPerPage" => 100,
+              "itemsInCurrentPage" => 1,
+              "totalItems" => 1
+            }
+          }
+        }
+      end
+
+      before do
+        allow(mock_list_service).to receive(:call).and_return(api_response_missing_url)
+        # APIからの個別URL確認をモック
+        allow(service).to receive(:verify_url_existence).with("abc123").and_return(true)
+        allow(service).to receive(:verify_url_existence).with("missing").and_return(false)
+      end
+
+      it "存在しないURLをソフト削除すること" do
+        expect { service.call }.not_to change(user.short_urls, :count)
+        
+        existing_url1.reload
+        existing_url2.reload
+        
+        expect(existing_url1.deleted_at).to be_nil
+        expect(existing_url2.deleted_at).to be_present
+      end
+
+      it "削除されたURLの統計情報をログに記録すること" do
+        expect(Rails.logger).to receive(:info).with(/Found .* URLs in Shlink API for user/).ordered
+        expect(Rails.logger).to receive(:info).with(/Synced stats for short URL: abc123 for user/).ordered
+        expect(Rails.logger).to receive(:info).with(/Soft deleted missing short URL: missing for user/).ordered
+        expect(Rails.logger).to receive(:info).with(/Sync completed for user .* 1 updated, 1 deleted/).ordered
+        service.call
+      end
+
+      it "同期と削除の件数を正しく返すこと" do
+        result = service.call
+        expect(result).to eq(1) # abc123のみ同期
+      end
+    end
+
+    context "個別URL確認でエラーが発生する場合" do
+      let!(:existing_url) { create(:short_url, user: user, short_code: "error_url", visit_count: 5) }
+
+      let(:api_response_empty) do
+        {
+          "shortUrls" => {
+            "data" => [],
+            "pagination" => {
+              "currentPage" => 1,
+              "pagesCount" => 1,
+              "itemsPerPage" => 100,
+              "itemsInCurrentPage" => 0,
+              "totalItems" => 0
+            }
+          }
+        }
+      end
+
+      before do
+        allow(mock_list_service).to receive(:call).and_return(api_response_empty)
+        allow(service).to receive(:verify_url_existence).with("error_url").and_raise(StandardError, "Network error")
+      end
+
+      it "エラー時はURLを削除せずに処理を続行すること" do
+        expect(Rails.logger).to receive(:warn).with(/Failed to sync short URL error_url for user/)
+        
+        expect { service.call }.not_to change(user.short_urls, :count)
+        
+        existing_url.reload
+        expect(existing_url.deleted_at).to be_nil
+      end
+    end
+
+    context "既存URLが存在しない場合" do
+      it "処理を早期終了すること" do
+        expect(Rails.logger).to receive(:info).with(/User \d+ has no existing active short URLs to sync/)
+        result = service.call
+        expect(result).to eq(0)
+      end
+    end
+  end
+
+  describe "#verify_url_existence" do
+    let(:mock_conn) { double('connection') }
+    
+    before do
+      allow(service).to receive(:conn).and_return(mock_conn)
+      allow(service).to receive(:api_headers).and_return({})
+    end
+
+    context "URLが存在する場合" do
+      it "trueを返すこと" do
+        allow(mock_conn).to receive(:get).and_return(double(status: 200))
+        expect(service.send(:verify_url_existence, "abc123")).to be true
+      end
+    end
+
+    context "URLが存在しない場合" do
+      it "falseを返すこと" do
+        allow(mock_conn).to receive(:get).and_return(double(status: 404))
+        expect(service.send(:verify_url_existence, "missing")).to be false
+      end
+    end
+
+    context "予期しないレスポンスの場合" do
+      it "警告をログに記録してtrueを返すこと" do
+        response = double(status: 500, body: "Internal Server Error")
+        allow(mock_conn).to receive(:get).and_return(response)
+        expect(Rails.logger).to receive(:warn).with(/Unexpected response status 500 for URL test: Internal Server Error/)
+        
+        expect(service.send(:verify_url_existence, "test")).to be true
+      end
+    end
+
+    context "例外が発生する場合" do
+      it "警告をログに記録してtrueを返すこと" do
+        allow(mock_conn).to receive(:get).and_raise(StandardError, "Network error")
+        expect(Rails.logger).to receive(:warn).with(/Failed to verify URL existence for test: Network error/)
+        
+        expect(service.send(:verify_url_existence, "test")).to be true
+      end
+    end
   end
 end

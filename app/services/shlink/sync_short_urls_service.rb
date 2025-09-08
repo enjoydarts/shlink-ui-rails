@@ -1,8 +1,9 @@
 module Shlink
-  class SyncShortUrlsService
+  class SyncShortUrlsService < BaseService
     attr_reader :user
 
     def initialize(user)
+      super() # BaseServiceの初期化
       @user = user
     end
 
@@ -17,10 +18,12 @@ module Shlink
       end
 
       total_synced = 0
+      total_deleted = 0
       list_service = Shlink::ListShortUrlsService.new
 
       # APIから全URLを取得して、存在しないものをソフト削除
       api_short_codes = fetch_all_api_short_codes(list_service)
+      Rails.logger.info "Found #{api_short_codes.size} URLs in Shlink API for user #{user.id}"
 
       # 既存の短縮URLの情報を個別に更新
       existing_short_codes.each do |short_code|
@@ -30,9 +33,18 @@ module Shlink
             updated = sync_existing_short_url(short_code, list_service)
             total_synced += 1 if updated
           else
-            # API側に存在しない場合はソフト削除
-            soft_delete_missing_url(short_code)
-            Rails.logger.info "Soft deleted missing short URL: #{short_code} for user #{user.id}"
+            # リストに含まれていない場合、個別確認を行う
+            if verify_url_existence(short_code)
+              Rails.logger.warn "Short URL #{short_code} not found in list but exists individually for user #{user.id}"
+              # 個別確認で存在する場合は同期を試行
+              updated = sync_existing_short_url(short_code, list_service)
+              total_synced += 1 if updated
+            else
+              # 個別確認でも存在しない場合はソフト削除
+              soft_delete_missing_url(short_code)
+              total_deleted += 1
+              Rails.logger.info "Soft deleted missing short URL: #{short_code} for user #{user.id}"
+            end
           end
         rescue => e
           Rails.logger.warn "Failed to sync short URL #{short_code} for user #{user.id}: #{e.message}"
@@ -40,6 +52,7 @@ module Shlink
         end
       end
 
+      Rails.logger.info "Sync completed for user #{user.id}: #{total_synced} updated, #{total_deleted} deleted"
       total_synced
     rescue Shlink::Error => e
       Rails.logger.error "Failed to sync short URLs for user #{user.id}: #{e.message}"
@@ -158,6 +171,27 @@ module Shlink
         forward_query: data["forwardQuery"] != false,
         date_created: parse_date(data["dateCreated"]) || Time.current
       }
+    end
+
+    def verify_url_existence(short_code)
+      # 個別のURL情報取得を試行して存在確認
+      # Shlink APIでは /rest/v3/short-urls/{shortCode} エンドポイントで個別取得可能
+      response = conn.get("/rest/v3/short-urls/#{short_code}", {}, api_headers)
+      
+      case response.status
+      when 200
+        true
+      when 404
+        false
+      else
+        # その他のエラーの場合は存在すると仮定（安全側に倒す）
+        Rails.logger.warn "Unexpected response status #{response.status} for URL #{short_code}: #{response.body}"
+        true
+      end
+    rescue => e
+      Rails.logger.warn "Failed to verify URL existence for #{short_code}: #{e.message}"
+      # エラーの場合は存在すると仮定（安全側に倒す）
+      true
     end
 
     def parse_date(date_string)
