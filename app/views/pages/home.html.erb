@@ -1,6 +1,6 @@
 <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex flex-col">
   <!-- Navigation -->
-  <nav class="w-full px-4 py-6">
+  <nav class="w-full px-4 py-6" data-controller="mobile-menu" data-action="click@window->mobile-menu#closeOnOutsideClick keydown@window->mobile-menu#closeOnEscape">
     <div class="max-w-6xl mx-auto flex justify-between items-center">
       <div class="flex items-center space-x-3">
         <!-- Logo matching favicon -->
@@ -15,11 +15,34 @@
         <h1 class="text-xl font-bold text-gray-800">Shlink UI</h1>
       </div>
       
-      <div class="flex space-x-4">
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex space-x-4">
         <%= link_to "ログイン", new_user_session_path, 
             class: "px-6 py-2 text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200" %>
         <%= link_to "新規登録", new_user_registration_path, 
             class: "px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl" %>
+      </div>
+
+      <!-- Mobile Hamburger Button -->
+      <div class="md:hidden">
+        <button type="button" 
+                data-action="click->mobile-menu#toggle"
+                class="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors duration-200">
+          <span class="sr-only">メニューを開く</span>
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="md:hidden hidden opacity-0 -translate-y-2 transition-all duration-200 ease-out bg-white/90 backdrop-blur-sm border-t border-gray-200 mt-4 rounded-xl shadow-lg" data-mobile-menu-target="menu">
+      <div class="px-4 py-6 space-y-4">
+        <%= link_to "今すぐ始める", new_user_registration_path, 
+            class: "block w-full px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold text-center transition-all duration-200 shadow-lg hover:shadow-xl" %>
+        <%= link_to "ログインして続ける", new_user_session_path, 
+            class: "block w-full px-6 py-3 border-2 border-blue-500 text-blue-600 hover:bg-blue-50 rounded-xl font-semibold text-center transition-all duration-200" %>
       </div>
     </div>
   </nav>

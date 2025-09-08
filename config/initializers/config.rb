@@ -22,7 +22,7 @@ Config.setup do |config|
 
   # Load environment variables from the `ENV` object and override any settings defined in files.
   #
-  # config.use_env = false
+  config.use_env = true
 
   # Define ENV variable prefix deciding which variables to load into config.
   #
@@ -31,7 +31,7 @@ Config.setup do |config|
   #
   # When not set it defaults to `config.const_name`.
   #
-  config.env_prefix = "SETTINGS"
+  # config.env_prefix = "SETTINGS"
 
   # What string to use as level separator for settings loaded from ENV variables. Default value of '.' works well
   # with Heroku, but you might want to change it for example for '__' to easy override settings from command line, where
@@ -59,7 +59,7 @@ Config.setup do |config|
 
   # Evaluate ERB in YAML config files at load time.
   #
-  # config.evaluate_erb_in_yaml = true
+  config.evaluate_erb_in_yaml = true
 
   # Name of directory and file to store config keys
   #
@@ -74,4 +74,10 @@ Config.setup do |config|
   #   { api_key: ENV['API_KEY'] },         # Hash: direct hash source
   #   MyCustomSource.new,                  # Custom source object
   # ]
+end
+
+# Config gemの設定完了後、即座にERB評価を強制実行
+# devise.rbより前に実行される必要がある
+ActiveSupport.on_load(:before_configuration) do
+  Settings.reload! if defined?(Settings)
 end
