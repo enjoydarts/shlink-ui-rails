@@ -267,10 +267,10 @@ RSpec.describe Shlink::SyncShortUrlsService do
 
       it "存在しないURLをソフト削除すること" do
         expect { service.call }.not_to change(user.short_urls, :count)
-        
+
         existing_url1.reload
         existing_url2.reload
-        
+
         expect(existing_url1.deleted_at).to be_nil
         expect(existing_url2.deleted_at).to be_present
       end
@@ -314,9 +314,9 @@ RSpec.describe Shlink::SyncShortUrlsService do
 
       it "エラー時はURLを削除せずに処理を続行すること" do
         expect(Rails.logger).to receive(:warn).with(/Failed to sync short URL error_url for user/)
-        
+
         expect { service.call }.not_to change(user.short_urls, :count)
-        
+
         existing_url.reload
         expect(existing_url.deleted_at).to be_nil
       end
@@ -333,7 +333,7 @@ RSpec.describe Shlink::SyncShortUrlsService do
 
   describe "#verify_url_existence" do
     let(:mock_conn) { double('connection') }
-    
+
     before do
       allow(service).to receive(:conn).and_return(mock_conn)
       allow(service).to receive(:api_headers).and_return({})
@@ -358,7 +358,7 @@ RSpec.describe Shlink::SyncShortUrlsService do
         response = double(status: 500, body: "Internal Server Error")
         allow(mock_conn).to receive(:get).and_return(response)
         expect(Rails.logger).to receive(:warn).with(/Unexpected response status 500 for URL test: Internal Server Error/)
-        
+
         expect(service.send(:verify_url_existence, "test")).to be true
       end
     end
@@ -367,7 +367,7 @@ RSpec.describe Shlink::SyncShortUrlsService do
       it "警告をログに記録してtrueを返すこと" do
         allow(mock_conn).to receive(:get).and_raise(StandardError, "Network error")
         expect(Rails.logger).to receive(:warn).with(/Failed to verify URL existence for test: Network error/)
-        
+
         expect(service.send(:verify_url_existence, "test")).to be true
       end
     end

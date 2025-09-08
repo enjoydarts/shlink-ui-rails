@@ -177,7 +177,7 @@ module Shlink
       # 個別のURL情報取得を試行して存在確認
       # Shlink APIでは /rest/v3/short-urls/{shortCode} エンドポイントで個別取得可能
       response = conn.get("/rest/v3/short-urls/#{short_code}", {}, api_headers)
-      
+
       case response.status
       when 200
         true
