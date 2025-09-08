@@ -110,28 +110,23 @@
               </div>
 
               <!-- Tags Field -->
-              <div class="space-y-2" data-controller="tag-input" data-tag-input-max-tags-value="10" data-tag-input-max-length-value="20">
+              <div class="space-y-2" data-controller="tag-input" data-tag-input-max-tags-value="<%= Settings.app.short_url.max_tags %>" data-tag-input-max-length-value="<%= Settings.app.short_url.max_tag_length %>">
                 <label class="block text-sm font-semibold text-gray-700 mb-2">🏷️ タグ（オプション）</label>
                 
-                <!-- 既存タグ表示エリア -->
-                <div data-tag-input-target="tagContainer" class="flex flex-wrap gap-2 mb-3 min-h-[2rem]"></div>
-                
-                <!-- タグ入力フィールド -->
+                <!-- タグ入力欄（タグを入力欄内に表示） -->
                 <div class="relative">
-                  <input type="text"
-                         data-tag-input-target="input"
-                         data-action="keydown->tag-input#handleKeydown"
-                         placeholder="タグを入力してEnterキーで追加"
-                         class="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all duration-200 text-base bg-gray-50/50 placeholder-gray-400" />
-                  
-                  <button type="button"
-                          data-action="click->tag-input#addTag"
-                          class="absolute right-2 top-1/2 transform -translate-y-1/2 px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center space-x-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                    </svg>
-                    <span>追加</span>
-                  </button>
+                  <div data-tag-input-target="inputContainer" 
+                       class="min-h-[3rem] w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus-within:border-purple-500 focus-within:ring-4 focus-within:ring-purple-100 transition-all duration-200 bg-gray-50/50 flex flex-wrap items-center gap-2">
+                    <!-- タグが動的に追加される場所 -->
+                    <div data-tag-input-target="tagContainer" class="flex flex-wrap items-center gap-2"></div>
+                    
+                    <!-- 実際の入力フィールド -->
+                    <input type="text"
+                           data-tag-input-target="input"
+                           data-action="keydown->tag-input#handleKeydown focus->tag-input#onInputFocus blur->tag-input#onInputBlur"
+                           placeholder="タグを入力してEnterキーで追加"
+                           class="flex-1 min-w-[120px] border-none outline-none bg-transparent text-base placeholder-gray-400" />
+                  </div>
                 </div>
                 
                 <!-- 隠しフィールド（実際の送信データ） -->
@@ -141,9 +136,12 @@
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                   </svg>
-                  <span>Enterキーまたは「追加」ボタンでタグを確定（最大10個、各20文字以内）</span>
+                  <span>Enterキーでタグを確定（最大10個、各20文字以内）</span>
                 </p>
-                <%= render_field_error(@shorten.errors[:tags]) %>
+                <!-- エラー表示エリア -->
+                <div data-tag-input-target="errorContainer">
+                  <%= render_field_error(@shorten.errors[:tags]) %>
+                </div>
               </div>
 
             </div>

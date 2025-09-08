@@ -17,8 +17,11 @@ docker-compose up
 # コンテナ内でRailsコマンド実行
 docker-compose exec web bin/rails console
 docker-compose exec web bin/rails routes
-docker-compose exec web bin/rails db:migrate
+
+# データベース操作（Ridgepole使用）
 docker-compose exec web bin/rails db:create
+docker-compose exec web bundle exec ridgepole -c config/database.yml -E development --apply -f db/schemas/Schemafile
+docker-compose exec web bundle exec ridgepole -c config/database.yml -E test --apply -f db/schemas/Schemafile
 
 # CSSビルド（通常はcssサービスで自動実行）
 docker-compose exec web bin/rails tailwindcss:build
@@ -62,6 +65,8 @@ Shlink API とのやり取り専用サービスクラスを持つサービス指
 - **Stimulus Controllers**: 
   - `clipboard_controller.js`: ワンクリックコピー機能
   - `submitter_controller.js`: フォーム送信処理
+  - `tag_input_controller.js`: Gmail風タグ入力UI（入力フィールド内タグ表示、バリデーション付き）
+  - `accordion_controller.js`: 高度なオプション展開/収納
 
 ### API統合
 Shlink API用の環境ベース設定：
@@ -114,3 +119,29 @@ APIレスポンスからの詳細エラーメッセージ抽出を持つAPIエ�
 
 ### フォームオブジェクト
 ActiveModelベースのフォームオブジェクトは適切な検証と属性処理でモデルからフォームロジックを分離。
+
+## モバイル対応とブラウザサポート
+
+### ブラウザ互換性
+`ApplicationController`で以下のブラウザバージョンをサポート：
+- Safari 12+
+- Chrome 70+
+- Firefox 70+
+- Edge 79+
+- Opera 57+
+
+これにより、モバイルブラウザからの正常なアクセスが可能。
+
+### レスポンシブデザイン
+- Tailwind CSSのモバイルファーストアプローチ
+- `min-w-[120px]`など、フレキシブルな最小幅設定
+- `flex-wrap`による要素の適応的配置
+- タッチ操作に適したボタンサイズ（`p-1`以上）
+
+## 最近の改善
+
+### タグ入力UI改善（2025年1月実装）
+- Gmail風インライン表示：タグが入力フィールド内に表示
+- リアルタイムバリデーション：文字数制限、重複チェック、最大個数制限
+- キーボードナビゲーション：Enterキーでの追加、ESCキーでのクリア
+- 視覚的フィードバック：フォーカス状態の強調、エラー時の境界色変更

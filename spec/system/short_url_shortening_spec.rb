@@ -111,18 +111,9 @@ RSpec.describe 'URL短縮機能', type: :system do
       # 高度なオプションを開く
       page.find('button[data-action="click->accordion#toggle"]').click
 
-      # 新しいタグ入力UIを使用（:rack_testドライバ対応）
-      tag_input = page.find('input[data-tag-input-target="input"]')
-
-      # タグを順番に追加
-      tag_input.set('tag1')
-      page.find('button[data-action="click->tag-input#addTag"]').click
-
-      tag_input.set('tag2')
-      page.find('button[data-action="click->tag-input#addTag"]').click
-
-      tag_input.set('tag3')
-      page.find('button[data-action="click->tag-input#addTag"]').click
+      # タグを隠しフィールドに直接設定（rack_testドライバ対応）
+      tag_field = page.find('input[data-tag-input-target="hiddenInput"]', visible: false)
+      tag_field.set('tag1, tag2, tag3')
 
       click_button '短縮する'
 
@@ -135,7 +126,7 @@ RSpec.describe 'URL短縮機能', type: :system do
       # 高度なオプションを開く
       page.find('button[data-action="click->accordion#toggle"]').click
 
-      expect(page).to have_content('Enterキーまたは「追加」ボタンでタグを確定（最大10個、各20文字以内）')
+      expect(page).to have_content('Enterキーでタグを確定（最大10個、各20文字以内）')
     end
   end
 
