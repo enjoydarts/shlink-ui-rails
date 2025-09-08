@@ -99,11 +99,13 @@
 
 4. **アプリケーションを開始**
    ```bash
-   # 初回セットアップ（コンテナビルドとデータベースセットアップ）
-   docker-compose up --build
+   # Makefileを使用（推奨）
+   make setup                    # 初回セットアップ（全て含む）
+   make up                       # 2回目以降の起動
    
-   # 以後の実行
-   docker-compose up
+   # または Docker Compose を直接使用
+   docker-compose up --build     # 初回セットアップ
+   docker-compose up             # 2回目以降の起動
    ```
 
 5. **アプリケーションにアクセス**
@@ -155,48 +157,88 @@
 
 ## 🧪 開発
 
+### Makefileによるクイックコマンド
+
+このプロジェクトには開発を効率化する包括的なMakefileが含まれています：
+
+```bash
+# 利用可能なコマンド一覧表示
+make help
+
+# 開発ワークフロー
+make up                       # サービス起動
+make console                 # Railsコンソール開く
+make test                    # 全テスト実行
+make lint                    # RuboCop実行
+make lint-fix                # RuboCop自動修正
+
+# データベース操作
+make db-reset                # データベースリセット（作成+マイグレーション）
+make db-migrate              # 開発環境マイグレーション実行
+make db-migrate-test         # テスト環境マイグレーション実行
+
+# 特定のテストタイプ
+make test-system             # システムテストのみ
+make test-models             # モデルテストのみ
+make test-coverage           # カバレッジレポート付きテスト
+
+# CSS管理
+make css-build               # Tailwind CSSビルド
+make css-watch               # CSS変更監視
+
+# ユーティリティ
+make logs                    # 全サービスログ表示
+make clean                   # 一時ファイル削除
+make status                  # サービス状況確認
+```
+
 ### テスト実行
 ```bash
-# 全テスト実行（230+例、93%+カバレッジ）
+# Makefileを使用（推奨）
+make test                    # 全テスト実行（255+例、93%+カバレッジ）
+make test-file FILE=spec/path/to/file_spec.rb  # 特定のテストファイル実行
+make test-coverage           # カバレッジレポート付きテスト実行
+
+# Docker Composeを直接使用
 docker-compose exec web bundle exec rspec
-
-# 特定のテストファイル実行
 docker-compose exec web bundle exec rspec spec/path/to/file_spec.rb
-
-# 詳細出力でテスト実行
 docker-compose exec web bundle exec rspec --format documentation
 ```
 
 ### コード品質
 ```bash
-# RuboCopリンター実行（Rails Omakase設定）
+# Makefileを使用（推奨）
+make lint                    # RuboCopリンター実行（Rails Omakase設定）
+make lint-fix                # 違反の自動修正
+make security                # Brakemanによるセキュリティ分析
+
+# Docker Composeを直接使用
 docker-compose exec web bundle exec rubocop
-
-# 違反の自動修正
 docker-compose exec web bundle exec rubocop --autocorrect
-
-# Brakemanによるセキュリティ分析
 docker-compose exec web bundle exec brakeman
 ```
 
 ### データベース操作
 ```bash
-# Ridgepoleでスキーマ変更適用
-docker-compose exec web bundle exec ridgepole -c config/database.yml -E development --apply -f db/Schemafile
+# Makefileを使用（推奨）
+make db-reset                # データベース完全リセット
+make db-migrate              # Ridgepoleでスキーマ変更適用（開発環境）
+make db-migrate-test         # Ridgepoleでスキーマ変更適用（テスト環境）
 
-# Railsコンソールアクセス
+# Docker Composeを直接使用
+docker-compose exec web bundle exec ridgepole -c config/database.yml -E development --apply -f db/schemas/Schemafile
 docker-compose exec web bin/rails console
-
-# アプリケーションルート表示
 docker-compose exec web bin/rails routes
 ```
 
 ### CSS開発
 ```bash
-# Tailwind CSS変更の監視（開発環境で自動）
-docker-compose exec web bin/rails tailwindcss:watch
+# Makefileを使用（推奨）
+make css-build               # CSS手動ビルド
+make css-watch               # Tailwind CSS変更監視
 
-# CSS手動ビルド
+# Docker Composeを直接使用
+docker-compose exec web bin/rails tailwindcss:watch
 docker-compose exec web bin/rails tailwindcss:build
 ```
 
