@@ -59,7 +59,7 @@ Config.setup do |config|
 
   # Evaluate ERB in YAML config files at load time.
   #
-  # config.evaluate_erb_in_yaml = true
+  config.evaluate_erb_in_yaml = true
 
   # Name of directory and file to store config keys
   #
@@ -74,4 +74,10 @@ Config.setup do |config|
   #   { api_key: ENV['API_KEY'] },         # Hash: direct hash source
   #   MyCustomSource.new,                  # Custom source object
   # ]
+end
+
+# Config gemの設定完了後、即座にERB評価を強制実行
+# devise.rbより前に実行される必要がある
+ActiveSupport.on_load(:before_configuration) do
+  Settings.reload! if defined?(Settings)
 end
