@@ -18,10 +18,10 @@ RSpec.describe 'タグ管理機能', type: :system do
 
       # タグ入力フィールドが存在することを確認
       expect(page).to have_selector('[data-tag-input-target="input"]')
-      
+
       # タグコンテナが存在することを確認
       expect(page).to have_selector('[data-tag-input-target="tagContainer"]')
-      
+
       # 隠しフィールドが存在することを確認
       expect(page).to have_selector('[data-tag-input-target="hiddenInput"]', visible: false)
     end
@@ -43,7 +43,7 @@ RSpec.describe 'タグ管理機能', type: :system do
 
       # tag_input_controllerがロードされていることを確認
       expect(page).to have_selector('[data-controller="tag-input"]')
-      
+
       # 削除ボタン用のdata-action属性が存在することを確認（将来のタグ用）
       tag_container = find('[data-tag-input-target="tagContainer"]')
       expect(tag_container).to be_present

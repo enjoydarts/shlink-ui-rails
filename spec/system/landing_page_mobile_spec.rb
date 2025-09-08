@@ -9,7 +9,6 @@ RSpec.describe 'ランディングページのモバイル表示', type: :system
   end
 
   context 'モバイル向け要素が存在することを確認' do
-
     it 'ハンバーガーメニューボタンが存在する' do
       within 'nav' do
         expect(page).to have_selector('[data-action*="mobile-menu#toggle"]')
@@ -26,7 +25,7 @@ RSpec.describe 'ランディングページのモバイル表示', type: :system
     it 'モバイルメニューが存在し、初期状態で非表示' do
       # モバイルメニューターゲットが存在することを確認
       expect(page).to have_selector('[data-mobile-menu-target="menu"]')
-      
+
       # 初期状態でhiddenクラスが付いていることを確認
       menu = find('[data-mobile-menu-target="menu"]')
       expect(menu[:class]).to include('hidden')
