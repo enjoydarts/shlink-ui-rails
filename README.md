@@ -104,11 +104,13 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 
 4. **Start the application**
    ```bash
-   # First time setup (builds containers and sets up database)
-   docker-compose up --build
+   # Using Makefile (recommended)
+   make setup                    # First time setup with everything
+   make up                       # Subsequent runs
    
-   # Subsequent runs
-   docker-compose up
+   # Or using Docker Compose directly
+   docker-compose up --build     # First time setup
+   docker-compose up             # Subsequent runs
    ```
 
 5. **Access the application**
@@ -162,48 +164,88 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 
 ## 🧪 Development
 
+### Quick Commands with Makefile
+
+This project includes a comprehensive Makefile for streamlined development:
+
+```bash
+# View all available commands
+make help
+
+# Development workflow
+make up                       # Start services
+make console                 # Open Rails console
+make test                    # Run all tests
+make lint                    # Run RuboCop
+make lint-fix                # Auto-fix RuboCop issues
+
+# Database operations
+make db-reset                # Reset database (create + migrate)
+make db-migrate              # Run development migrations
+make db-migrate-test         # Run test migrations
+
+# Specific test types
+make test-system             # System tests only
+make test-models             # Model tests only
+make test-coverage           # Tests with coverage report
+
+# CSS management
+make css-build               # Build Tailwind CSS
+make css-watch               # Watch CSS changes
+
+# Utilities
+make logs                    # View all service logs
+make clean                   # Clean temporary files
+make status                  # Check service status
+```
+
 ### Running Tests
 ```bash
-# Run all tests (255+ examples with 93%+ coverage)
+# Using Makefile (recommended)
+make test                    # Run all tests (255+ examples with 93%+ coverage)
+make test-file FILE=spec/path/to/file_spec.rb  # Run specific test file
+make test-coverage           # Run tests with coverage report
+
+# Using Docker Compose directly
 docker-compose exec web bundle exec rspec
-
-# Run specific test file
 docker-compose exec web bundle exec rspec spec/path/to/file_spec.rb
-
-# Run tests with detailed output
 docker-compose exec web bundle exec rspec --format documentation
 ```
 
 ### Code Quality
 ```bash
-# Run RuboCop linter (Rails Omakase configuration)
+# Using Makefile (recommended)
+make lint                    # Run RuboCop linter (Rails Omakase configuration)
+make lint-fix                # Auto-fix violations
+make security                # Security analysis with Brakeman
+
+# Using Docker Compose directly
 docker-compose exec web bundle exec rubocop
-
-# Auto-fix violations
 docker-compose exec web bundle exec rubocop --autocorrect
-
-# Security analysis with Brakeman
 docker-compose exec web bundle exec brakeman
 ```
 
 ### Database Operations
 ```bash
-# Apply schema changes with Ridgepole
-docker-compose exec web bundle exec ridgepole -c config/database.yml -E development --apply -f db/Schemafile
+# Using Makefile (recommended)
+make db-reset                # Reset database completely
+make db-migrate              # Apply schema changes with Ridgepole (development)
+make db-migrate-test         # Apply schema changes with Ridgepole (test)
 
-# Access Rails console
+# Using Docker Compose directly
+docker-compose exec web bundle exec ridgepole -c config/database.yml -E development --apply -f db/schemas/Schemafile
 docker-compose exec web bin/rails console
-
-# View application routes
 docker-compose exec web bin/rails routes
 ```
 
 ### CSS Development
 ```bash
-# Watch Tailwind CSS changes (automatic in development)
-docker-compose exec web bin/rails tailwindcss:watch
+# Using Makefile (recommended)
+make css-build               # Build CSS manually
+make css-watch               # Watch Tailwind CSS changes
 
-# Build CSS manually
+# Using Docker Compose directly
+docker-compose exec web bin/rails tailwindcss:watch
 docker-compose exec web bin/rails tailwindcss:build
 ```
 

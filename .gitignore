@@ -42,6 +42,9 @@
 # テストカバレッジレポート
 /coverage/
 
+# RSpecテスト実行状態ファイル
+/spec/examples.txt
+
 # .claude/
 .claude/
 
