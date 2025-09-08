@@ -1,0 +1,43 @@
+# Default settings for all environments
+
+# Shlink API設定
+shlink:
+  # APIのベースURL（環境変数 SHLINK_BASE_URL で上書き可能）
+  base_url: <%= ENV.fetch('SHLINK_BASE_URL', 'http://localhost:8080') %>
+  # API認証キー（環境変数 SHLINK_API_KEY で上書き可能）
+  api_key: <%= ENV.fetch('SHLINK_API_KEY', '') %>
+  # APIタイムアウト設定（秒）
+  timeout: 30
+  # リトライ回数
+  retry_attempts: 3
+
+# OAuth設定（Google認証）
+oauth:
+  google:
+    client_id: <%= ENV.fetch('GOOGLE_CLIENT_ID', '') %>
+    client_secret: <%= ENV.fetch('GOOGLE_CLIENT_SECRET', '') %>
+
+# アプリケーション設定
+app:
+  # デフォルトのタイムゾーン
+  time_zone: 'Asia/Tokyo'
+  # ページネーション設定
+  pagination:
+    per_page: 20
+    max_per_page: 100
+  # URL短縮設定
+  short_url:
+    # デフォルトの最大タグ数
+    max_tags: 10
+    # デフォルトのタグ最大文字数
+    max_tag_length: 20
+    # デフォルトのスラッグ最小文字数
+    min_slug_length: 3
+
+# ブラウザサポート設定
+browser_support:
+  safari: "12+"
+  chrome: "70+"
+  firefox: "70+"
+  edge: "79+"
+  opera: "57+"

@@ -7,8 +7,8 @@ RSpec.describe Shlink::DeleteShortUrlService, type: :service do
   let(:api_key) { 'test_api_key' }
 
   before do
-    ENV['SHLINK_BASE_URL'] = base_url
-    ENV['SHLINK_API_KEY'] = api_key
+    allow(Settings.shlink).to receive(:base_url).and_return(base_url)
+    allow(Settings.shlink).to receive(:api_key).and_return(api_key)
   end
 
   describe '#call' do

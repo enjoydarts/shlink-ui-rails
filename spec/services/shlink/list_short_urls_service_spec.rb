@@ -6,9 +6,8 @@ RSpec.describe Shlink::ListShortUrlsService do
   let(:api_key) { "test_api_key" }
 
   before do
-    allow(ENV).to receive(:[]).and_call_original
-    allow(ENV).to receive(:[]).with("SHLINK_BASE_URL").and_return(base_url)
-    allow(ENV).to receive(:[]).with("SHLINK_API_KEY").and_return(api_key)
+    allow(Settings.shlink).to receive(:base_url).and_return(base_url)
+    allow(Settings.shlink).to receive(:api_key).and_return(api_key)
   end
 
   describe "#call" do

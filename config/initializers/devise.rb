@@ -275,8 +275,8 @@ Devise.setup do |config|
 
   # Google OAuth2 configuration
   config.omniauth :google_oauth2,
-                   ENV["GOOGLE_CLIENT_ID"],
-                   ENV["GOOGLE_CLIENT_SECRET"],
+                   Settings.oauth.google.client_id,
+                   Settings.oauth.google.client_secret,
                    {
                      scope: "email,profile",
                      prompt: "select_account",

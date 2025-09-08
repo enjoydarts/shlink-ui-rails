@@ -7,7 +7,7 @@ module Shlink
   class BaseService
     attr_reader :base_url, :api_key, :conn
 
-    def initialize(base_url: ENV["SHLINK_BASE_URL"], api_key: ENV["SHLINK_API_KEY"])
+    def initialize(base_url: Settings.shlink.base_url, api_key: Settings.shlink.api_key)
       @base_url = base_url
       @api_key = api_key
       @conn = build_connection
@@ -19,6 +19,7 @@ module Shlink
       Faraday.new(url: base_url) do |f|
         f.request :json
         f.response :json, content_type: /\bjson$/
+        f.options.timeout = Settings.shlink.timeout
         f.adapter Faraday.default_adapter
       end
     end

@@ -9,7 +9,7 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 - **Custom Slugs**: Optional custom short codes for branded links
 - **QR Code Generation**: Automatic QR code creation for each shortened URL
 - **One-click Copy**: Instant clipboard copying with visual feedback
-- **Interactive Tag Management**: Modern tag input with Enter key confirmation and delete buttons
+- **Gmail-style Tag Input**: Modern in-field tag display with Enter key confirmation and visual feedback
 - **Advanced Options**: Access to expiration dates, visit limits, and tagging features
 
 ### 👤 User Management
@@ -30,8 +30,10 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 - **Status Indicators**: Clear visual feedback for URL status and tag information
 
 ### 🎨 Modern UI/UX
+- **Mobile-First Design**: Enhanced mobile browser support with optimized compatibility settings
 - **Responsive Design**: Works perfectly on desktop, tablet, and mobile devices with mobile-optimized navigation
 - **Hamburger Menu**: Clean mobile navigation with slide-down menu for compact screens
+- **Gmail-style Tag Input**: Tags display within input field with visual separation and smooth interactions
 - **Glass-morphism Design**: Modern, translucent interface elements with blur effects
 - **Clean Interface**: Removed excessive gradients for better readability and accessibility
 - **Smooth Animations**: Fade-in effects and hover interactions
@@ -55,6 +57,7 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 - **MySQL 8.4** for reliable and scalable data storage
 - **Devise** for authentication and user session management
 - **Faraday** for HTTP API communication with Shlink
+- **Config gem** for centralized configuration management
 - **Ridgepole** for database schema management
 
 ### Frontend

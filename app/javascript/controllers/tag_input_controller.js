@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["input", "hiddenInput", "tagContainer"]
+  static targets = ["input", "hiddenInput", "tagContainer", "inputContainer", "errorContainer"]
   static values = { maxTags: { type: Number, default: 10 }, maxLength: { type: Number, default: 20 } }
 
   connect() {
@@ -140,8 +140,19 @@ export default class extends Controller {
     errorElement.textContent = message
     errorElement.setAttribute('data-tag-error', '')
     
-    this.inputTarget.parentNode.appendChild(errorElement)
-    this.inputTarget.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500')
+    // エラーコンテナが存在する場合はそこに、なければ従来通り
+    if (this.hasErrorContainerTarget) {
+      this.errorContainerTarget.appendChild(errorElement)
+    } else {
+      this.inputTarget.parentNode.appendChild(errorElement)
+    }
+    
+    // 入力コンテナの境界を赤くする
+    if (this.hasInputContainerTarget) {
+      this.inputContainerTarget.classList.add('border-red-500', 'focus-within:border-red-500', 'focus-within:ring-red-500')
+    } else {
+      this.inputTarget.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500')
+    }
   }
 
   // エラーメッセージをクリア
@@ -149,11 +160,30 @@ export default class extends Controller {
     const errorElements = this.element.querySelectorAll('[data-tag-error]')
     errorElements.forEach(element => element.remove())
     
-    this.inputTarget.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500')
+    // 入力コンテナのエラースタイルをクリア
+    if (this.hasInputContainerTarget) {
+      this.inputContainerTarget.classList.remove('border-red-500', 'focus-within:border-red-500', 'focus-within:ring-red-500')
+    } else {
+      this.inputTarget.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500')
+    }
   }
 
   // 入力フィールドにフォーカス
   focusInput() {
     this.inputTarget.focus()
+  }
+
+  // 入力フィールドフォーカス時の処理
+  onInputFocus() {
+    if (this.hasInputContainerTarget) {
+      this.inputContainerTarget.classList.add('ring-4', 'ring-purple-100')
+    }
+  }
+
+  // 入力フィールドブラー時の処理
+  onInputBlur() {
+    if (this.hasInputContainerTarget) {
+      this.inputContainerTarget.classList.remove('ring-4', 'ring-purple-100')
+    }
   }
 }

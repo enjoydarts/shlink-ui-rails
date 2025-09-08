@@ -1,0 +1,13 @@
+# Development environment specific settings
+
+# 開発環境用のShlink設定
+shlink:
+  base_url: <%= ENV.fetch('SHLINK_BASE_URL', 'http://localhost:8080') %>
+  api_key: <%= ENV.fetch('SHLINK_API_KEY', 'development-api-key') %>
+  timeout: 10
+  retry_attempts: 1
+
+# 開発環境用のアプリケーション設定
+app:
+  pagination:
+    per_page: 10  # 開発環境では少なめに設定
