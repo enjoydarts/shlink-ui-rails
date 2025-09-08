@@ -77,7 +77,11 @@ export default class extends Controller {
 
   // タグを削除
   removeTag(event) {
-    const tagText = event.target.dataset.tag
+    // ボタン要素を取得（SVGをクリックした場合は親のボタンを探す）
+    const button = event.target.closest('[data-tag]')
+    if (!button) return
+    
+    const tagText = button.dataset.tag
     this.tags.delete(tagText)
     this.renderTags()
     this.updateHiddenInput()
