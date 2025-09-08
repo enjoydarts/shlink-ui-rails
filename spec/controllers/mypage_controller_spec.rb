@@ -154,10 +154,12 @@ RSpec.describe MypageController, type: :controller do
           delete :destroy, params: { short_code: user_url.short_code }
         end
 
-        it "ローカルDBからも削除されること" do
-          expect {
-            delete :destroy, params: { short_code: user_url.short_code }
-          }.to change(ShortUrl, :count).by(-1)
+        it "ローカルDBからソフト削除されること" do
+          delete :destroy, params: { short_code: user_url.short_code }
+
+          # ソフト削除されていることを確認
+          user_url.reload
+          expect(user_url.deleted_at).to be_present
         end
 
         it "成功のJSONレスポンスを返すこと" do

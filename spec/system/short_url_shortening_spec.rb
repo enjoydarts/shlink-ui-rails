@@ -97,7 +97,10 @@ RSpec.describe 'URL短縮機能', type: :system do
       visit dashboard_path
 
       expect(page).to have_content('高度なオプション')
-      expect(page).to have_field('shorten_form[tags]', visible: false)
+      # 高度なオプションを開く
+      page.find('button[data-action="click->accordion#toggle"]').click
+      expect(page).to have_field('shorten_form[tags]', type: 'hidden')
+      expect(page).to have_css('input[data-tag-input-target="input"]')
     end
 
     it 'タグ付きでURL短縮ができる' do
@@ -108,7 +111,19 @@ RSpec.describe 'URL短縮機能', type: :system do
       # 高度なオプションを開く
       page.find('button[data-action="click->accordion#toggle"]').click
 
-      fill_in 'shorten_form[tags]', with: 'tag1, tag2, tag3'
+      # 新しいタグ入力UIを使用（:rack_testドライバ対応）
+      tag_input = page.find('input[data-tag-input-target="input"]')
+
+      # タグを順番に追加
+      tag_input.set('tag1')
+      page.find('button[data-action="click->tag-input#addTag"]').click
+
+      tag_input.set('tag2')
+      page.find('button[data-action="click->tag-input#addTag"]').click
+
+      tag_input.set('tag3')
+      page.find('button[data-action="click->tag-input#addTag"]').click
+
       click_button '短縮する'
 
       expect(page).to have_content('短縮しました')
@@ -120,7 +135,7 @@ RSpec.describe 'URL短縮機能', type: :system do
       # 高度なオプションを開く
       page.find('button[data-action="click->accordion#toggle"]').click
 
-      expect(page).to have_content('カンマ区切りで入力（最大10個、各20文字以内）')
+      expect(page).to have_content('Enterキーまたは「追加」ボタンでタグを確定（最大10個、各20文字以内）')
     end
   end
 

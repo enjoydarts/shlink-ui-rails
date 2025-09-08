@@ -188,10 +188,9 @@ RSpec.describe Shlink::SyncShortUrlsService do
         allow(mock_list_service).to receive(:call).and_raise(Shlink::Error, "API Error")
       end
 
-      it "エラーをログに記録して0件の同期結果を返すこと" do
-        expect(Rails.logger).to receive(:warn).with(/Failed to sync short URL abc123 for user/)
-        result = service.call
-        expect(result).to eq(0)
+      it "エラーをログに記録して例外を再発生させること" do
+        expect(Rails.logger).to receive(:error).with(/Failed to sync short URLs for user \d+: API Error/)
+        expect { service.call }.to raise_error(Shlink::Error, "API Error")
       end
     end
 
