@@ -1,5 +1,32 @@
-<p>Welcome <%= @email %>!</p>
-
-<p>You can confirm your account email through the link below:</p>
-
-<p><%= link_to 'Confirm my account', confirmation_url(@resource, confirmation_token: @token) %></p>
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc;">
+  <div style="background-color: white; border-radius: 12px; padding: 32px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);">
+    <div style="text-align: center; margin-bottom: 32px;">
+      <h1 style="color: #1f2937; font-size: 24px; font-weight: 600; margin: 0;">メールアドレスの確認</h1>
+    </div>
+    
+    <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-bottom: 16px;">
+      <%= @email %> 様
+    </p>
+    
+    <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
+      Shlink UI にご登録いただき、ありがとうございます！<br>
+      アカウントを有効にするため、下記のボタンをクリックしてメールアドレスの確認を完了してください。
+    </p>
+    
+    <div style="text-align: center; margin: 32px 0;">
+      <%= link_to confirmation_url(@resource, confirmation_token: @token), 
+            style: "display: inline-block; background-color: #3b82f6; color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 16px;" do %>
+        ✅ メールアドレスを確認する
+      <% end %>
+    </div>
+    
+    <p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+      ※ このメールに心当たりがない場合は、無視していただいて構いません。<br>
+      ※ リンクの有効期限は送信から24時間です。
+    </p>
+  </div>
+  
+  <div style="text-align: center; margin-top: 16px; color: #9ca3af; font-size: 12px;">
+    Shlink UI - URL短縮サービス
+  </div>
+</div>

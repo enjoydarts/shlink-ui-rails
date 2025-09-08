@@ -1,0 +1,63 @@
+ja:
+  devise:
+    confirmations:
+      confirmed: "メールアドレスが正常に確認されました。"
+      send_instructions: "数分以内にメールアドレス確認の手順を記載したメールが送信されます。"
+      send_paranoid_instructions: "メールアドレスがデータベースに存在する場合、数分以内にメールアドレス確認の手順を記載したメールが送信されます。"
+    failure:
+      already_authenticated: "既にログインしています。"
+      inactive: "アカウントがアクティベートされていません。"
+      invalid: "メールアドレスまたはパスワードが正しくありません。"
+      locked: "アカウントがロックされています。"
+      last_attempt: "もう一度間違えるとアカウントがロックされます。"
+      not_found_in_database: "メールアドレスまたはパスワードが正しくありません。"
+      timeout: "セッションが期限切れです。もう一度ログインしてください。"
+      unauthenticated: "続行するにはログインまたは新規登録が必要です。"
+      unconfirmed: "続行する前にメールアドレスを確認してください。"
+    mailer:
+      confirmation_instructions:
+        subject: "【Shlink UI】メールアドレス確認のお願い"
+      reset_password_instructions:
+        subject: "【Shlink UI】パスワードリセットのご案内"
+      unlock_instructions:
+        subject: "【Shlink UI】アカウントロック解除のご案内"
+      email_changed:
+        subject: "【Shlink UI】メールアドレス変更のお知らせ"
+      password_change:
+        subject: "【Shlink UI】パスワード変更完了のお知らせ"
+    omniauth_callbacks:
+      failure: "%{kind} アカウントによる認証に失敗しました。理由: \"%{reason}\""
+      success: "%{kind} アカウントによる認証に成功しました。"
+    passwords:
+      no_token: "パスワードリセットメールからのアクセスでない場合、このページにアクセスすることはできません。パスワードリセットメールからのアクセスの場合は、提供された完全なURLを使用していることを確認してください。"
+      send_instructions: "数分以内にパスワードリセットの手順を記載したメールが送信されます。"
+      send_paranoid_instructions: "メールアドレスがデータベースに存在する場合、数分以内にパスワード復旧リンクが送信されます。"
+      updated: "パスワードが正常に変更されました。ログインしています。"
+      updated_not_active: "パスワードが正常に変更されました。"
+    registrations:
+      destroyed: "アカウントが正常に削除されました。またのご利用をお待ちしております。"
+      signed_up: "ご登録ありがとうございます。"
+      signed_up_but_inactive: "登録が完了しましたが、アカウントがアクティベートされていないためログインできません。"
+      signed_up_but_locked: "登録が完了しましたが、アカウントがロックされているためログインできません。"
+      signed_up_but_unconfirmed: "確認リンクを記載したメールを送信しました。リンクをクリックしてアカウントを有効にしてください。"
+      update_needs_confirmation: "アカウントが正常に更新されましたが、新しいメールアドレスの確認が必要です。メールを確認し、確認リンクをクリックして新しいメールアドレスを確認してください。"
+      updated: "アカウントが正常に更新されました。"
+      updated_but_not_signed_in: "アカウントが正常に更新されましたが、パスワードが変更されたため、再度ログインしてください。"
+    sessions:
+      signed_in: "ログインしました。"
+      signed_out: "ログアウトしました。"
+      already_signed_out: "ログアウトしました。"
+    unlocks:
+      send_instructions: "数分以内にアカウントのロック解除手順を記載したメールが送信されます。"
+      send_paranoid_instructions: "アカウントが存在する場合、数分以内にロック解除手順を記載したメールが送信されます。"
+      unlocked: "アカウントのロックが解除されました。ログインしてください。"
+  errors:
+    messages:
+      already_confirmed: "は既に確認済みです。ログインしてください。"
+      confirmation_period_expired: "は%{period}以内に確認する必要があります。新しいリクエストをしてください。"
+      expired: "は期限切れです。新しいリクエストをしてください。"
+      not_found: "は見つかりませんでした。"
+      not_locked: "はロックされていませんでした。"
+      not_saved:
+        one: "1つのエラーにより%{resource}を保存できませんでした:"
+        other: "%{count}つのエラーにより%{resource}を保存できませんでした:"
