@@ -3,6 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe 'Async Mail', type: :system do
+  include ActiveJob::TestHelper
   before do
     driven_by(:rack_test)
   end
@@ -15,7 +16,7 @@ RSpec.describe 'Async Mail', type: :system do
         fill_in 'user_email', with: 'test@example.com'
         fill_in 'user_password', with: 'password123'
         fill_in 'user_password_confirmation', with: 'password123'
-        click_button 'Sign up'
+        click_button '🚀 新規登録'
       }.to have_enqueued_job(DeviseMailerJob)
         .with(:confirmation_instructions, anything, anything, anything)
     end
@@ -29,7 +30,7 @@ RSpec.describe 'Async Mail', type: :system do
 
       expect {
         fill_in 'user_email', with: user.email
-        click_button 'Send me reset password instructions'
+        click_button '🔄 パスワードリセット送信'
       }.to have_enqueued_job(DeviseMailerJob)
         .with(:reset_password_instructions, anything, anything, anything)
     end
