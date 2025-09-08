@@ -162,6 +162,7 @@ ja:
       subtitle: "プロフィール情報とセキュリティ設定を管理"
       profile_settings: "プロフィール設定"
       password_settings: "パスワード変更"
+      password_setup: "パスワード設定"
       email_settings: "メールアドレス変更"
       danger_zone: "危険な操作"
       back_to_dashboard: "ダッシュボードに戻る"
@@ -174,6 +175,7 @@ ja:
       current_password: "現在のパスワード（確認用）"
       current_password_placeholder: "現在のパスワードを入力"
       current_password_help: "変更を確認するため現在のパスワードが必要です"
+      oauth_user_notice: "Google認証でログインしているため、現在のパスワードは不要です"
       update_profile: "プロフィールを更新"
     password_form:
       new_password: "新しいパスワード"
@@ -184,6 +186,10 @@ ja:
       current_password: "現在のパスワード（確認用）"
       current_password_placeholder: "現在のパスワードを入力"
       current_password_help: "パスワード変更には現在のパスワードが必要です"
+      oauth_setup_title: "パスワードの設定"
+      oauth_setup_help: "Google認証に加えて、パスワードを設定することでより安全にアカウントを保護できます"
+      oauth_no_current_password: "Google認証ユーザーのため、現在のパスワードは不要です"
+      setup_password: "パスワードを設定"
       update_password: "パスワードを変更"
     email_form:
       current_email: "現在のメールアドレス"

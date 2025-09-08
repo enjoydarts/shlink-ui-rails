@@ -83,4 +83,28 @@ class Users::RegistrationsController < Devise::RegistrationsController
       resource.pending_reconfirmation? &&
       previous_unconfirmed_email != resource.unconfirmed_email
   end
+
+  # Override update_resource to handle OAuth users
+  def update_resource(resource, params)
+    # For OAuth users, we don't require current password for profile/email updates
+    if resource.from_omniauth?
+      # If updating password and user doesn't have one yet, skip current password validation
+      if params[:password].present? && !resource.has_password?
+        resource.update(params.except(:current_password))
+      elsif params[:password].blank?
+        # Profile or email update without password change
+        resource.update_without_password(params.except(:current_password))
+      else
+        # Password update for OAuth user who already has a password
+        resource.update_with_password(params)
+      end
+    else
+      # Regular users need current password for all updates
+      if params[:password].present?
+        resource.update_with_password(params)
+      else
+        resource.update_without_password(params.except(:current_password))
+      end
+    end
+  end
 end

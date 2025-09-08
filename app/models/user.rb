@@ -41,6 +41,14 @@ class User < ApplicationRecord
     name.presence || email.split("@").first
   end
 
+  def needs_password_setup?
+    from_omniauth? && encrypted_password.blank?
+  end
+
+  def has_password?
+    encrypted_password.present?
+  end
+
   # Association with short URLs
   has_many :short_urls, dependent: :destroy
 
