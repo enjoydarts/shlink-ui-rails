@@ -156,6 +156,88 @@ ja:
       send_instructions: "アカウントのロック解除手順を記載したメールを数分以内にお送りします。"
       send_paranoid_instructions: "アカウントが存在する場合、アカウントのロック解除手順を記載したメールをお送りします。"
       unlocked: "アカウントが正常にロック解除されました。"
+  accounts:
+    show:
+      title: "アカウント設定"
+      subtitle: "プロフィール情報とセキュリティ設定を管理"
+      profile_settings: "プロフィール設定"
+      password_settings: "パスワード変更"
+      email_settings: "メールアドレス変更"
+      danger_zone: "危険な操作"
+      back_to_dashboard: "ダッシュボードに戻る"
+      confirmed_status: "確認済み"
+      unconfirmed_status: "未確認"
+    profile_form:
+      display_name: "表示名"
+      display_name_placeholder: "山田 太郎"
+      display_name_help: "空白の場合はメールアドレスから自動生成されます"
+      current_password: "現在のパスワード（確認用）"
+      current_password_placeholder: "現在のパスワードを入力"
+      current_password_help: "変更を確認するため現在のパスワードが必要です"
+      update_profile: "プロフィールを更新"
+    password_form:
+      new_password: "新しいパスワード"
+      new_password_placeholder: "新しいパスワードを入力"
+      new_password_help: "パスワードは6文字以上で入力してください"
+      password_confirmation: "新しいパスワード（確認）"
+      password_confirmation_placeholder: "新しいパスワードを再度入力"
+      current_password: "現在のパスワード（確認用）"
+      current_password_placeholder: "現在のパスワードを入力"
+      current_password_help: "パスワード変更には現在のパスワードが必要です"
+      update_password: "パスワードを変更"
+    email_form:
+      current_email: "現在のメールアドレス"
+      pending_confirmation: "確認待ち"
+      new_email: "新しいメールアドレス"
+      new_email_placeholder: "new@example.com"
+      new_email_help: "新しいメールアドレスには確認メールが送信されます"
+      current_password: "現在のパスワード（確認用）"
+      current_password_placeholder: "現在のパスワードを入力"
+      current_password_help: "メールアドレス変更には現在のパスワードが必要です"
+      update_email: "メールアドレスを変更"
+    danger_zone:
+      account_locked: "アカウントロック状況"
+      account_locked_message: "アカウントがロックされています"
+      unlock_account: "ロック解除メールを再送信"
+      account_not_locked: "アカウントは正常です"
+      failed_attempts: "失敗回数"
+      locked_at: "ロック日時"
+      delete_account_title: "アカウントの削除"
+      delete_warning_title: "削除に関する注意事項"
+      delete_warning_items:
+        data_loss: "アカウントを削除すると、すべてのデータが永久に失われます"
+        url_deletion: "作成した短縮URLもすべて削除されます"
+        irreversible: "この操作は取り消すことができません"
+        reregistration: "削除後は同じメールアドレスで再登録が可能です"
+      current_password_delete: "現在のパスワード（削除確認用）"
+      current_password_delete_placeholder: "現在のパスワードを入力"
+      current_password_delete_help: "削除を確認するため現在のパスワードが必要です"
+      delete_confirmation: "本当にアカウントを削除しますか？この操作は取り消せません。"
+      delete_button: "アカウントを削除する"
+    messages:
+      profile_updated: "プロフィールが正常に更新されました。"
+      password_updated: "パスワードが正常に変更されました。"
+      email_update_sent: "新しいメールアドレスの確認メールを送信しました。メールをご確認ください。"
+      unlock_instructions_sent: "アカウントロック解除の手順をメールで送信しました。"
+      account_deleted: "アカウントが正常に削除されました。ご利用ありがとうございました。"
+  mypage:
+    action_buttons:
+      create_new_url: "新しい短縮URLを作成"
+      sync_data: "データを同期"
+      account_settings: "アカウント設定"
+  devise:
+    unlocks:
+      new:
+        title: "アカウントロック解除"
+        subtitle: "ロック解除手順をメールで再送信します"
+        email_label: "メールアドレス"
+        email_placeholder: "your-email@example.com"
+        submit_button: "ロック解除メールを送信"
+        info_title: "アカウントロックについて"
+        info_items:
+          consecutive_failures: "連続してログインに失敗すると、セキュリティのためアカウントがロックされます"
+          check_email: "ロック解除メールが送信されない場合は、メールアドレスをご確認ください"
+          auto_unlock: "1時間経過すると自動的にロックが解除されます"
   errors:
     messages:
       already_confirmed: "は既に登録済みです。ログインしてください。"
