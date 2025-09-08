@@ -53,15 +53,27 @@
 
     <%= form_with model: @user, url: registration_path(resource_name), local: true, html: { method: :delete }, data: { controller: "submitter" }, class: "space-y-4" do |f| %>
       
-      <!-- Current Password (required for deletion) -->
-      <div>
-        <%= f.label :current_password, "🔑 #{t('accounts.danger_zone.current_password_delete')}", class: "block text-sm font-medium text-gray-700 mb-2" %>
-        <%= f.password_field :current_password, 
-              autocomplete: "current-password",
-              placeholder: t('accounts.danger_zone.current_password_delete_placeholder'),
-              class: "w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all duration-200" %>
-        <p class="mt-1 text-sm text-gray-500"><%= t('accounts.danger_zone.current_password_delete_help') %></p>
-      </div>
+      <!-- Deletion Confirmation -->
+      <% if @user.from_omniauth? %>
+        <!-- OAuth User: Text confirmation -->
+        <div>
+          <%= f.label :delete_confirmation, "🔑 #{t('accounts.danger_zone.oauth_delete_confirmation')}", class: "block text-sm font-medium text-gray-700 mb-2" %>
+          <%= f.text_field :delete_confirmation, 
+                placeholder: t('accounts.danger_zone.oauth_delete_placeholder'),
+                class: "w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all duration-200" %>
+          <p class="mt-1 text-sm text-gray-500"><%= t('accounts.danger_zone.oauth_delete_help') %></p>
+        </div>
+      <% else %>
+        <!-- Regular User: Password confirmation -->
+        <div>
+          <%= f.label :current_password, "🔑 #{t('accounts.danger_zone.current_password_delete')}", class: "block text-sm font-medium text-gray-700 mb-2" %>
+          <%= f.password_field :current_password, 
+                autocomplete: "current-password",
+                placeholder: t('accounts.danger_zone.current_password_delete_placeholder'),
+                class: "w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all duration-200" %>
+          <p class="mt-1 text-sm text-gray-500"><%= t('accounts.danger_zone.current_password_delete_help') %></p>
+        </div>
+      <% end %>
 
       <!-- Delete Button -->
       <div class="pt-2">

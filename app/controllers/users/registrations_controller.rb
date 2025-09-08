@@ -1,6 +1,32 @@
 class Users::RegistrationsController < Devise::RegistrationsController
   before_action :authenticate_user!
   before_action :configure_account_update_params, only: [:update]
+  before_action :configure_account_delete_params, only: [:destroy]
+
+  # Override destroy to handle OAuth users
+  def destroy
+    # Check confirmation based on user type
+    if resource.from_omniauth?
+      # OAuth users need to type "削除" to confirm
+      unless params[:user][:delete_confirmation] == "削除"
+        redirect_to account_path, alert: t('accounts.messages.delete_confirmation_failed')
+        return
+      end
+    else
+      # Regular users need current password
+      unless resource.valid_password?(params[:user][:current_password])
+        redirect_to account_path, alert: t('accounts.messages.current_password_invalid')
+        return
+      end
+    end
+
+    # Proceed with deletion
+    resource.destroy
+    Devise.sign_out_all_scopes ? sign_out : sign_out(resource_name)
+    set_flash_message! :notice, :destroyed
+    yield resource if block_given?
+    respond_with_navigational(resource) { redirect_to after_sign_out_path_for(resource_name) }
+  end
 
   # Override update to provide better user experience
   def update
@@ -32,6 +58,11 @@ class Users::RegistrationsController < Devise::RegistrationsController
   # Configure permitted parameters for account update
   def configure_account_update_params
     devise_parameter_sanitizer.permit(:account_update, keys: [:name])
+  end
+
+  # Configure permitted parameters for account deletion
+  def configure_account_delete_params
+    params.require(:user).permit(:current_password, :delete_confirmation)
   end
 
   private
