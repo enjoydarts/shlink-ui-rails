@@ -7,25 +7,33 @@ module Shlink
     end
 
     def call
-      # ユーザーが既に持っている短縮URLのみを同期
+      # ユーザーが既に持っているアクティブな短縮URLのみを同期
       # 新しいURLの発見ではなく、既存URLの統計情報更新に限定
-      existing_short_codes = user.short_urls.pluck(:short_code)
+      existing_short_codes = user.short_urls.active.pluck(:short_code)
 
       if existing_short_codes.empty?
-        Rails.logger.info "User #{user.id} has no existing short URLs to sync"
+        Rails.logger.info "User #{user.id} has no existing active short URLs to sync"
         return 0
       end
 
       total_synced = 0
       list_service = Shlink::ListShortUrlsService.new
 
+      # APIから全URLを取得して、存在しないものをソフト削除
+      api_short_codes = fetch_all_api_short_codes(list_service)
+
       # 既存の短縮URLの情報を個別に更新
       existing_short_codes.each do |short_code|
         begin
-          # 個別URL情報を取得する機能は未実装のため、
-          # 全URL一覧から該当するものを探す（一時的な実装）
-          updated = sync_existing_short_url(short_code, list_service)
-          total_synced += 1 if updated
+          if api_short_codes.include?(short_code)
+            # API側に存在する場合は統計情報を更新
+            updated = sync_existing_short_url(short_code, list_service)
+            total_synced += 1 if updated
+          else
+            # API側に存在しない場合はソフト削除
+            soft_delete_missing_url(short_code)
+            Rails.logger.info "Soft deleted missing short URL: #{short_code} for user #{user.id}"
+          end
         rescue => e
           Rails.logger.warn "Failed to sync short URL #{short_code} for user #{user.id}: #{e.message}"
           # 個別エラーは続行
@@ -39,6 +47,35 @@ module Shlink
     end
 
     private
+
+    def fetch_all_api_short_codes(list_service)
+      api_short_codes = []
+      page = 1
+
+      loop do
+        response = list_service.call(page: page, items_per_page: 100)
+        short_urls_data = response["shortUrls"]["data"]
+
+        break if short_urls_data.empty?
+
+        api_short_codes.concat(short_urls_data.map { |url_data| url_data["shortCode"] })
+
+        # ページネーション確認
+        pagination = response["shortUrls"]["pagination"]
+        break if pagination["currentPage"] >= pagination["pagesCount"]
+
+        page += 1
+      end
+
+      api_short_codes
+    end
+
+    def soft_delete_missing_url(short_code)
+      short_url = user.short_urls.active.find_by(short_code: short_code)
+      return unless short_url
+
+      short_url.soft_delete!
+    end
 
     def sync_existing_short_url(short_code, list_service)
       # Shlink APIから該当する短縮URLの情報を検索

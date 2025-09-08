@@ -110,16 +110,38 @@
               </div>
 
               <!-- Tags Field -->
-              <div class="space-y-2">
+              <div class="space-y-2" data-controller="tag-input" data-tag-input-max-tags-value="10" data-tag-input-max-length-value="20">
                 <label class="block text-sm font-semibold text-gray-700 mb-2">🏷️ タグ（オプション）</label>
-                <%= f.text_field :tags, 
-                      placeholder: "例: 重要, 仕事, プロジェクト",
-                      class: "w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all duration-200 text-base bg-gray-50/50" %>
+                
+                <!-- 既存タグ表示エリア -->
+                <div data-tag-input-target="tagContainer" class="flex flex-wrap gap-2 mb-3 min-h-[2rem]"></div>
+                
+                <!-- タグ入力フィールド -->
+                <div class="relative">
+                  <input type="text"
+                         data-tag-input-target="input"
+                         data-action="keydown->tag-input#handleKeydown"
+                         placeholder="タグを入力してEnterキーで追加"
+                         class="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all duration-200 text-base bg-gray-50/50 placeholder-gray-400" />
+                  
+                  <button type="button"
+                          data-action="click->tag-input#addTag"
+                          class="absolute right-2 top-1/2 transform -translate-y-1/2 px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center space-x-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    <span>追加</span>
+                  </button>
+                </div>
+                
+                <!-- 隠しフィールド（実際の送信データ） -->
+                <%= f.hidden_field :tags, data: { tag_input_target: "hiddenInput" } %>
+                
                 <p class="text-sm text-gray-500 flex items-center space-x-1">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                   </svg>
-                  <span>カンマ区切りで入力（最大10個、各20文字以内）</span>
+                  <span>Enterキーまたは「追加」ボタンでタグを確定（最大10個、各20文字以内）</span>
                 </p>
                 <%= render_field_error(@shorten.errors[:tags]) %>
               </div>

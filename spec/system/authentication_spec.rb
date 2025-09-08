@@ -67,14 +67,21 @@ RSpec.describe 'ユーザー認証機能', type: :system do
     let!(:user) { create(:user) }
 
     before do
-      sign_in user
+      # システムテストでは実際にログインフォームを使用
+      visit new_user_session_path
+      fill_in 'user[email]', with: user.email
+      fill_in 'user[password]', with: user.password
+      click_button 'ログイン'
+
       visit dashboard_path
     end
 
     it 'ログアウトできること' do
+      # ページ上の任意のログアウトボタンを探す（デスクトップまたはモバイル）
       expect(page).to have_button('ログアウト')
 
-      click_button 'ログアウト'
+      # 最初に見つかったログアウトボタンをクリック
+      first('button', text: 'ログアウト').click
 
       expect(page).to have_content('ログアウトしました')
       expect(page).to have_current_path(root_path)

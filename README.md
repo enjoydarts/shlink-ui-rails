@@ -9,7 +9,7 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 - **Custom Slugs**: Optional custom short codes for branded links
 - **QR Code Generation**: Automatic QR code creation for each shortened URL
 - **One-click Copy**: Instant clipboard copying with visual feedback
-- **Tag Management**: Organize URLs with custom tags for easy categorization
+- **Interactive Tag Management**: Modern tag input with Enter key confirmation and delete buttons
 - **Advanced Options**: Access to expiration dates, visit limits, and tagging features
 
 ### 👤 User Management
@@ -24,18 +24,20 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 - **Search & Filter**: Find specific URLs quickly with built-in search functionality
 - **Pagination**: Organized display with 10 URLs per page for easy browsing
 - **Real-time Sync**: Manual synchronization with Shlink API to update statistics
+- **Soft Delete Management**: Deleted URLs are hidden from view but preserved in database
 - **URL Management**: Edit, delete, and organize your links with confirmation dialogs
-- **Tag Display**: Visual tag indicators next to each URL for easy organization
+- **Responsive Tag Display**: Optimized tag layout for mobile and desktop viewing
 - **Status Indicators**: Clear visual feedback for URL status and tag information
 
 ### 🎨 Modern UI/UX
-- **Responsive Design**: Works perfectly on desktop, tablet, and mobile devices
+- **Responsive Design**: Works perfectly on desktop, tablet, and mobile devices with mobile-optimized navigation
+- **Hamburger Menu**: Clean mobile navigation with slide-down menu for compact screens
 - **Glass-morphism Design**: Modern, translucent interface elements with blur effects
 - **Clean Interface**: Removed excessive gradients for better readability and accessibility
 - **Smooth Animations**: Fade-in effects and hover interactions
 - **Status Indicators**: Visual feedback for active, expired, and limited URLs
 - **Modal Dialogs**: Clean confirmation dialogs for destructive actions
-- **Tag Visualization**: Distinct tag design with proper mobile responsiveness
+- **Tag Visualization**: Distinct tag design with responsive layout optimization
 
 ### 🔧 Technical Features
 - **Shlink API Integration**: Full integration with Shlink REST API v3
@@ -116,7 +118,8 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 ### Homepage
 - Clean, modern landing page with URL shortening form
 - Real-time validation and error handling
-- Advanced options including tag management, expiration dates, and visit limits
+- Interactive tag input with Enter key confirmation and visual tag management
+- Advanced options including expiration dates and visit limits
 - Immediate QR code generation for created URLs
 - One-click copy functionality with visual feedback
 
@@ -126,8 +129,9 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 - Pagination for large URL collections
 - Statistics display (total URLs, visits, active links)
 - Manual sync button to update data from Shlink API
-- Tag visualization with responsive design for mobile devices
-- Organized tag display positioned appropriately for better mobile experience
+- Responsive tag visualization optimized for mobile and desktop
+- Mobile-friendly tag layout with vertical stacking on small screens
+- Soft delete functionality that hides deleted URLs from view
 
 ### URL Management
 - Individual URL editing and customization
@@ -157,7 +161,7 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 
 ### Running Tests
 ```bash
-# Run all tests (230+ examples with 93%+ coverage)
+# Run all tests (255+ examples with 93%+ coverage)
 docker-compose exec web bundle exec rspec
 
 # Run specific test file
@@ -344,4 +348,4 @@ Built with ❤️ using Ruby on Rails
 
 **Author**: enjoydarts  
 **Last Updated**: September 2025  
-**Version**: 1.0.0
+**Version**: 1.1.0
