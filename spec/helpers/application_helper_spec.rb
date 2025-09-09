@@ -23,7 +23,7 @@ RSpec.describe ApplicationHelper, type: :helper do
 
   describe '#render_form_errors' do
     let(:user) { build(:user, email: '', password: '') }
-    
+
     before do
       user.valid? # バリデーションエラーを発生させる
     end
@@ -37,7 +37,7 @@ RSpec.describe ApplicationHelper, type: :helper do
 
     context 'エラーがない場合' do
       let(:valid_user) { build(:user) }
-      
+
       before do
         valid_user.valid?
       end
@@ -57,7 +57,7 @@ RSpec.describe ApplicationHelper, type: :helper do
   end
 
   describe '#render_field_error' do
-    let(:field_errors) { ['フィールドエラー1', 'フィールドエラー2'] }
+    let(:field_errors) { [ 'フィールドエラー1', 'フィールドエラー2' ] }
 
     context 'フィールドエラーがある場合' do
       it 'フィールドエラーパーシャルがレンダリングされる' do

@@ -1,7 +1,7 @@
 class Users::RegistrationsController < Devise::RegistrationsController
   before_action :authenticate_user!
-  before_action :configure_account_update_params, only: [:update]
-  before_action :configure_account_delete_params, only: [:destroy]
+  before_action :configure_account_update_params, only: [ :update ]
+  before_action :configure_account_delete_params, only: [ :destroy ]
 
   # Override destroy to handle OAuth users
   def destroy
@@ -9,13 +9,13 @@ class Users::RegistrationsController < Devise::RegistrationsController
     if resource.from_omniauth?
       # OAuth users need to type "削除" to confirm
       unless params[:user][:delete_confirmation] == "削除"
-        redirect_to account_path, alert: t('accounts.messages.delete_confirmation_failed')
+        redirect_to account_path, alert: t("accounts.messages.delete_confirmation_failed")
         return
       end
     else
       # Regular users need current password
       unless resource.valid_password?(params[:user][:current_password])
-        redirect_to account_path, alert: t('accounts.messages.current_password_invalid')
+        redirect_to account_path, alert: t("accounts.messages.current_password_invalid")
         return
       end
     end
@@ -57,7 +57,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
 
   # Configure permitted parameters for account update
   def configure_account_update_params
-    devise_parameter_sanitizer.permit(:account_update, keys: [:name])
+    devise_parameter_sanitizer.permit(:account_update, keys: [ :name ])
   end
 
   # Configure permitted parameters for account deletion
@@ -72,11 +72,11 @@ class Users::RegistrationsController < Devise::RegistrationsController
 
     flash_key = if update_needs_confirmation?(resource, prev_unconfirmed_email)
                   :update_needs_confirmation
-                elsif sign_in_after_change_password?
+    elsif sign_in_after_change_password?
                   :updated
-                else
+    else
                   :updated_but_not_signed_in
-                end
+    end
 
     case flash_key
     when :update_needs_confirmation
@@ -124,7 +124,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
         resource.errors.add(:email, "Google認証ユーザーはメールアドレスを変更できません")
         return false
       end
-      
+
       # If updating password and user doesn't have one yet, skip current password validation
       if params[:password].present? && !resource.has_password?
         resource.update(params.except(:current_password, :email))
