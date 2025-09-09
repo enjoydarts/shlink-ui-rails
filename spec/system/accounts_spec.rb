@@ -65,7 +65,7 @@ RSpec.describe 'Accounts', type: :system do
       expect(page).to have_css('.sm\\:hidden', text: '基本')
       expect(page).to have_css('.sm\\:hidden', text: '安全')
       expect(page).to have_css('.sm\\:hidden', text: '危険')
-      
+
       # デスクトップ用の完全ラベル
       expect(page).to have_css('.hidden.sm\\:inline', text: '基本設定')
       expect(page).to have_css('.hidden.sm\\:inline', text: 'セキュリティ')

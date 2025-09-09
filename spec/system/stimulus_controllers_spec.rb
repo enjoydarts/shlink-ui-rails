@@ -14,7 +14,7 @@ RSpec.describe 'Stimulus Controllers', type: :system do
       expect(page).to have_css('[data-tab="basic"]')
       expect(page).to have_css('[data-tab="security"]')
       expect(page).to have_css('[data-tab="danger"]')
-      
+
       # パネル要素が存在する
       expect(page).to have_css('[data-panel="basic"]')
       expect(page).to have_css('[data-panel="security"]')
@@ -37,7 +37,7 @@ RSpec.describe 'Stimulus Controllers', type: :system do
 
     # JavaScript依存のテストはDockerでは実行困難のためペンディング
     xit 'タブ切り替えが正しく動作する', js: true
-    xit 'ARIA属性が正しく更新される', js: true  
+    xit 'ARIA属性が正しく更新される', js: true
     xit 'パネルのアニメーションが適用される', js: true
   end
 
