@@ -79,7 +79,7 @@
 
 1. **リポジトリをクローン**
    ```bash
-   git clone https://github.com/yourusername/shlink-ui-rails.git
+   git clone https://github.com/enjoydarts/shlink-ui-rails.git
    cd shlink-ui-rails
    ```
 
@@ -102,7 +102,7 @@
    # Makefileを使用（推奨）
    make setup                    # 初回セットアップ（全て含む）
    make up                       # 2回目以降の起動
-   
+
    # または Docker Compose を直接使用
    docker-compose up --build     # 初回セットアップ
    docker-compose up             # 2回目以降の起動
@@ -384,8 +384,8 @@ docker-compose exec web bin/rails importmap:outdated
 
 Ruby on Rails で ❤️ を込めて構築
 
-**作成者**: enjoydarts  
-**最終更新**: 2025年9月  
+**作成者**: enjoydarts
+**最終更新**: 2025年9月
 **バージョン**: 1.0.0
 
 ## 🎯 実装済み機能一覧
