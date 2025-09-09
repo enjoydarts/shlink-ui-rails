@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   devise_for :users, controllers: {
-    omniauth_callbacks: "users/omniauth_callbacks"
+    omniauth_callbacks: "users/omniauth_callbacks",
+    registrations: "users/registrations"
   }
 
   # Email preview in development
@@ -27,6 +28,9 @@ Rails.application.routes.draw do
     get "mypage", to: "mypage#index", as: :mypage
     post "mypage/sync", to: "mypage#sync", as: :mypage_sync
     delete "short_urls/:short_code", to: "mypage#destroy", as: :delete_short_url
+
+    # Account management
+    resource :account, only: [ :show ], controller: :accounts
   end
 
   # Public pages

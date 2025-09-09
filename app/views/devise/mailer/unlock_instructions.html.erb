@@ -1,7 +1,41 @@
-<p>Hello <%= @resource.email %>!</p>
-
-<p>Your account has been locked due to an excessive number of unsuccessful sign in attempts.</p>
-
-<p>Click the link below to unlock your account:</p>
-
-<p><%= link_to 'Unlock my account', unlock_url(@resource, unlock_token: @token) %></p>
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc;">
+  <div style="background-color: white; border-radius: 12px; padding: 32px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);">
+    <div style="text-align: center; margin-bottom: 32px;">
+      <h1 style="color: #1f2937; font-size: 24px; font-weight: 600; margin: 0;">アカウントロック解除</h1>
+    </div>
+    
+    <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-bottom: 16px;">
+      <%= @resource.email %> 様
+    </p>
+    
+    <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
+      ログイン試行回数が上限に達したため、アカウントがロックされました。<br>
+      アカウントのロックを解除するには、下記のボタンをクリックしてください。
+    </p>
+    
+    <div style="text-align: center; margin: 32px 0;">
+      <%= link_to unlock_url(@resource, unlock_token: @token), 
+            style: "display: inline-block; background-color: #f59e0b; color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 16px;" do %>
+        🔓 アカウントロックを解除する
+      <% end %>
+    </div>
+    
+    <div style="background-color: #f3f4f6; border-left: 4px solid #6b7280; padding: 16px; margin: 24px 0; border-radius: 4px;">
+      <p style="color: #374151; font-size: 14px; line-height: 1.5; margin: 0;">
+        <strong>💡 ロック解除について</strong><br>
+        • アカウントは1時間後に自動的にロック解除されます<br>
+        • このメールからロック解除を行うと、即座にアカウントが利用可能になります<br>
+        • セキュリティのため、正しいパスワードの使用をお心がけください
+      </p>
+    </div>
+    
+    <p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+      このメールは自動送信されています。返信は不要です。<br>
+      ご不明な点がございましたら、サポートまでお問い合わせください。
+    </p>
+  </div>
+  
+  <div style="text-align: center; margin-top: 16px; color: #9ca3af; font-size: 12px;">
+    Shlink UI - URL短縮サービス
+  </div>
+</div>

@@ -1,0 +1,152 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header Section -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-500 rounded-2xl mb-4 shadow-lg">
+        <svg width="24" height="24" viewBox="0 0 24 24" class="text-white">
+          <path fill="currentColor" d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+        </svg>
+      </div>
+      <h1 class="text-3xl font-bold text-gray-800 mb-2"><%= t('accounts.show.title') %></h1>
+      <p class="text-lg text-gray-600"><%= t('accounts.show.subtitle') %></p>
+    </div>
+
+
+    <!-- User Info Card -->
+    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6 mb-8">
+      <div class="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-4">
+        <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold shrink-0">
+          <%= @user.display_name.first.upcase %>
+        </div>
+        <div class="text-center sm:text-left flex-1">
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-800"><%= @user.display_name %></h2>
+          <p class="text-gray-600 break-all"><%= @user.email %></p>
+          <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-3">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              <%= @user.role.humanize %>
+            </span>
+            <% if @user.confirmed? %>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                ✓ <%= t('accounts.show.confirmed_status') %>
+              </span>
+            <% else %>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                <%= t('accounts.show.unconfirmed_status') %>
+              </span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Navigation Container -->
+    <div data-controller="account-tabs" 
+         data-account-tabs-active-value="basic"
+         class="bg-white/60 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 overflow-hidden">
+      
+      <!-- Tab Navigation -->
+      <nav class="flex border-b border-gray-200/50 bg-gray-50/50 rounded-t-3xl" 
+           role="tablist" 
+           aria-label="アカウント設定">
+        <button data-account-tabs-target="tab" 
+                data-tab="basic"
+                data-action="click->account-tabs#switchTab keydown->account-tabs#keydown"
+                role="tab"
+                aria-selected="true"
+                aria-controls="basic-panel"
+                tabindex="0"
+                class="flex-1 px-4 py-3 text-sm font-medium text-center border border-transparent border-r-gray-200/50 rounded-tl-3xl transition-all duration-200 focus:outline-none focus:border-blue-500 focus:bg-blue-50 focus:shadow-lg focus:rounded-tl-3xl">
+          <div class="flex items-center justify-center space-x-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" class="flex-shrink-0">
+              <path fill="currentColor" d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+            </svg>
+            <span class="hidden sm:inline"><%= t('accounts.tabs.basic') %></span>
+            <span class="sm:hidden">基本</span>
+          </div>
+        </button>
+        
+        <button data-account-tabs-target="tab" 
+                data-tab="security"
+                data-action="click->account-tabs#switchTab keydown->account-tabs#keydown"
+                role="tab"
+                aria-selected="false"
+                aria-controls="security-panel"
+                tabindex="-1"
+                class="flex-1 px-4 py-3 text-sm font-medium text-center border border-transparent border-r-gray-200/50 transition-all duration-200 focus:outline-none focus:border-blue-500 focus:bg-blue-50 focus:shadow-lg">
+          <div class="flex items-center justify-center space-x-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" class="flex-shrink-0">
+              <path fill="currentColor" d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/>
+            </svg>
+            <span class="hidden sm:inline"><%= t('accounts.tabs.security') %></span>
+            <span class="sm:hidden">安全</span>
+          </div>
+        </button>
+        
+        <button data-account-tabs-target="tab" 
+                data-tab="danger"
+                data-action="click->account-tabs#switchTab keydown->account-tabs#keydown"
+                role="tab"
+                aria-selected="false"
+                aria-controls="danger-panel"
+                tabindex="-1"
+                class="flex-1 px-4 py-3 text-sm font-medium text-center border border-transparent rounded-tr-3xl transition-all duration-200 focus:outline-none focus:border-blue-500 focus:bg-blue-50 focus:shadow-lg focus:rounded-tr-3xl">
+          <div class="flex items-center justify-center space-x-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" class="flex-shrink-0">
+              <path fill="currentColor" d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z"/>
+            </svg>
+            <span class="hidden sm:inline"><%= t('accounts.tabs.danger') %></span>
+            <span class="sm:hidden">危険</span>
+          </div>
+        </button>
+      </nav>
+
+      <!-- Tab Panels -->
+      <div class="p-6 lg:p-8">
+        <!-- Basic Settings Panel -->
+        <div data-account-tabs-target="panel" 
+             data-panel="basic"
+             id="basic-panel"
+             role="tabpanel"
+             aria-labelledby="basic-tab"
+             aria-hidden="false">
+          <%= render 'tab_basic' %>
+        </div>
+
+        <!-- Security Settings Panel -->
+        <div data-account-tabs-target="panel" 
+             data-panel="security"
+             id="security-panel"
+             role="tabpanel"
+             aria-labelledby="security-tab"
+             aria-hidden="true"
+             class="hidden">
+          <%= render 'tab_security' %>
+        </div>
+
+        <!-- Danger Zone Panel -->
+        <div data-account-tabs-target="panel" 
+             data-panel="danger"
+             id="danger-panel"
+             role="tabpanel"
+             aria-labelledby="danger-tab"
+             aria-hidden="true"
+             class="hidden">
+          <%= render 'tab_danger' %>
+        </div>
+      </div>
+    </div>
+
+    <!-- アカウント削除モーダル -->
+    <%= render 'delete_modal' %>
+
+    <!-- Navigation -->
+    <div class="mt-8 text-center">
+      <%= link_to dashboard_path, class: "inline-flex items-center px-4 sm:px-6 py-3 border border-transparent text-sm sm:text-base font-medium rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200" do %>
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        <%= t('accounts.show.back_to_dashboard') %>
+      <% end %>
+    </div>
+  </div>
+</div>

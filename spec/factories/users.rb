@@ -16,6 +16,12 @@ FactoryBot.define do
       name { "OAuth User" }
     end
 
+    trait :from_omniauth do
+      provider { "google_oauth2" }
+      sequence(:uid) { |n| "google_uid_#{n}" }
+      name { "OAuth User" }
+    end
+
     trait :unconfirmed do
       confirmed_at { nil }
     end
