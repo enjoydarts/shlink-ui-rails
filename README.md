@@ -84,7 +84,7 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/shlink-ui-rails.git
+   git clone https://github.com/enjoydarts/shlink-ui-rails.git
    cd shlink-ui-rails
    ```
 
@@ -107,7 +107,7 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
    # Using Makefile (recommended)
    make setup                    # First time setup with everything
    make up                       # Subsequent runs
-   
+
    # Or using Docker Compose directly
    docker-compose up --build     # First time setup
    docker-compose up             # Subsequent runs
@@ -391,6 +391,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Built with ❤️ using Ruby on Rails
 
-**Author**: enjoydarts  
-**Last Updated**: September 2025  
+**Author**: enjoydarts
+**Last Updated**: September 2025
 **Version**: 1.1.0
