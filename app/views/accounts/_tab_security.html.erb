@@ -1,0 +1,108 @@
+<!-- セキュリティタブ -->
+<div class="space-y-8">
+  
+  <!-- パスワード設定セクション -->
+  <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6 lg:p-8">
+    <div class="flex items-center mb-6">
+      <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mr-4">
+        <svg width="20" height="20" viewBox="0 0 24 24" class="text-green-600">
+          <path fill="currentColor" d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/>
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-xl font-bold text-gray-800">
+          <%= @user.from_omniauth? && !@user.has_password? ? t('accounts.show.password_setup') : t('accounts.show.password_settings') %>
+        </h3>
+        <p class="text-sm text-gray-600 mt-1">
+          <%= @user.from_omniauth? && !@user.has_password? ? "アカウントのセキュリティを強化するため、パスワードを設定できます" : "アカウントのパスワードを変更します" %>
+        </p>
+      </div>
+    </div>
+    
+    <%= render 'password_form' %>
+  </div>
+  
+  <!-- メールアドレス設定セクション -->
+  <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6 lg:p-8">
+    <div class="flex items-center mb-6">
+      <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center mr-4">
+        <svg width="20" height="20" viewBox="0 0 24 24" class="text-purple-600">
+          <path fill="currentColor" d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z"/>
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-xl font-bold text-gray-800"><%= t('accounts.show.email_settings') %></h3>
+        <p class="text-sm text-gray-600 mt-1">メールアドレスを変更します</p>
+      </div>
+    </div>
+    
+    <%= render 'email_form' %>
+  </div>
+  
+  <!-- セキュリティ情報 -->
+  <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-3xl border border-green-100 p-6 lg:p-8">
+    <div class="flex items-center mb-4">
+      <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+        <svg width="16" height="16" viewBox="0 0 24 24" class="text-green-600">
+          <path fill="currentColor" d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.4,7 14.8,8.6 14.8,10V11.5C15.4,11.5 16,12.4 16,13V16C16,16.6 15.6,17 15,17H9C8.4,17 8,16.6 8,16V13C8,12.4 8.4,11.5 9,11.5V10C9,8.6 10.6,7 12,7M12,8.2C11.2,8.2 10.2,9.2 10.2,10V11.5H13.8V10C13.8,9.2 12.8,8.2 12,8.2Z"/>
+        </svg>
+      </div>
+      <h4 class="text-lg font-semibold text-green-800">セキュリティ情報</h4>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-white/60 rounded-xl p-4 border border-green-200/50">
+        <dt class="text-sm font-medium text-green-700 mb-1">パスワード設定状況</dt>
+        <dd class="text-sm text-green-900">
+          <% if @user.has_password? %>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              ✓ 設定済み
+            </span>
+          <% else %>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+              未設定（Google認証のみ）
+            </span>
+          <% end %>
+        </dd>
+      </div>
+      
+      <div class="bg-white/60 rounded-xl p-4 border border-green-200/50">
+        <dt class="text-sm font-medium text-green-700 mb-1">アカウントロック状況</dt>
+        <dd class="text-sm text-green-900">
+          <% if @user.access_locked? %>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+              ロック中
+            </span>
+          <% else %>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              ✓ 正常
+            </span>
+          <% end %>
+        </dd>
+      </div>
+      
+      <div class="bg-white/60 rounded-xl p-4 border border-green-200/50">
+        <dt class="text-sm font-medium text-green-700 mb-1">失敗回数</dt>
+        <dd class="text-sm text-green-900"><%= @user.failed_attempts %> / 5回</dd>
+      </div>
+      
+      <div class="bg-white/60 rounded-xl p-4 border border-green-200/50">
+        <dt class="text-sm font-medium text-green-700 mb-1">最終ログイン</dt>
+        <dd class="text-sm text-green-900">
+          <%= @user.last_sign_in_at&.strftime("%Y年%m月%d日 %H:%M") || "記録なし" %>
+        </dd>
+      </div>
+    </div>
+    
+    <% if @user.access_locked? %>
+      <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+        <p class="text-sm text-red-700 mb-2">
+          アカウントがロックされています。ロック解除メールを送信できます。
+        </p>
+        <%= link_to "ロック解除メールを送信", new_user_unlock_path, 
+              class: "inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-lg text-red-700 bg-red-50 hover:bg-red-100 transition-colors duration-200" %>
+      </div>
+    <% end %>
+  </div>
+  
+</div>

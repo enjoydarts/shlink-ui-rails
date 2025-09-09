@@ -1,0 +1,88 @@
+<!-- 基本設定タブ -->
+<div class="space-y-8">
+  
+  <!-- プロフィール設定セクション -->
+  <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6 lg:p-8">
+    <div class="flex items-center mb-6">
+      <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mr-4">
+        <svg width="20" height="20" viewBox="0 0 24 24" class="text-blue-600">
+          <path fill="currentColor" d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-xl font-bold text-gray-800"><%= t('accounts.show.profile_settings') %></h3>
+        <p class="text-sm text-gray-600 mt-1"><%= t('accounts.tabs.basic_description') %></p>
+      </div>
+    </div>
+    
+    <%= render 'profile_form' %>
+  </div>
+  
+  <!-- アカウント情報表示 -->
+  <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl border border-blue-100 p-6 lg:p-8">
+    <div class="flex items-center mb-4">
+      <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+        <svg width="16" height="16" viewBox="0 0 24 24" class="text-blue-600">
+          <path fill="currentColor" d="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+        </svg>
+      </div>
+      <h4 class="text-lg font-semibold text-blue-800">アカウント情報</h4>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-white/60 rounded-xl p-4 border border-blue-200/50">
+        <dt class="text-sm font-medium text-blue-700 mb-1">アカウント種別</dt>
+        <dd class="text-sm text-blue-900">
+          <% if @user.from_omniauth? %>
+            <span class="inline-flex items-center">
+              <svg class="w-4 h-4 mr-1" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              Google認証ユーザー
+            </span>
+          <% else %>
+            <span class="inline-flex items-center">
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
+              </svg>
+              メール/パスワード認証
+            </span>
+          <% end %>
+        </dd>
+      </div>
+      
+      <div class="bg-white/60 rounded-xl p-4 border border-blue-200/50">
+        <dt class="text-sm font-medium text-blue-700 mb-1">権限レベル</dt>
+        <dd class="text-sm text-blue-900">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <%= @user.role.humanize %>
+          </span>
+        </dd>
+      </div>
+      
+      <div class="bg-white/60 rounded-xl p-4 border border-blue-200/50">
+        <dt class="text-sm font-medium text-blue-700 mb-1">メール確認状況</dt>
+        <dd class="text-sm text-blue-900">
+          <% if @user.confirmed? %>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              ✓ <%= t('accounts.show.confirmed_status') %>
+            </span>
+          <% else %>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+              <%= t('accounts.show.unconfirmed_status') %>
+            </span>
+          <% end %>
+        </dd>
+      </div>
+      
+      <div class="bg-white/60 rounded-xl p-4 border border-blue-200/50">
+        <dt class="text-sm font-medium text-blue-700 mb-1">登録日時</dt>
+        <dd class="text-sm text-blue-900"><%= @user.created_at.strftime("%Y年%m月%d日") %></dd>
+      </div>
+    </div>
+  </div>
+  
+</div>

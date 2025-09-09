@@ -1,35 +1,58 @@
-<%= form_with model: @user, url: registration_path(resource_name), local: true, html: { method: :patch }, data: { controller: "submitter" }, class: "space-y-4" do |f| %>
-  
-  <!-- Current Email Display -->
-  <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-4">
-    <div class="flex items-center">
-      <svg class="w-5 h-5 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
+<% if @user.from_omniauth? %>
+  <!-- OAuth User - Email Change Restriction Notice -->
+  <div class="bg-amber-50 border border-amber-200 rounded-xl p-6">
+    <div class="flex items-start">
+      <svg class="w-6 h-6 text-amber-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.864-.833-2.634 0L5.232 15.5c-.77.833.192 2.5 1.732 2.5z"/>
       </svg>
-      <span class="text-sm font-medium text-purple-700"><%= t('accounts.email_form.current_email') %>: <%= @user.email %></span>
-    </div>
-    <% if @user.unconfirmed_email.present? %>
-      <div class="mt-2 flex items-center">
-        <svg class="w-5 h-5 text-amber-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.864-.833-2.634 0L5.232 15.5c-.77.833.192 2.5 1.732 2.5z"/>
-        </svg>
-        <span class="text-sm text-amber-700"><%= t('accounts.email_form.pending_confirmation') %>: <%= @user.unconfirmed_email %></span>
+      <div>
+        <h4 class="text-sm font-medium text-amber-800 mb-2">Google認証ユーザーのメールアドレス変更について</h4>
+        <div class="text-sm text-amber-700 space-y-2">
+          <p><strong>現在のメールアドレス:</strong> <%= @user.email %></p>
+          <p>Google認証でログインしているため、メールアドレスの変更はできません。</p>
+          <p>メールアドレスを変更したい場合は、以下の手順をお試しください：</p>
+          <ul class="list-disc list-inside mt-2 space-y-1">
+            <li>Googleアカウント側でメールアドレスを変更</li>
+            <li>一度ログアウトして再度Google認証でログイン</li>
+            <li>新しいメールアドレスでの新規アカウント作成を検討</li>
+          </ul>
+        </div>
       </div>
-    <% end %>
+    </div>
   </div>
+<% else %>
+  <!-- Regular User - Email Change Form -->
+  <%= form_with model: @user, url: registration_path(resource_name), local: true, html: { method: :patch }, data: { controller: "submitter" }, class: "space-y-4" do |f| %>
+    
+    <!-- Current Email Display -->
+    <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-4">
+      <div class="flex items-center">
+        <svg class="w-5 h-5 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
+        </svg>
+        <span class="text-sm font-medium text-purple-700"><%= t('accounts.email_form.current_email') %>: <%= @user.email %></span>
+      </div>
+      <% if @user.unconfirmed_email.present? %>
+        <div class="mt-2 flex items-center">
+          <svg class="w-5 h-5 text-amber-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.864-.833-2.634 0L5.232 15.5c-.77.833.192 2.5 1.732 2.5z"/>
+          </svg>
+          <span class="text-sm text-amber-700"><%= t('accounts.email_form.pending_confirmation') %>: <%= @user.unconfirmed_email %></span>
+        </div>
+      <% end %>
+    </div>
 
-  <!-- New Email -->
-  <div>
-    <%= f.label :email, "📧 #{t('accounts.email_form.new_email')}", class: "block text-sm font-medium text-gray-700 mb-2" %>
-    <%= f.email_field :email, 
-          autocomplete: "email",
-          placeholder: t('accounts.email_form.new_email_placeholder'),
-          class: "w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200" %>
-    <p class="mt-1 text-sm text-gray-500"><%= t('accounts.email_form.new_email_help') %></p>
-  </div>
+    <!-- New Email -->
+    <div>
+      <%= f.label :email, "📧 #{t('accounts.email_form.new_email')}", class: "block text-sm font-medium text-gray-700 mb-2" %>
+      <%= f.email_field :email, 
+            autocomplete: "email",
+            placeholder: t('accounts.email_form.new_email_placeholder'),
+            class: "w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200" %>
+      <p class="mt-1 text-sm text-gray-500"><%= t('accounts.email_form.new_email_help') %></p>
+    </div>
 
-  <!-- Current Password (required for non-OAuth users) -->
-  <% unless @user.from_omniauth? %>
+    <!-- Current Password -->
     <div>
       <%= f.label :current_password, "🔑 #{t('accounts.email_form.current_password')}", class: "block text-sm font-medium text-gray-700 mb-2" %>
       <%= f.password_field :current_password, 
@@ -38,27 +61,17 @@
             class: "w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200" %>
       <p class="mt-1 text-sm text-gray-500"><%= t('accounts.email_form.current_password_help') %></p>
     </div>
-  <% else %>
-    <!-- OAuth User Notice -->
-    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
-      <div class="flex items-center">
-        <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+
+    <!-- Submit Button -->
+    <div class="pt-2">
+      <button type="submit" data-submitter-target="btn"
+              class="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-6 rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none">
+        <span data-submitter-target="label">📧 <%= t('accounts.email_form.update_email') %></span>
+        <svg data-submitter-target="spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 718-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        <span class="text-sm text-blue-700"><%= t('accounts.profile_form.oauth_user_notice') %></span>
-      </div>
+      </button>
     </div>
   <% end %>
-
-  <!-- Submit Button -->
-  <div class="pt-2">
-    <button type="submit" data-submitter-target="btn"
-            class="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-6 rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none">
-      <span data-submitter-target="label">📧 <%= t('accounts.email_form.update_email') %></span>
-      <svg data-submitter-target="spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
-    </button>
-  </div>
 <% end %>

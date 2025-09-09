@@ -119,15 +119,21 @@ class Users::RegistrationsController < Devise::RegistrationsController
   def update_resource(resource, params)
     # For OAuth users, we don't require current password for profile/email updates
     if resource.from_omniauth?
+      # Prevent email changes for OAuth users
+      if params[:email].present? && params[:email] != resource.email
+        resource.errors.add(:email, "Google認証ユーザーはメールアドレスを変更できません")
+        return false
+      end
+      
       # If updating password and user doesn't have one yet, skip current password validation
       if params[:password].present? && !resource.has_password?
-        resource.update(params.except(:current_password))
+        resource.update(params.except(:current_password, :email))
       elsif params[:password].blank?
-        # Profile or email update without password change
-        resource.update_without_password(params.except(:current_password))
+        # Profile update without password change (exclude email for OAuth users)
+        resource.update_without_password(params.except(:current_password, :email))
       else
         # Password update for OAuth user who already has a password
-        resource.update_with_password(params)
+        resource.update_with_password(params.except(:email))
       end
     else
       # Regular users need current password for all updates

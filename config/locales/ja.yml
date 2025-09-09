@@ -168,6 +168,13 @@ ja:
       back_to_dashboard: "ダッシュボードに戻る"
       confirmed_status: "確認済み"
       unconfirmed_status: "未確認"
+    tabs:
+      basic: "基本設定"
+      security: "セキュリティ"
+      danger: "危険な操作"
+      basic_description: "プロフィール情報の変更"
+      security_description: "パスワードとメールアドレスの管理"
+      danger_description: "アカウントの削除とロック管理"
     profile_form:
       display_name: "表示名"
       display_name_placeholder: "山田 太郎"

@@ -11,8 +11,6 @@
       <p class="text-lg text-gray-600"><%= t('accounts.show.subtitle') %></p>
     </div>
 
-    <!-- Flash Messages -->
-    <%= render_flash_messages %>
 
     <!-- User Info Card -->
     <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6 mb-8">
@@ -41,61 +39,105 @@
       </div>
     </div>
 
-    <!-- Settings Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+    <!-- Tab Navigation Container -->
+    <div data-controller="account-tabs" 
+         data-account-tabs-active-value="basic"
+         class="bg-white/60 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 overflow-hidden">
       
-      <!-- Profile Settings -->
-      <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6 lg:p-8">
-        <div class="flex items-center mb-6">
-          <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-            <svg width="16" height="16" viewBox="0 0 24 24" class="text-blue-600">
+      <!-- Tab Navigation -->
+      <nav class="flex border-b border-gray-200/50 bg-gray-50/50 rounded-t-3xl" 
+           role="tablist" 
+           aria-label="アカウント設定">
+        <button data-account-tabs-target="tab" 
+                data-tab="basic"
+                data-action="click->account-tabs#switchTab keydown->account-tabs#keydown"
+                role="tab"
+                aria-selected="true"
+                aria-controls="basic-panel"
+                tabindex="0"
+                class="flex-1 px-4 py-3 text-sm font-medium text-center border border-transparent border-r-gray-200/50 rounded-tl-3xl transition-all duration-200 focus:outline-none focus:border-blue-500 focus:bg-blue-50 focus:shadow-lg focus:rounded-tl-3xl">
+          <div class="flex items-center justify-center space-x-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" class="flex-shrink-0">
               <path fill="currentColor" d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
             </svg>
+            <span class="hidden sm:inline"><%= t('accounts.tabs.basic') %></span>
+            <span class="sm:hidden">基本</span>
           </div>
-          <h3 class="text-xl font-bold text-gray-800"><%= t('accounts.show.profile_settings') %></h3>
-        </div>
-        <%= render 'profile_form' %>
-      </div>
-
-      <!-- Password Settings -->
-      <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6 lg:p-8">
-        <div class="flex items-center mb-6">
-          <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-            <svg width="16" height="16" viewBox="0 0 24 24" class="text-green-600">
+        </button>
+        
+        <button data-account-tabs-target="tab" 
+                data-tab="security"
+                data-action="click->account-tabs#switchTab keydown->account-tabs#keydown"
+                role="tab"
+                aria-selected="false"
+                aria-controls="security-panel"
+                tabindex="-1"
+                class="flex-1 px-4 py-3 text-sm font-medium text-center border border-transparent border-r-gray-200/50 transition-all duration-200 focus:outline-none focus:border-blue-500 focus:bg-blue-50 focus:shadow-lg">
+          <div class="flex items-center justify-center space-x-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" class="flex-shrink-0">
               <path fill="currentColor" d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/>
             </svg>
+            <span class="hidden sm:inline"><%= t('accounts.tabs.security') %></span>
+            <span class="sm:hidden">安全</span>
           </div>
-          <h3 class="text-xl font-bold text-gray-800"><%= @user.from_omniauth? && !@user.has_password? ? t('accounts.show.password_setup') : t('accounts.show.password_settings') %></h3>
-        </div>
-        <%= render 'password_form' %>
-      </div>
-
-      <!-- Email Settings -->
-      <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6 lg:p-8">
-        <div class="flex items-center mb-6">
-          <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-            <svg width="16" height="16" viewBox="0 0 24 24" class="text-purple-600">
-              <path fill="currentColor" d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z"/>
-            </svg>
-          </div>
-          <h3 class="text-xl font-bold text-gray-800"><%= t('accounts.show.email_settings') %></h3>
-        </div>
-        <%= render 'email_form' %>
-      </div>
-
-      <!-- Danger Zone -->
-      <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-red-200/50 p-6 lg:p-8">
-        <div class="flex items-center mb-6">
-          <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
-            <svg width="16" height="16" viewBox="0 0 24 24" class="text-red-600">
+        </button>
+        
+        <button data-account-tabs-target="tab" 
+                data-tab="danger"
+                data-action="click->account-tabs#switchTab keydown->account-tabs#keydown"
+                role="tab"
+                aria-selected="false"
+                aria-controls="danger-panel"
+                tabindex="-1"
+                class="flex-1 px-4 py-3 text-sm font-medium text-center border border-transparent rounded-tr-3xl transition-all duration-200 focus:outline-none focus:border-blue-500 focus:bg-blue-50 focus:shadow-lg focus:rounded-tr-3xl">
+          <div class="flex items-center justify-center space-x-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" class="flex-shrink-0">
               <path fill="currentColor" d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z"/>
             </svg>
+            <span class="hidden sm:inline"><%= t('accounts.tabs.danger') %></span>
+            <span class="sm:hidden">危険</span>
           </div>
-          <h3 class="text-xl font-bold text-red-600"><%= t('accounts.show.danger_zone') %></h3>
+        </button>
+      </nav>
+
+      <!-- Tab Panels -->
+      <div class="p-6 lg:p-8">
+        <!-- Basic Settings Panel -->
+        <div data-account-tabs-target="panel" 
+             data-panel="basic"
+             id="basic-panel"
+             role="tabpanel"
+             aria-labelledby="basic-tab"
+             aria-hidden="false">
+          <%= render 'tab_basic' %>
         </div>
-        <%= render 'danger_zone' %>
+
+        <!-- Security Settings Panel -->
+        <div data-account-tabs-target="panel" 
+             data-panel="security"
+             id="security-panel"
+             role="tabpanel"
+             aria-labelledby="security-tab"
+             aria-hidden="true"
+             class="hidden">
+          <%= render 'tab_security' %>
+        </div>
+
+        <!-- Danger Zone Panel -->
+        <div data-account-tabs-target="panel" 
+             data-panel="danger"
+             id="danger-panel"
+             role="tabpanel"
+             aria-labelledby="danger-tab"
+             aria-hidden="true"
+             class="hidden">
+          <%= render 'tab_danger' %>
+        </div>
       </div>
     </div>
+
+    <!-- アカウント削除モーダル -->
+    <%= render 'delete_modal' %>
 
     <!-- Navigation -->
     <div class="mt-8 text-center">
