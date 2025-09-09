@@ -9,6 +9,8 @@ export default class extends Controller {
   }
 
   connect() {
+    console.log("Statistics charts controller connected")
+    console.log("Chart.js available:", typeof window.Chart !== 'undefined')
     this.charts = {}
     this.loadStatisticsData()
   }
@@ -23,10 +25,13 @@ export default class extends Controller {
 
   async loadStatisticsData() {
     try {
+      console.log("Loading statistics data from:", this.dataUrlValue)
       const response = await fetch(this.dataUrlValue)
+      console.log("Response status:", response.status)
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       
       const data = await response.json()
+      console.log("Statistics data received:", data)
       this.renderCharts(data)
     } catch (error) {
       console.error('統計データの読み込みに失敗しました:', error)
@@ -59,7 +64,7 @@ export default class extends Controller {
   renderOverallChart(data) {
     const ctx = this.overallChartTarget.getContext('2d')
     
-    this.charts.overall = new Chart(ctx, {
+    this.charts.overall = new window.Chart(ctx, {
       type: 'doughnut',
       data: {
         labels: ['総URL数', '総アクセス数', '有効URL数'],
@@ -98,7 +103,7 @@ export default class extends Controller {
   renderDailyChart(data) {
     const ctx = this.dailyChartTarget.getContext('2d')
     
-    this.charts.daily = new Chart(ctx, {
+    this.charts.daily = new window.Chart(ctx, {
       type: 'line',
       data: {
         labels: data.labels,
@@ -145,7 +150,7 @@ export default class extends Controller {
   renderStatusChart(data) {
     const ctx = this.statusChartTarget.getContext('2d')
     
-    this.charts.status = new Chart(ctx, {
+    this.charts.status = new window.Chart(ctx, {
       type: 'pie',
       data: {
         labels: data.labels,
@@ -185,7 +190,7 @@ export default class extends Controller {
   renderMonthlyChart(data) {
     const ctx = this.monthlyChartTarget.getContext('2d')
     
-    this.charts.monthly = new Chart(ctx, {
+    this.charts.monthly = new window.Chart(ctx, {
       type: 'bar',
       data: {
         labels: data.labels,
