@@ -211,6 +211,10 @@ RSpec.describe ShortUrlsController, type: :controller do
       let(:mock_client) { instance_double(Shlink::CreateShortUrlService) }
 
       before do
+        # Devise認証をバイパス
+        allow(controller).to receive(:authenticate_user!).and_return(true)
+        allow(controller).to receive(:current_user).and_return(user)
+        
         allow(Shlink::CreateShortUrlService).to receive(:new).and_return(mock_client)
         allow(mock_client).to receive(:call)
           .and_raise(Shlink::Error, 'API connection failed')

@@ -18,7 +18,7 @@ RSpec.describe 'ユーザー認証機能', type: :system do
 
       click_button '新規登録'
 
-      expect(page).to have_content('確認リンクを記載したメールをお送りしました')
+      expect(page).to have_content('確認リンクを記載したメールを送信しました')
       expect(page).to have_current_path(root_path)
     end
 

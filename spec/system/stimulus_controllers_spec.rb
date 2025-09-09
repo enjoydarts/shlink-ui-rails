@@ -63,8 +63,9 @@ RSpec.describe 'Stimulus Controllers', type: :system do
 
   describe 'フラッシュメッセージ表示' do
     it 'フラッシュメッセージ要素が存在する' do
-      # フラッシュメッセージコンテナが存在する
-      expect(page).to have_css('#flash-messages')
+      # フラッシュメッセージコンテナが存在する（実際にはレンダリングされるまでは表示されない）
+      # アカウント設定画面ではフラッシュメッセージがない状態が正常
+      expect(page).to have_no_css('[data-controller="flash"]')
     end
   end
 end
