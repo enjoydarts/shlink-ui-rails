@@ -31,6 +31,11 @@ Rails.application.routes.draw do
 
     # Account management
     resource :account, only: [ :show ], controller: :accounts
+
+    # Statistics API
+    namespace :statistics do
+      get :overall, to: "overall#index"
+    end
   end
 
   # Public pages

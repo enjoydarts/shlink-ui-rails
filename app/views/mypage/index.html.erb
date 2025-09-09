@@ -4,37 +4,10 @@
     <%= render 'statistics_cards' %>
     <%= render 'action_buttons' %>
 
-    <!-- Short URLs List -->
+    <!-- Main Content with Tabs -->
     <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6 md:p-8">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h2 class="text-2xl font-bold text-gray-900">あなたの短縮URL一覧</h2>
-        <%= render 'search_form' %>
-      </div>
-      
-      <% if @search_query.present? %>
-        <div class="mb-4 px-4 py-2 bg-blue-50 border border-blue-200 rounded-xl">
-          <p class="text-sm text-blue-800">
-            "<%= @search_query %>" の検索結果: <%= @short_urls.total_count %>件
-          </p>
-        </div>
-      <% end %>
-
-      <% if @short_urls.any? %>
-        <div class="space-y-4">
-          <% @short_urls.each do |short_url| %>
-            <%= render 'short_url_card', short_url: short_url %>
-          <% end %>
-        </div>
-        
-        <!-- Pagination -->
-        <% if @short_urls.respond_to?(:total_pages) && @short_urls.total_pages > 1 %>
-          <div class="mt-8">
-            <%= paginate @short_urls, params: { search: @search_query } %>
-          </div>
-        <% end %>
-      <% else %>
-        <%= render 'empty_state' %>
-      <% end %>
+      <%= render 'tab_navigation' %>
+      <%= render 'tab_content' %>
     </div>
   </div>
 </div>
