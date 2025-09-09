@@ -8,9 +8,9 @@ module Statistics
     end
 
     # 全体統計データを取得（キャッシュ付き）
-    def call(period = '30d')
+    def call(period = "30d")
       cache_key = "user_statistics:#{@user.id}:#{period}:#{Date.current}"
-      
+
       Rails.cache.fetch(cache_key, expires_in: CACHE_EXPIRES) do
         generate_statistics_data(period)
       end
@@ -30,7 +30,7 @@ module Statistics
     # 全体サマリーデータ
     def generate_overall_data
       active_urls = @user.short_urls.active
-      
+
       {
         total_urls: active_urls.count,
         total_visits: active_urls.sum(:visit_count),
@@ -42,19 +42,23 @@ module Statistics
     def generate_daily_data(period)
       days = parse_period_to_days(period)
       start_date = days.days.ago.beginning_of_day
-      
-      # 日別のアクセス数を集計
-      daily_stats = @user.short_urls.active
-                         .where(date_created: start_date..Time.current)
-                         .group("DATE(date_created)")
-                         .sum(:visit_count)
+
+      # 期間内に作成されたURL一覧を取得
+      urls_in_period = @user.short_urls.active
+                            .where(date_created: start_date..Time.current)
+
+      # URLのvisit_countの合計を日別に集計
+      # 注: ここでは作成日ベースで集計（実際のアクセス日時ではない）
+      daily_stats = urls_in_period
+                    .group("DATE(date_created)")
+                    .sum(:visit_count)
 
       # 日付の配列を生成
-      date_labels = (0...days).map { |i| (start_date + i.days).strftime('%m/%d') }
-      
+      date_labels = (0...days).map { |i| (start_date + i.days).strftime("%m/%d") }
+
       # 各日のアクセス数を配列に変換（データがない日は0）
       values = date_labels.map.with_index do |label, index|
-        date_key = (start_date + index.days).strftime('%Y-%m-%d')
+        date_key = (start_date + index.days).strftime("%Y-%m-%d")
         daily_stats[date_key] || 0
       end
 
@@ -67,11 +71,11 @@ module Statistics
     # URL状態分布データ
     def generate_status_data
       active_urls = @user.short_urls.active
-      
+
       active_count = 0
       expired_count = 0
       limit_reached_count = 0
-      
+
       active_urls.find_each do |url|
         if url.expired?
           expired_count += 1
@@ -83,8 +87,8 @@ module Statistics
       end
 
       {
-        labels: ['有効', '期限切れ', '制限到達'],
-        values: [active_count, expired_count, limit_reached_count]
+        labels: [ "有効", "期限切れ", "制限到達" ],
+        values: [ active_count, expired_count, limit_reached_count ]
       }
     end
 
@@ -92,24 +96,23 @@ module Statistics
     def generate_monthly_data
       # 過去6ヶ月のデータを取得
       start_date = 6.months.ago.beginning_of_month
-      
+
+      # MySQLの日付関数を使用してグループ化
       monthly_stats = @user.short_urls.active
                            .where(date_created: start_date..Time.current)
-                           .group_by_month(:date_created)
+                           .group("DATE_FORMAT(date_created, '%Y-%m')")
                            .count
 
-      # 月のラベルを生成
-      month_labels = (0...6).map { |i| (start_date + i.months).strftime('%Y/%m') }
-      
+      # 月のラベルを生成（過去6ヶ月）
+      month_labels = (0...6).map { |i| (start_date + i.months).strftime("%Y-%m") }
+
       # 各月の作成数を配列に変換
-      values = month_labels.map do |label|
-        # ActiveRecord group_by_monthの結果キーと照合
-        month_key = Date.strptime(label, '%Y/%m').beginning_of_month
+      values = month_labels.map do |month_key|
         monthly_stats[month_key] || 0
       end
 
       {
-        labels: month_labels.map { |label| Date.strptime(label, '%Y/%m').strftime('%m月') },
+        labels: month_labels.map { |label| Date.strptime(label, "%Y-%m").strftime("%m月") },
         values: values
       }
     end
@@ -117,13 +120,13 @@ module Statistics
     # 期間文字列を日数に変換
     def parse_period_to_days(period)
       case period
-      when '7d'
+      when "7d"
         7
-      when '30d'
+      when "30d"
         30
-      when '90d'
+      when "90d"
         90
-      when '365d'
+      when "365d"
         365
       else
         30 # デフォルト
