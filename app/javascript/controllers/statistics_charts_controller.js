@@ -39,29 +39,41 @@ export default class extends Controller {
     }
   }
 
-  renderCharts(data) {
+  renderCharts(response) {
+    console.log("Full response:", response)
+    
+    // APIレスポンスの構造: { success: true, data: { overall, daily, status, monthly } }
+    const data = response.data || response
+    console.log("Extracted data:", data)
+    
     // 全体統計ドーナツチャート
-    if (this.hasOverallChartTarget) {
+    if (this.hasOverallChartTarget && data.overall) {
+      console.log("Rendering overall chart with:", data.overall)
       this.renderOverallChart(data.overall)
     }
 
     // 日別アクセス推移線グラフ
-    if (this.hasDailyChartTarget) {
+    if (this.hasDailyChartTarget && data.daily) {
       this.renderDailyChart(data.daily)
     }
 
     // URL状態分布円グラフ  
-    if (this.hasStatusChartTarget) {
+    if (this.hasStatusChartTarget && data.status) {
       this.renderStatusChart(data.status)
     }
 
     // 月別作成数棒グラフ
-    if (this.hasMonthlyChartTarget) {
+    if (this.hasMonthlyChartTarget && data.monthly) {
       this.renderMonthlyChart(data.monthly)
     }
   }
 
   renderOverallChart(data) {
+    if (!data || typeof data.total_urls === 'undefined') {
+      console.error('Invalid overall chart data:', data)
+      return
+    }
+    
     const ctx = this.overallChartTarget.getContext('2d')
     
     this.charts.overall = new window.Chart(ctx, {
