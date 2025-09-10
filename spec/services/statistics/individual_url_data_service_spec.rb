@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe Statistics::IndividualUrlDataService, type: :service do
   let(:user) { create(:user) }
   let(:short_code) { 'abc123' }
-  let(:service) { described_class.new(user, short_code, shlink_config: { base_url: "https://test.example.com", api_key: "test-key" }) }
+  let(:service) { described_class.new(user, short_code) }
 
   before do
     # Mock Shlink API responses

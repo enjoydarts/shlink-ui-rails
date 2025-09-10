@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe Statistics::OverallDataService, type: :service do
   let(:user) { create(:user) }
-  let(:service) { described_class.new(user, shlink_config: { base_url: "https://test.example.com", api_key: "test-key" }) }
+  let(:service) { described_class.new(user) }
 
   describe '#call' do
     let(:period) { '30d' }

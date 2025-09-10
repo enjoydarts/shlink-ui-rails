@@ -94,14 +94,14 @@ RSpec.describe Statistics::OverallController, type: :controller do
           create(:short_url, user: @test_user, visit_count: 20, short_code: 'test2')
 
           # Shlink APIスタブ
-          stub_request(:get, %r{https://kty\.at/rest/v3/short-urls/test1/visits})
+          stub_request(:get, %r{https://test\.example\.com/rest/v3/short-urls/test1/visits})
             .to_return(
               status: 200,
               body: { visits: { data: [] } }.to_json,
               headers: { 'Content-Type' => 'application/json' }
             )
 
-          stub_request(:get, %r{https://kty\.at/rest/v3/short-urls/test2/visits})
+          stub_request(:get, %r{https://test\.example\.com/rest/v3/short-urls/test2/visits})
             .to_return(
               status: 200,
               body: { visits: { data: [] } }.to_json,
@@ -145,7 +145,7 @@ RSpec.describe Statistics::OverallController, type: :controller do
       create(:short_url, user: @other_user, visit_count: 100, short_code: 'sec2')
 
       # セキュリティユーザーのURLのみスタブ設定
-      stub_request(:get, %r{https://kty\.at/rest/v3/short-urls/sec1/visits})
+      stub_request(:get, %r{https://test\.example\.com/rest/v3/short-urls/sec1/visits})
         .to_return(
           status: 200,
           body: { visits: { data: [] } }.to_json,
