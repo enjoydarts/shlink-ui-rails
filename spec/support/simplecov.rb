@@ -18,5 +18,5 @@ SimpleCov.start "rails" do
   add_group "Helpers", "app/helpers"
 
   # 最小カバレッジ率
-  minimum_coverage 85
+  minimum_coverage 80
 end

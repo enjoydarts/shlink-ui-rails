@@ -1,0 +1,32 @@
+<!-- Tab Content -->
+<div data-mypage-tabs-target="content">
+  <!-- URL一覧パネル -->
+  <div id="urls-panel" 
+       data-mypage-tabs-target="panel"
+       data-tab="urls"
+       class="tab-panel" 
+       aria-hidden="false"
+       role="tabpanel">
+    <%= render 'urls_list' %>
+  </div>
+
+  <!-- 統計グラフパネル -->
+  <div id="statistics-panel"
+       data-mypage-tabs-target="panel" 
+       data-tab="statistics"
+       class="tab-panel hidden"
+       aria-hidden="true"
+       role="tabpanel">
+    <%= render 'statistics_charts' %>
+  </div>
+
+  <!-- 個別URL分析パネル -->
+  <div id="individual-panel"
+       data-mypage-tabs-target="panel" 
+       data-tab="individual"
+       class="tab-panel hidden"
+       aria-hidden="true"
+       role="tabpanel">
+    <%= render 'individual_analysis' %>
+  </div>
+</div>

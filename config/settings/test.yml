@@ -1,0 +1,4 @@
+shlink:
+  base_url: "https://test.example.com"
+  api_key: "test-api-key"
+  timeout: 10

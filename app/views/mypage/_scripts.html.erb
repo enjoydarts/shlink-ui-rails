@@ -197,4 +197,45 @@ function showToast(message, type = 'info') {
     }, 300);
   }, type === 'success' ? 2000 : 4000);
 }
+
+function openIndividualAnalysis(shortCode) {
+  // URL別分析タブに切り替えて特定URLを選択
+  
+  // まずタブを切り替え
+  const individualTab = document.querySelector('[data-tab="individual"]');
+  if (individualTab) {
+    individualTab.click();
+  }
+  
+  // 少し待ってからURLを選択（タブ切り替えの処理を待つため）
+  setTimeout(() => {
+    const controllerElement = document.querySelector('[data-controller*="individual-analysis"]');
+    if (controllerElement) {
+      // Stimulusコントローラーにアクセス
+      const application = window.Stimulus || window.Application;
+      if (application) {
+        const controller = application.getControllerForElementAndIdentifier(controllerElement, 'individual-analysis');
+        if (controller && controller.urlList) {
+          // 新しい検索UIを使用してURLを選択
+          const urlData = controller.urlList.find(url => url.short_code === shortCode);
+          if (urlData) {
+            controller.selectUrlFromDropdown(urlData);
+            return;
+          }
+        }
+      }
+    }
+    
+    // フォールバック: 従来のselect要素を使用
+    const urlSelect = document.querySelector('[data-individual-analysis-target="urlSelect"]');
+    if (urlSelect) {
+      const targetOption = Array.from(urlSelect.options).find(option => option.value === shortCode);
+      if (targetOption) {
+        urlSelect.value = shortCode;
+        const changeEvent = new Event('change', { bubbles: true });
+        urlSelect.dispatchEvent(changeEvent);
+      }
+    }
+  }, 1000);
+}
 </script>

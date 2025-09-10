@@ -1,0 +1,84 @@
+<!-- Statistics Charts Content -->
+<div data-controller="statistics-charts" 
+     data-statistics-charts-user-id-value="<%= current_user.id %>"
+     data-statistics-charts-period-value="30d"
+     data-statistics-charts-data-url-value="<%= statistics_overall_path %>">
+
+  <!-- Period Filter -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <h2 class="text-2xl font-bold text-gray-900">統計グラフ</h2>
+    
+    <div class="flex items-center space-x-2">
+      <label for="period-select" class="text-sm font-medium text-gray-700">期間:</label>
+      <select id="period-select" 
+              data-action="change->statistics-charts#changePeriod"
+              class="block w-32 px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+        <option value="7d">1週間</option>
+        <option value="30d" selected>1ヶ月</option>
+        <option value="90d">3ヶ月</option>
+        <option value="365d">1年</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Charts Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Overall Summary Chart -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div class="h-64">
+        <canvas data-statistics-charts-target="overallChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Daily Access Chart -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div class="h-64">
+        <canvas data-statistics-charts-target="dailyChart"></canvas>
+      </div>
+    </div>
+
+    <!-- URL Status Chart -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div class="h-64">
+        <canvas data-statistics-charts-target="statusChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Monthly Creation Chart -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div class="h-64">
+        <canvas data-statistics-charts-target="monthlyChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="hidden" data-statistics-charts-target="loading">
+    <div class="flex items-center justify-center h-64">
+      <div class="text-center">
+        <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-blue-500 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-sm text-gray-500">統計データを読み込んでいます...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Data State -->
+  <div class="hidden" data-statistics-charts-target="noData">
+    <div class="text-center py-12">
+      <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2-2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+      </svg>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">まだ統計データがありません</h3>
+      <p class="text-gray-500 mb-4">短縮URLを作成すると統計グラフが表示されます</p>
+      <a href="<%= dashboard_path %>" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        URL作成
+      </a>
+    </div>
+  </div>
+</div>
