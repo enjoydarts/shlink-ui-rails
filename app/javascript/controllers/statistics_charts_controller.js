@@ -9,46 +9,42 @@ export default class extends Controller {
   }
 
   connect() {
-    console.log("Statistics charts controller connected")
-    console.log("Chart.js available:", typeof window.Chart !== 'undefined')
     this.charts = {}
     this.loadStatisticsData()
   }
 
   disconnect() {
     // Clean up charts when controller disconnects
-    Object.values(this.charts).forEach(chart => {
-      if (chart) chart.destroy()
-    })
-    this.charts = {}
+    this.destroyAllCharts()
   }
 
   async loadStatisticsData() {
     try {
-      console.log("Loading statistics data from:", this.dataUrlValue)
-      const response = await fetch(this.dataUrlValue)
-      console.log("Response status:", response.status)
+      this.showLoadingState()
+      
+      // 期間パラメータをURLに追加
+      const url = new URL(this.dataUrlValue, window.location.origin)
+      url.searchParams.set('period', this.periodValue)
+      
+      const response = await fetch(url.toString())
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       
       const data = await response.json()
-      console.log("Statistics data received:", data)
       this.renderCharts(data)
+      this.hideLoadingState()
     } catch (error) {
       console.error('統計データの読み込みに失敗しました:', error)
+      this.hideLoadingState()
       this.showErrorState()
     }
   }
 
   renderCharts(response) {
-    console.log("Full response:", response)
-    
     // APIレスポンスの構造: { success: true, data: { overall, daily, status, monthly } }
     const data = response.data || response
-    console.log("Extracted data:", data)
     
     // 全体統計ドーナツチャート
     if (this.hasOverallChartTarget && data.overall) {
-      console.log("Rendering overall chart with:", data.overall)
       this.renderOverallChart(data.overall)
     }
 
@@ -72,6 +68,11 @@ export default class extends Controller {
     if (!data || typeof data.total_urls === 'undefined') {
       console.error('Invalid overall chart data:', data)
       return
+    }
+    
+    // 既存のチャートがあれば破棄
+    if (this.charts.overall) {
+      this.charts.overall.destroy()
     }
     
     const ctx = this.overallChartTarget.getContext('2d')
@@ -113,6 +114,11 @@ export default class extends Controller {
   }
 
   renderDailyChart(data) {
+    // 既存のチャートがあれば破棄
+    if (this.charts.daily) {
+      this.charts.daily.destroy()
+    }
+    
     const ctx = this.dailyChartTarget.getContext('2d')
     
     this.charts.daily = new window.Chart(ctx, {
@@ -160,6 +166,11 @@ export default class extends Controller {
   }
 
   renderStatusChart(data) {
+    // 既存のチャートがあれば破棄
+    if (this.charts.status) {
+      this.charts.status.destroy()
+    }
+    
     const ctx = this.statusChartTarget.getContext('2d')
     
     this.charts.status = new window.Chart(ctx, {
@@ -200,6 +211,11 @@ export default class extends Controller {
   }
 
   renderMonthlyChart(data) {
+    // 既存のチャートがあれば破棄
+    if (this.charts.monthly) {
+      this.charts.monthly.destroy()
+    }
+    
     const ctx = this.monthlyChartTarget.getContext('2d')
     
     this.charts.monthly = new window.Chart(ctx, {
@@ -272,6 +288,72 @@ export default class extends Controller {
   // Period filter change handler
   changePeriod(event) {
     this.periodValue = event.target.value
+    // 既存のチャートを全て破棄してからリロード
+    this.destroyAllCharts()
     this.loadStatisticsData()
+  }
+
+  // 全てのチャートを破棄するヘルパーメソッド
+  destroyAllCharts() {
+    Object.values(this.charts).forEach(chart => {
+      if (chart) chart.destroy()
+    })
+    this.charts = {}
+  }
+
+  // ローディング状態表示
+  showLoadingState() {
+    // 全てのチャートコンテナにローディング表示
+    const chartTargets = [
+      this.overallChartTarget,
+      this.dailyChartTarget, 
+      this.statusChartTarget,
+      this.monthlyChartTarget
+    ].filter(target => target)
+
+    chartTargets.forEach(target => {
+      const canvas = target
+      const container = canvas.parentElement
+      
+      // 既存のローディング要素があれば削除
+      const existingLoader = container.querySelector('.chart-loading')
+      if (existingLoader) existingLoader.remove()
+      
+      // キャンバスを非表示
+      canvas.style.display = 'none'
+      
+      // ローディング要素を作成
+      const loader = document.createElement('div')
+      loader.className = 'chart-loading flex items-center justify-center h-full'
+      loader.innerHTML = `
+        <div class="text-center">
+          <svg class="animate-spin h-8 w-8 text-blue-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p class="text-sm text-gray-500">読み込み中...</p>
+        </div>
+      `
+      container.appendChild(loader)
+    })
+  }
+
+  // ローディング状態非表示
+  hideLoadingState() {
+    // 全てのローディング要素を削除
+    const loaders = document.querySelectorAll('.chart-loading')
+    loaders.forEach(loader => loader.remove())
+    
+    // キャンバスを表示
+    const chartTargets = [
+      this.overallChartTarget,
+      this.dailyChartTarget, 
+      this.statusChartTarget,
+      this.monthlyChartTarget
+    ].filter(target => target)
+
+    chartTargets.forEach(target => {
+      target.style.display = 'block'
+    })
   }
 }

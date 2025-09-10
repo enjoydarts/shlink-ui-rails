@@ -19,4 +19,14 @@
        role="tabpanel">
     <%= render 'statistics_charts' %>
   </div>
+
+  <!-- 個別URL分析パネル -->
+  <div id="individual-panel"
+       data-mypage-tabs-target="panel" 
+       data-tab="individual"
+       class="tab-panel hidden"
+       aria-hidden="true"
+       role="tabpanel">
+    <%= render 'individual_analysis' %>
+  </div>
 </div>

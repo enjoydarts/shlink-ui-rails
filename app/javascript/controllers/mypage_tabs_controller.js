@@ -22,6 +22,11 @@ export default class extends Controller {
     if (tabName === "statistics") {
       this.loadStatistics()
     }
+    
+    // 個別分析タブに切り替えた時にURL一覧を再読み込み
+    if (tabName === "individual") {
+      this.loadIndividualAnalysis()
+    }
   }
 
   updateTabs() {
@@ -48,9 +53,11 @@ export default class extends Controller {
       
       if (isActive) {
         panel.classList.remove("hidden")
+        panel.style.display = "block" // 強制的に表示
         panel.setAttribute("aria-hidden", "false")
       } else {
         panel.classList.add("hidden")
+        panel.style.display = "none" // 強制的に非表示
         panel.setAttribute("aria-hidden", "true")
       }
     })
@@ -65,6 +72,18 @@ export default class extends Controller {
     
     if (statisticsController) {
       statisticsController.loadStatisticsData()
+    }
+  }
+
+  loadIndividualAnalysis() {
+    // 個別分析コントローラーにURL一覧の読み込みを依頼
+    const individualController = this.application.getControllerForElementAndIdentifier(
+      document.querySelector('[data-controller*="individual-analysis"]'),
+      "individual-analysis"
+    )
+    
+    if (individualController) {
+      individualController.loadUrlList()
     }
   }
 

@@ -20,7 +20,13 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 
 ### 📊 My Page Dashboard
 - **Personal URL Library**: View all your shortened URLs in one organized place
-- **Statistics Tracking**: Monitor click counts and engagement metrics
+- **Advanced Statistics Dashboard**: Comprehensive analytics with interactive Chart.js visualizations
+- **Overall Statistics**: Total URLs, visits, and active links with real-time data from Shlink API
+- **Individual URL Analytics**: Detailed statistics per URL including daily/hourly visits, browser stats, country distribution, and referrer analysis
+- **Interactive Charts**: Daily access trends, URL status distribution, and monthly creation patterns
+- **Period Filtering**: View statistics for 7 days, 1 month, 3 months, or 1 year periods
+- **Searchable URL Selection**: Gmail-style search for finding specific URLs by title, short URL, or long URL
+- **Quick Analysis Access**: Direct analysis buttons on each URL card for instant insights
 - **Search & Filter**: Find specific URLs quickly with built-in search functionality
 - **Pagination**: Organized display with 10 URLs per page for easy browsing
 - **Real-time Sync**: Manual synchronization with Shlink API to update statistics
@@ -42,10 +48,12 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 - **Tag Visualization**: Distinct tag design with responsive layout optimization
 
 ### 🔧 Technical Features
-- **Shlink API Integration**: Full integration with Shlink REST API v3
+- **Shlink API Integration**: Full integration with Shlink REST API v3 with comprehensive visit statistics
+- **Advanced Analytics**: Real-time data processing with Shlink visit endpoints for detailed insights
 - **Background Processing**: Async operations with Solid Queue
-- **High Performance**: Solid Cache for optimal response times
-- **Real-time Updates**: Live data synchronization and updates
+- **High Performance Caching**: Solid Cache with MySQL backend for optimal statistics response times
+- **Interactive Data Visualization**: Chart.js integration for dynamic, responsive charts
+- **Real-time Updates**: Live data synchronization and updates from Shlink API
 - **Comprehensive Error Handling**: User-friendly error messages and recovery
 - **Security**: CSRF protection, secure headers, and input validation
 
@@ -62,7 +70,9 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 
 ### Frontend
 - **Hotwire (Turbo + Stimulus)** for SPA-like interactive experiences
+- **Chart.js 4.4.0** for interactive and responsive data visualizations
 - **Tailwind CSS v4** for modern, utility-first styling
+- **Advanced Stimulus Controllers** for statistics charts, individual analysis, and tab navigation
 - **Responsive Design** optimized for all device types
 - **Progressive Enhancement** ensuring accessibility and performance
 
@@ -71,7 +81,7 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 - **RuboCop Rails Omakase** for consistent code quality
 - **Factory Bot** for test data generation
 - **WebMock & VCR** for reliable API testing
-- **SimpleCov** for test coverage analysis (93%+ coverage)
+- **SimpleCov** for test coverage analysis (80.8%+ coverage)
 - **Docker Compose** for consistent development environments
 
 ## 🚀 Quick Start
@@ -130,6 +140,12 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 
 ### User Dashboard (My Page)
 - Complete overview of all user's shortened URLs
+- **Advanced Analytics Dashboard** with Chart.js-powered interactive visualizations
+- **Tabbed Interface** with seamless navigation between URL list, overall statistics, and individual URL analysis
+- **Overall Statistics**: Daily access trends, URL status distribution, monthly creation patterns
+- **Individual URL Analytics**: Detailed insights including hourly visits, browser statistics, country distribution, and referrer analysis
+- **Intelligent URL Search**: Gmail-style searchable interface for finding URLs by title, short code, or full URL
+- **Quick Analysis Access**: Direct analysis buttons on URL cards for instant insights
 - Advanced search and filtering capabilities
 - Pagination for large URL collections
 - Statistics display (total URLs, visits, active links)
@@ -152,7 +168,8 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 - **URL Listing**: `GET /rest/v3/short-urls` (with pagination and search)
 - **URL Deletion**: `DELETE /rest/v3/short-urls/{shortCode}`
 - **QR Code Generation**: `GET /rest/v3/short-urls/{shortCode}/qr-code`
-- **Statistics Retrieval**: Real-time visit count tracking
+- **Statistics Retrieval**: `GET /rest/v3/short-urls/{shortCode}/visits` for detailed analytics
+- **Global Statistics**: Real-time visit count tracking and comprehensive analytics
 
 ### Service Architecture
 - **Shlink::BaseService**: Foundation class with Faraday HTTP client setup
@@ -161,6 +178,9 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 - **Shlink::SyncShortUrlsService**: Synchronizes user data with Shlink API
 - **Shlink::DeleteShortUrlService**: Manages URL deletion operations
 - **Shlink::GetQrCodeService**: Handles QR code generation and caching
+- **Shlink::GetUrlVisitsService**: Retrieves detailed visit statistics for individual URLs
+- **Statistics::OverallDataService**: Generates comprehensive statistics with caching
+- **Statistics::IndividualUrlDataService**: Processes detailed analytics for specific URLs
 
 ## 🧪 Development
 
@@ -202,7 +222,7 @@ make status                  # Check service status
 ### Running Tests
 ```bash
 # Using Makefile (recommended)
-make test                    # Run all tests (255+ examples with 93%+ coverage)
+make test                    # Run all tests (426+ examples with 80.8%+ coverage)
 make test-file FILE=spec/path/to/file_spec.rb  # Run specific test file
 make test-coverage           # Run tests with coverage report
 
@@ -273,6 +293,9 @@ app/
 │   ├── short_urls_controller.rb      # URL creation and QR codes
 │   ├── mypage_controller.rb          # User dashboard and management
 │   ├── pages_controller.rb           # Static pages
+│   ├── statistics/
+│   │   ├── overall_controller.rb     # Overall statistics API
+│   │   └── individual_controller.rb  # Individual URL analytics API
 │   └── users/
 │       └── omniauth_callbacks_controller.rb
 ├── forms/
@@ -286,7 +309,15 @@ app/
 │   ├── list_short_urls_service.rb    # URL retrieval and pagination
 │   ├── sync_short_urls_service.rb    # Data synchronization
 │   ├── delete_short_url_service.rb   # URL deletion handling
-│   └── get_qr_code_service.rb        # QR code generation
+│   ├── get_qr_code_service.rb        # QR code generation
+│   └── get_url_visits_service.rb     # Visit statistics retrieval
+├── services/statistics/
+│   ├── overall_data_service.rb       # Overall analytics processing
+│   └── individual_url_data_service.rb # Individual URL analytics
+├── javascript/controllers/
+│   ├── statistics_charts_controller.js    # Overall statistics charts
+│   ├── individual_analysis_controller.js  # Individual URL analysis
+│   └── mypage_tabs_controller.js          # Tab navigation
 └── views/
     ├── layouts/
     ├── short_urls/

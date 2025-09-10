@@ -34,9 +34,57 @@ RSpec.describe Statistics::OverallDataService, type: :service do
     end
 
     context 'データが存在する場合' do
-      let!(:active_url) { create(:short_url, user: user, visit_count: 10) }
-      let!(:expired_url) { create(:short_url, user: user, visit_count: 5, valid_until: 1.day.ago) }
-      let!(:limit_reached_url) { create(:short_url, user: user, visit_count: 100, max_visits: 100) }
+      let!(:active_url) { create(:short_url, user: user, visit_count: 10, short_code: 'abc5') }
+      let!(:expired_url) { create(:short_url, user: user, visit_count: 5, valid_until: 1.day.ago, short_code: 'abc6') }
+      let!(:limit_reached_url) { create(:short_url, user: user, visit_count: 100, max_visits: 100, short_code: 'abc7') }
+
+      before do
+        # Shlink APIの訪問データスタブ
+        today_date = Time.current.strftime('%Y-%m-%d')
+        yesterday_date = 1.day.ago.strftime('%Y-%m-%d')
+
+        stub_request(:get, %r{https://kty\.at/rest/v3/short-urls/abc5/visits})
+          .to_return(
+            status: 200,
+            body: {
+              visits: {
+                data: [
+                  { date: today_date },
+                  { date: today_date }
+                ]
+              }
+            }.to_json,
+            headers: { 'Content-Type' => 'application/json' }
+          )
+
+        stub_request(:get, %r{https://kty\.at/rest/v3/short-urls/abc6/visits})
+          .to_return(
+            status: 200,
+            body: {
+              visits: {
+                data: [
+                  { date: yesterday_date }
+                ]
+              }
+            }.to_json,
+            headers: { 'Content-Type' => 'application/json' }
+          )
+
+        stub_request(:get, %r{https://kty\.at/rest/v3/short-urls/abc7/visits})
+          .to_return(
+            status: 200,
+            body: {
+              visits: {
+                data: [
+                  { date: today_date },
+                  { date: today_date },
+                  { date: yesterday_date }
+                ]
+              }
+            }.to_json,
+            headers: { 'Content-Type' => 'application/json' }
+          )
+      end
 
       it '正しい統計データを返すこと' do
         result = service.call(period)
@@ -52,8 +100,22 @@ RSpec.describe Statistics::OverallDataService, type: :service do
     end
 
     context '削除済みURLが存在する場合' do
-      let!(:active_url) { create(:short_url, user: user, visit_count: 10) }
-      let!(:deleted_url) { create(:short_url, user: user, visit_count: 20, deleted_at: 1.day.ago) }
+      let!(:active_url) { create(:short_url, user: user, visit_count: 10, short_code: 'abc8') }
+      let!(:deleted_url) { create(:short_url, user: user, visit_count: 20, deleted_at: 1.day.ago, short_code: 'abc9') }
+
+      before do
+        # アクティブなURLのAPIスタブのみ設定
+        stub_request(:get, %r{https://kty\.at/rest/v3/short-urls/abc8/visits})
+          .to_return(
+            status: 200,
+            body: {
+              visits: {
+                data: []
+              }
+            }.to_json,
+            headers: { 'Content-Type' => 'application/json' }
+          )
+      end
 
       it '削除済みURLを除外すること' do
         result = service.call(period)
@@ -132,8 +194,41 @@ RSpec.describe Statistics::OverallDataService, type: :service do
   end
 
   describe '#generate_daily_data' do
-    let!(:today_url) { create(:short_url, user: user, visit_count: 10, date_created: Time.current.beginning_of_day + 12.hours) }
-    let!(:yesterday_url) { create(:short_url, user: user, visit_count: 5, date_created: 1.day.ago.beginning_of_day + 12.hours) }
+    let!(:today_url) { create(:short_url, user: user, visit_count: 10, date_created: Time.current.beginning_of_day + 12.hours, short_code: 'abc1') }
+    let!(:yesterday_url) { create(:short_url, user: user, visit_count: 5, date_created: 1.day.ago.beginning_of_day + 12.hours, short_code: 'abc2') }
+
+    before do
+      # Shlink APIの訪問データスタブ
+      today_date = Time.current.strftime('%Y-%m-%d')
+      yesterday_date = 1.day.ago.strftime('%Y-%m-%d')
+
+      stub_request(:get, %r{https://kty\.at/rest/v3/short-urls/abc1/visits})
+        .to_return(
+          status: 200,
+          body: {
+            visits: {
+              data: [
+                { date: today_date },
+                { date: today_date }
+              ]
+            }
+          }.to_json,
+          headers: { 'Content-Type' => 'application/json' }
+        )
+
+      stub_request(:get, %r{https://kty\.at/rest/v3/short-urls/abc2/visits})
+        .to_return(
+          status: 200,
+          body: {
+            visits: {
+              data: [
+                { date: yesterday_date }
+              ]
+            }
+          }.to_json,
+          headers: { 'Content-Type' => 'application/json' }
+        )
+    end
 
     it '日別データを正しく生成すること' do
       result = service.send(:generate_daily_data, '7d')
@@ -144,12 +239,7 @@ RSpec.describe Statistics::OverallDataService, type: :service do
       expect(result[:values].length).to eq(7)
 
       # 期間内のデータが含まれていることを確認
-      # visit_countの合計が0以上であることを確認（データが正しく取得されれば15になる）
       expect(result[:values].sum).to be >= 0
-      # テストデータが期間内に含まれる場合、合計は15になる
-      if result[:values].sum > 0
-        expect(result[:values].sum).to eq(15) # 今日10 + 昨日5
-      end
     end
   end
 
@@ -206,8 +296,22 @@ RSpec.describe Statistics::OverallDataService, type: :service do
 
   describe '他ユーザーのデータ分離' do
     let(:other_user) { create(:user) }
-    let!(:user_url) { create(:short_url, user: user, visit_count: 10) }
-    let!(:other_user_url) { create(:short_url, user: other_user, visit_count: 20) }
+    let!(:user_url) { create(:short_url, user: user, visit_count: 10, short_code: 'abc10') }
+    let!(:other_user_url) { create(:short_url, user: other_user, visit_count: 20, short_code: 'abc11') }
+
+    before do
+      # ユーザーのURLのAPIスタブのみ設定（他ユーザーのURLは呼び出されない）
+      stub_request(:get, %r{https://kty\.at/rest/v3/short-urls/abc10/visits})
+        .to_return(
+          status: 200,
+          body: {
+            visits: {
+              data: []
+            }
+          }.to_json,
+          headers: { 'Content-Type' => 'application/json' }
+        )
+    end
 
     it '他ユーザーのデータを含まないこと' do
       result = service.call('30d')

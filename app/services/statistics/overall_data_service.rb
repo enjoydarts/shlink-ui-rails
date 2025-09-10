@@ -42,16 +42,57 @@ module Statistics
     def generate_daily_data(period)
       days = parse_period_to_days(period)
       start_date = days.days.ago.beginning_of_day
+      end_date = Time.current
 
-      # 期間内に作成されたURL一覧を取得
-      urls_in_period = @user.short_urls.active
-                            .where(date_created: start_date..Time.current)
+      # ユーザーの全URLを取得
+      all_urls = @user.short_urls.active
 
-      # URLのvisit_countの合計を日別に集計
-      # 注: ここでは作成日ベースで集計（実際のアクセス日時ではない）
-      daily_stats = urls_in_period
-                    .group("DATE(date_created)")
-                    .sum(:visit_count)
+      # 各URLのアクセス統計を取得して日別に集計
+      daily_visits_count = {}
+
+      begin
+        visits_service = Shlink::GetUrlVisitsService.new
+
+        all_urls.find_each do |url|
+          begin
+            visits_response = visits_service.call(
+              url.short_code,
+              start_date: start_date,
+              end_date: end_date
+            )
+
+            next unless visits_response.is_a?(Hash)
+
+            # 訪問データを抽出
+            visits_data = if visits_response.key?("visits") && visits_response["visits"].is_a?(Hash) && visits_response["visits"].key?("data")
+                            visits_response["visits"]["data"]
+            elsif visits_response.key?("visits") && visits_response["visits"].is_a?(Array)
+                            visits_response["visits"]
+            elsif visits_response.key?("data") && visits_response["data"].is_a?(Array)
+                            visits_response["data"]
+            else
+                            []
+            end
+
+            # 日別にカウント
+            visits_data.each do |visit|
+              next unless visit.is_a?(Hash) && visit["date"]
+
+              begin
+                visit_date = Date.parse(visit["date"]).strftime("%Y-%m-%d")
+                daily_visits_count[visit_date] = (daily_visits_count[visit_date] || 0) + 1
+              rescue Date::Error, ArgumentError => e
+                Rails.logger.warn "Invalid date format in visit data: #{visit['date']}"
+              end
+            end
+          rescue Shlink::Error => e
+            Rails.logger.warn "Could not fetch visits for URL #{url.short_code}: #{e.message}"
+            # 404 Not Found などのエラーは無視して続行
+          end
+        end
+      rescue => e
+        Rails.logger.error "Error fetching daily visits data: #{e.message}"
+      end
 
       # 日付の配列を生成
       date_labels = (0...days).map { |i| (start_date + i.days).strftime("%m/%d") }
@@ -59,7 +100,7 @@ module Statistics
       # 各日のアクセス数を配列に変換（データがない日は0）
       values = date_labels.map.with_index do |label, index|
         date_key = (start_date + index.days).strftime("%Y-%m-%d")
-        daily_stats[date_key] || 0
+        daily_visits_count[date_key] || 0
       end
 
       {

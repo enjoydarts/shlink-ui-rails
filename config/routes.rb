@@ -35,6 +35,8 @@ Rails.application.routes.draw do
     # Statistics API
     namespace :statistics do
       get :overall, to: "overall#index"
+      get :url_list, to: "individual#url_list"
+      get "individual/:short_code", to: "individual#show", as: :individual
     end
   end
 
