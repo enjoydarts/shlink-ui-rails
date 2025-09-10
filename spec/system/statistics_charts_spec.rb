@@ -46,7 +46,7 @@ RSpec.describe '全体統計機能', type: :system do
 
   # JavaScript有効環境は複雑なので実際の開発でテストする
   # システムテストではJavaScript無効環境での基本動作を確認
-  
+
   context 'マークアップとスタイルの確認（JavaScript無効）' do
     before { driven_by(:rack_test) }
 
@@ -56,26 +56,26 @@ RSpec.describe '全体統計機能', type: :system do
 
         # statistics-panelが存在する
         expect(page).to have_css('#statistics-panel')
-        
+
         # 期間選択要素が存在する
         expect(page).to have_css('select#period-select')
-        
+
         # グラフグリッドが存在する
         expect(page).to have_css('.grid')
-        
+
         # Canvas要素が存在する
         expect(page).to have_css('canvas')
-        
+
         # データコントローラーが設定されている
         expect(page).to have_css('[data-controller*="statistics-charts"]')
       end
-      
+
       it '個別分析パネルの構造が正しいこと' do
         visit mypage_path
-        
+
         # individual-panelが存在する
         expect(page).to have_css('#individual-panel')
-        
+
         # URL選択要素が存在する
         expect(page).to have_css('[data-controller*="individual-analysis"]')
       end

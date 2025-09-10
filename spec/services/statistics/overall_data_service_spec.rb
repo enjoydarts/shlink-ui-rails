@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe Statistics::OverallDataService, type: :service do
   let(:user) { create(:user) }
-  let(:service) { described_class.new(user) }
+  let(:service) { described_class.new(user, shlink_config: { base_url: "https://test.example.com", api_key: "test-key" }) }
 
   describe '#call' do
     let(:period) { '30d' }
@@ -43,7 +43,7 @@ RSpec.describe Statistics::OverallDataService, type: :service do
         today_date = Time.current.strftime('%Y-%m-%d')
         yesterday_date = 1.day.ago.strftime('%Y-%m-%d')
 
-        stub_request(:get, %r{https://kty\.at/rest/v3/short-urls/abc5/visits})
+        stub_request(:get, %r{https://test\.example\.com/rest/v3/short-urls/abc5/visits})
           .to_return(
             status: 200,
             body: {
@@ -57,7 +57,7 @@ RSpec.describe Statistics::OverallDataService, type: :service do
             headers: { 'Content-Type' => 'application/json' }
           )
 
-        stub_request(:get, %r{https://kty\.at/rest/v3/short-urls/abc6/visits})
+        stub_request(:get, %r{https://test\.example\.com/rest/v3/short-urls/abc6/visits})
           .to_return(
             status: 200,
             body: {
@@ -70,7 +70,7 @@ RSpec.describe Statistics::OverallDataService, type: :service do
             headers: { 'Content-Type' => 'application/json' }
           )
 
-        stub_request(:get, %r{https://kty\.at/rest/v3/short-urls/abc7/visits})
+        stub_request(:get, %r{https://test\.example\.com/rest/v3/short-urls/abc7/visits})
           .to_return(
             status: 200,
             body: {
@@ -105,7 +105,7 @@ RSpec.describe Statistics::OverallDataService, type: :service do
 
       before do
         # アクティブなURLのAPIスタブのみ設定
-        stub_request(:get, %r{https://kty\.at/rest/v3/short-urls/abc8/visits})
+        stub_request(:get, %r{https://test\.example\.com/rest/v3/short-urls/abc8/visits})
           .to_return(
             status: 200,
             body: {
@@ -202,7 +202,7 @@ RSpec.describe Statistics::OverallDataService, type: :service do
       today_date = Time.current.strftime('%Y-%m-%d')
       yesterday_date = 1.day.ago.strftime('%Y-%m-%d')
 
-      stub_request(:get, %r{https://kty\.at/rest/v3/short-urls/abc1/visits})
+      stub_request(:get, %r{https://test\.example\.com/rest/v3/short-urls/abc1/visits})
         .to_return(
           status: 200,
           body: {
@@ -216,7 +216,7 @@ RSpec.describe Statistics::OverallDataService, type: :service do
           headers: { 'Content-Type' => 'application/json' }
         )
 
-      stub_request(:get, %r{https://kty\.at/rest/v3/short-urls/abc2/visits})
+      stub_request(:get, %r{https://test\.example\.com/rest/v3/short-urls/abc2/visits})
         .to_return(
           status: 200,
           body: {
@@ -301,7 +301,7 @@ RSpec.describe Statistics::OverallDataService, type: :service do
 
     before do
       # ユーザーのURLのAPIスタブのみ設定（他ユーザーのURLは呼び出されない）
-      stub_request(:get, %r{https://kty\.at/rest/v3/short-urls/abc10/visits})
+      stub_request(:get, %r{https://test\.example\.com/rest/v3/short-urls/abc10/visits})
         .to_return(
           status: 200,
           body: {

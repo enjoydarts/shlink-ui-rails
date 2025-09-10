@@ -3,11 +3,11 @@ require 'rails_helper'
 RSpec.describe Statistics::IndividualUrlDataService, type: :service do
   let(:user) { create(:user) }
   let(:short_code) { 'abc123' }
-  let(:service) { described_class.new(user, short_code) }
+  let(:service) { described_class.new(user, short_code, shlink_config: { base_url: "https://test.example.com", api_key: "test-key" }) }
 
   before do
     # Mock Shlink API responses
-    stub_request(:get, %r{https://kty\.at/rest/v3/short-urls/abc123/visits})
+    stub_request(:get, %r{https://test\.example\.com/rest/v3/short-urls/abc123/visits})
       .to_return(
         status: 200,
         body: {
@@ -85,7 +85,7 @@ RSpec.describe Statistics::IndividualUrlDataService, type: :service do
 
     context 'APIエラーの場合' do
       before do
-        stub_request(:get, %r{https://kty\.at/rest/v3/short-urls/abc123/visits})
+        stub_request(:get, %r{https://test\.example\.com/rest/v3/short-urls/abc123/visits})
           .to_return(status: 404, body: { error: 'Not found' }.to_json)
       end
 

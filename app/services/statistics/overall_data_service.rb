@@ -3,8 +3,9 @@ module Statistics
     # キャッシュ有効期限: 1時間
     CACHE_EXPIRES = 1.hour
 
-    def initialize(user)
+    def initialize(user, shlink_config: {})
       @user = user
+      @shlink_config = shlink_config
     end
 
     # 全体統計データを取得（キャッシュ付き）
@@ -51,7 +52,7 @@ module Statistics
       daily_visits_count = {}
 
       begin
-        visits_service = Shlink::GetUrlVisitsService.new
+        visits_service = Shlink::GetUrlVisitsService.new(**@shlink_config)
 
         all_urls.find_each do |url|
           begin

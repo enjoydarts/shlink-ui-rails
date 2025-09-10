@@ -2,9 +2,10 @@ module Statistics
   class IndividualUrlDataService
     CACHE_EXPIRES = 30.minutes
 
-    def initialize(user, short_code)
+    def initialize(user, short_code, shlink_config: {})
       @user = user
       @short_code = short_code
+      @shlink_config = shlink_config
     end
 
     def call(period = "30d")
@@ -21,7 +22,7 @@ module Statistics
 
       begin
         # Shlink APIから個別URL訪問データを取得
-        visits_service = Shlink::GetUrlVisitsService.new
+        visits_service = Shlink::GetUrlVisitsService.new(**@shlink_config)
         visits_response = visits_service.call(
           @short_code,
           start_date: start_date,
