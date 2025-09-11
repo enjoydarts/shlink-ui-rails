@@ -1,173 +1,47 @@
-# CLAUDE.md
+# Shlink-UI-Rails
 
-このファイルは、Claude Code (claude.ai/code) がこのリポジトリでコードを扱う際のガイダンスを提供します。
+## 概要
+
+Shlink REST API を利用した短縮URL管理のRails製Webアプリケーション。
+
+## 技術スタック
+
+- **Backend**: Ruby 3.4.5 + Rails 8.0.2
+- **Database**: MySQL 8.4 + Ridgepole
+- **Frontend**: Hotwire (Turbo + Stimulus) + Tailwind CSS 4
+- **Testing**: RSpec + Capybara + WebMock
+- **Infrastructure**: Docker Compose
+- **Auth**: Devise + Google OAuth2
+- **Email**: MailerSend (本番)
 
 ## 開発コマンド
 
-### Makefile による簡単コマンド（推奨）
-このプロジェクトではMakefileによる開発ワークフローの簡素化を提供しています：
-
 ```bash
-# 初回セットアップ
-make setup
+# 環境起動・停止
+make up        # サービス起動
+make down      # サービス停止
+make setup     # 初回セットアップ
 
-# 日常的な開発作業
-make up                    # サービス起動
-make down                  # サービス停止
-make console              # Railsコンソール
-make test                 # 全テスト実行
-make lint                 # RuboCop実行
-make lint-fix             # RuboCop自動修正
+# テスト・品質管理
+make test      # 全テスト実行
+make lint      # RuboCop実行
+make lint-fix  # RuboCop自動修正
 
-# データベース操作
-make db-reset             # DB初期化
-make db-migrate           # 開発環境マイグレーション
-make db-migrate-test      # テスト環境マイグレーション
-
-# ヘルプ
-make help                 # 全コマンド一覧表示
+# データベース
+make db-migrate     # 開発環境マイグレーション
+make db-migrate-all # 全環境マイグレーション
 ```
 
-### Docker Compose による直接実行
-Makefileを使わない場合の従来方法：
+## 開発ルール
 
-```bash
-# 全サービス開始（初回ビルド付き）
-docker-compose up --build
+1. **Plan→Implement** - 変更方針提示→実装
+2. **最小変更** - 影響範囲を最小限に
+3. **品質保証** - 変更後は `make lint && make test` 実行必須
+4. **UX重視** - 破壊的操作は確認ダイアログ、エラーは分かりやすいメッセージ
 
-# サービス開始（2回目以降）
-docker-compose up
+## アーキテクチャ
 
-# コンテナ内でRailsコマンド実行
-docker-compose exec web bin/rails console
-docker-compose exec web bin/rails routes
-
-# データベース操作（Ridgepole使用）
-docker-compose exec web bin/rails db:create
-docker-compose exec web bundle exec ridgepole -c config/database.yml -E development --apply -f db/schemas/Schemafile
-docker-compose exec web bundle exec ridgepole -c config/database.yml -E test --apply -f db/schemas/Schemafile
-
-# CSSビルド（通常はcssサービスで自動実行）
-docker-compose exec web bin/rails tailwindcss:build
-docker-compose exec web bin/rails tailwindcss:watch
-
-# ログ確認
-docker-compose logs -f web
-docker-compose logs -f css
-```
-
-### テストと品質管理
-```bash
-# Makefileを使用（推奨）
-make test                 # 全テスト実行
-make test-system          # システムテスト実行
-make test-coverage        # カバレッジ付きテスト
-make lint                 # RuboCop実行
-make lint-fix             # RuboCop自動修正
-make security             # Brakemanセキュリティチェック
-
-# 直接実行
-docker-compose exec web bundle exec rspec
-docker-compose exec web bundle exec rspec spec/path/to/file_spec.rb
-docker-compose exec web bundle exec rubocop
-docker-compose exec web bundle exec brakeman
-```
-
-## アーキテクチャ概要
-
-### コアサービスアーキテクチャ
-Shlink API とのやり取り専用サービスクラスを持つサービス指向アーキテクチャ：
-
-- **Shlink::BaseService** (`app/services/shlink/base_service.rb`): Faradayを使ったHTTPクライアント設定、エラーハンドリング、認証ヘッダーを提供するベースクラス
-- **Shlink::CreateShortUrlService** (`app/services/shlink/create_short_url_service.rb`): Shlink API `/rest/v3/short-urls` エンドポイント経由でURL短縮を処理
-- **Shlink::GetQrCodeService** (`app/services/shlink/get_qr_code_service.rb`): 短縮URLのQRコード生成を処理
-
-### フォームオブジェクト
-- **ShortenForm** (`app/forms/shorten_form.rb`): URL短縮用のActiveModelフォームオブジェクト、URL形式の検証と任意のslug/QRコードパラメータ付き
-
-### フロントエンドアーキテクチャ
-- **Hotwire Stack**: JavaScript フレームワークなしでSPAライクな体験を提供するTurbo + Stimulus
-- **Tailwind CSS v4**: グラスモーフィズムデザインのモダンなユーティリティファーストCSS
-- **Stimulus Controllers**: 
-  - `clipboard_controller.js`: ワンクリックコピー機能
-  - `submitter_controller.js`: フォーム送信処理
-  - `tag_input_controller.js`: Gmail風タグ入力UI（入力フィールド内タグ表示、バリデーション付き）
-  - `accordion_controller.js`: 高度なオプション展開/収納
-
-### API統合
-Shlink API用の環境ベース設定：
-- `SHLINK_BASE_URL`: ShlinkサーバーURL
-- `SHLINK_API_KEY`: API認証キー
-
-エラーハンドリングには適切なHTTPステータスコード処理とユーザーフレンドリーなエラーメッセージを含みます。
-
-## 開発環境
-
-### 技術スタック
-- YJIT有効化のRuby 3.4.5
-- Rails 8.0.2.1
-- MySQL 8.4 データベース
-- コンテナ化のためのDocker Compose
-- フロントエンドインタラクティブ用のHotwire（Turbo + Stimulus）
-- スタイリング用のTailwind CSS v4
-
-### 主要依存関係
-- `faraday` + `faraday_middleware`: API通信用HTTPクライアント
-- `rspec-rails`: テストフレームワーク（Test::Unitではない）
-- `rubocop-rails-omakase`: コードスタイル強制
-- `capybara` + `selenium-webdriver`: システムテスト
-
-### 開発サービス
-Docker Composeは3つのサービスを実行：
-1. **web**: Railsアプリケーションサーバー（ポート3000）
-2. **css**: 自動リビルド用のTailwind CSSファイルウォッチャー
-3. **db**: MySQLデータベース（ポート3307）
-
-### テスト設定
-以下を使用するRSpec：
-- テストデータ生成用のFactoryBot
-- HTTPリクエストスタブ用のWebMock
-- HTTPインタラクション記録用のVCR
-- Rails固有のアサーション用のShouldaマッチャー
-- カバレッジレポート用のSimpleCov
-- システム/統合テスト用のCapybara
-
-## コードパターン
-
-### サービスクラスパターン
-すべてのShlink APIとのやり取りは`Shlink::BaseService`を継承するサービスクラスを使用。サービスは以下のパターンに従う：
-- メイン機能用の`call`メソッド
-- 例外発生版の`call!`メソッド
-- リクエスト構築とレスポンス処理用のプライベートメソッド
-
-### エラーハンドリング
-APIレスポンスからの詳細エラーメッセージ抽出を持つAPIエラー用のカスタム`Shlink::Error`例外クラス。
-
-### フォームオブジェクト
-ActiveModelベースのフォームオブジェクトは適切な検証と属性処理でモデルからフォームロジックを分離。
-
-## モバイル対応とブラウザサポート
-
-### ブラウザ互換性
-`ApplicationController`で以下のブラウザバージョンをサポート：
-- Safari 12+
-- Chrome 70+
-- Firefox 70+
-- Edge 79+
-- Opera 57+
-
-これにより、モバイルブラウザからの正常なアクセスが可能。
-
-### レスポンシブデザイン
-- Tailwind CSSのモバイルファーストアプローチ
-- `min-w-[120px]`など、フレキシブルな最小幅設定
-- `flex-wrap`による要素の適応的配置
-- タッチ操作に適したボタンサイズ（`p-1`以上）
-
-## 最近の改善
-
-### タグ入力UI改善（2025年1月実装）
-- Gmail風インライン表示：タグが入力フィールド内に表示
-- リアルタイムバリデーション：文字数制限、重複チェック、最大個数制限
-- キーボードナビゲーション：Enterキーでの追加、ESCキーでのクリア
-- 視覚的フィードバック：フォーカス状態の強調、エラー時の境界色変更
+- **Services**: 外部API通信・ビジネスロジック
+- **Controllers**: リクエスト処理・レスポンス制御
+- **Jobs**: 非同期処理（メール送信等）
+- **Adapters**: 外部サービス抽象化層

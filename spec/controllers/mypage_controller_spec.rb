@@ -3,6 +3,10 @@ require 'rails_helper'
 RSpec.describe MypageController, type: :controller do
   let(:user) { create(:user) }
 
+  before do
+    @request.env["devise.mapping"] = Devise.mappings[:user]
+  end
+
   describe "GET #index" do
     context "認証されていない場合" do
       before { get :index }
@@ -48,7 +52,7 @@ RSpec.describe MypageController, type: :controller do
           expect(assigns(:short_urls)).not_to include(other_user_url)
         end
 
-        xit "統計情報が正しく計算されること" do
+        it "統計情報が正しく計算されること" do
           expect(assigns(:total_urls)).to eq(4)
           expect(assigns(:total_visits)).to eq(50) # 10 + 20 + 5 + 15
           expect(assigns(:active_urls)).to eq(2) # active_url1 and active_url2 only

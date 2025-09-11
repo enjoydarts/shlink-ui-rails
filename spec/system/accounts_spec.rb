@@ -29,12 +29,6 @@ RSpec.describe 'Accounts', type: :system do
         expect(page).to have_button('アカウントを削除する')
       end
 
-      # 複雑なフォーム操作テストは省略（曖昧なセレクタ問題のため）
-      xit 'プロフィール更新ができる'
-      xit 'パスワード変更ができる'
-      xit 'アカウント削除モーダルが表示される'
-      xit 'アカウント削除モーダルでキャンセルできる'
-      xit 'パスワードが正しい場合アカウント削除ができる'
     end
 
     context 'OAuthユーザーでログイン' do
@@ -48,9 +42,6 @@ RSpec.describe 'Accounts', type: :system do
         expect(page).to have_css('[data-account-delete-is-oauth-user-value="true"]')
       end
 
-      # 複雑なフォーム操作テストは省略
-      xit 'OAuth用のアカウント削除確認が表示される'
-      xit '正しい確認文字列でアカウント削除ができる'
     end
   end
 
@@ -73,15 +64,4 @@ RSpec.describe 'Accounts', type: :system do
     end
   end
 
-  # JavaScript依存およびフォーム操作のテストはペンディング
-  describe 'キーボードナビゲーション' do
-    xit '矢印キーでタブを移動できる', js: true
-    xit 'Homeキーで最初のタブに移動できる', js: true
-    xit 'Endキーで最後のタブに移動できる', js: true
-  end
-
-  describe 'バリデーション' do
-    xit 'プロフィール更新で不正なパスワードの場合エラーが表示される'
-    xit 'パスワード変更で確認パスワードが一致しない場合エラーが表示される'
-  end
 end

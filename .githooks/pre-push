@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# pre-push の stdin から、push対象の ref を受け取る（複数行あり得る）
+# 形式: <local ref> <local sha> <remote ref> <remote sha>
+status=0
+while read -r local_ref local_sha remote_ref remote_sha; do
+  # 新規ブランチは remote_sha が all-zero
+  if [[ "$remote_sha" =~ ^0+$ ]]; then
+    range="$local_sha"                   # 初回は全履歴は重いので直近コミット集合で十分
+  else
+    range="$remote_sha..$local_sha"      # 差分レンジ
+  fi
+
+  files=$(git diff --name-only "$range" -- '*.rb' 'Gemfile' | tr '\n' ' ')
+  if [[ -n "${files// /}" ]]; then
+    echo "RuboCop: $files"
+    # 既存除外を尊重しつつ該当ファイルだけをLint
+    if ! bundle exec rubocop --force-exclusion $files; then
+      status=1
+    fi
+  fi
+done
+
+if [[ $status -ne 0 ]]; then
+  echo "✖ RuboCopに違反があります。修正してから push してください。"
+  exit 1   # 非0で push を中止
+fi
+exit 0
+

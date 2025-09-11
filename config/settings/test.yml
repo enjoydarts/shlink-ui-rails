@@ -2,3 +2,25 @@ shlink:
   base_url: "https://test.example.com"
   api_key: "test-api-key"
   timeout: 10
+
+# メール送信方式設定（テスト環境ではデフォルトでSMTP）
+mail_delivery_method: smtp
+
+# SMTP設定（テスト環境用）
+mailer:
+  host: "localhost"
+  port: 587
+  address: "smtp.test.com"
+  domain: "test.com"
+  user_name: "test@example.com"
+  password: "test_password"
+  authentication: "login"
+  enable_starttls_auto: true
+  from: "test@example.com"
+
+# MailerSend設定（テスト環境用）
+mailersend:
+  api_key: "test-mailersend-api-key"
+  domain: "test.example.com"
+  from_email: "test@example.com"
+  from_name: "Test App"
