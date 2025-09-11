@@ -1,5 +1,5 @@
 class Users::RegistrationsController < Devise::RegistrationsController
-  before_action :authenticate_user!
+  before_action :authenticate_user!, except: [ :new, :create, :cancel ]
   before_action :configure_account_update_params, only: [ :update ]
   before_action :configure_account_delete_params, only: [ :destroy ]
 
@@ -9,7 +9,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
     unless verify_captcha(params[:cf_turnstile_response])
       self.resource = resource_class.new(sign_up_params)
       resource.validate # バリデーションエラーを表示するため
-      respond_with resource
+      render :new, status: :unprocessable_entity
       return
     end
 

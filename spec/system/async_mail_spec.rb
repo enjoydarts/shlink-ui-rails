@@ -10,6 +10,11 @@ RSpec.describe 'Async Mail', type: :system do
 
   describe 'ユーザー登録時のメール送信' do
     it 'メール確認のジョブがキューイングされること' do
+      # CAPTCHA検証をスタブ化
+      allow(CaptchaVerificationService).to receive(:verify).and_return(
+        double(success?: true, error_codes: [])
+      )
+
       visit new_user_registration_path
 
       expect {

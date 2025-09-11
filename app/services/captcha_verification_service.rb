@@ -107,7 +107,6 @@ class CaptchaVerificationService
   # @return [Boolean] 無効の場合true
   def captcha_disabled?
     Settings.captcha.turnstile.secret_key.blank? ||
-      Rails.env.development? ||
       Rails.env.test?
   end
 
