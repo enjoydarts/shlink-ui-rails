@@ -5,6 +5,13 @@ Rails.application.routes.draw do
     sessions: "users/sessions"
   }
 
+  # Two-Factor Authentication routes
+  namespace :users do
+    resource :two_factor_authentication, only: [:show] do
+      post :verify, on: :member
+    end
+  end
+
   # Email preview in development
   if Rails.env.development?
     mount LetterOpenerWeb::Engine, at: "/letter_opener"

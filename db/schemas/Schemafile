@@ -38,6 +38,12 @@ create_table "users", force: :cascade do |t|
   # User role (normal_user, admin)
   t.string "role", default: "normal_user", null: false
 
+  # Two-Factor Authentication (TOTP)
+  t.string "otp_secret_key"                            # TOTP秘密鍵（暗号化）
+  t.boolean "otp_required_for_login", default: false   # TOTP有効フラグ
+  t.datetime "otp_backup_codes_generated_at"           # バックアップコード生成日時
+  t.text "otp_backup_codes"                            # バックアップコード（暗号化・JSON）
+
   t.timestamps null: false
 end
 
