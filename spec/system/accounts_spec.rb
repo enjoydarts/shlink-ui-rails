@@ -28,7 +28,6 @@ RSpec.describe 'Accounts', type: :system do
         expect(page).to have_css('[data-controller="account-delete"]')
         expect(page).to have_button('アカウントを削除する')
       end
-
     end
 
     context 'OAuthユーザーでログイン' do
@@ -41,7 +40,6 @@ RSpec.describe 'Accounts', type: :system do
         expect(page).to have_content('Google認証ユーザー')
         expect(page).to have_css('[data-account-delete-is-oauth-user-value="true"]')
       end
-
     end
   end
 
@@ -63,5 +61,4 @@ RSpec.describe 'Accounts', type: :system do
       expect(page).to have_css('.hidden.sm\\:inline', text: '危険な操作')
     end
   end
-
 end

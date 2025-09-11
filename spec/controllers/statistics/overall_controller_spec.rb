@@ -182,7 +182,6 @@ RSpec.describe Statistics::OverallController, type: :controller do
           monthly: { labels: [], values: [] }
         })
     end
-
   end
 
   describe 'JSONレスポンス形式' do
