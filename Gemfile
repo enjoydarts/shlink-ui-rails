@@ -58,6 +58,7 @@ gem "mailersend-ruby"
 # Two-Factor Authentication
 gem "rotp"        # TOTP generation and verification
 gem "rqrcode"     # QR code generation
+gem "webauthn"    # FIDO2/WebAuthn for physical security keys
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

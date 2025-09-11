@@ -7,8 +7,19 @@ Rails.application.routes.draw do
 
   # Two-Factor Authentication routes
   namespace :users do
-    resource :two_factor_authentication, only: [:show] do
-      post :verify, on: :member
+    resource :two_factor_authentications, only: [ :show, :new, :create, :destroy ] do
+      collection do
+        post :verify
+        post :backup_codes
+      end
+    end
+
+    # WebAuthn routes
+    resources :webauthn_credentials, only: [ :create, :destroy ] do
+      collection do
+        get :registration_options
+        get :authentication_options
+      end
     end
   end
 

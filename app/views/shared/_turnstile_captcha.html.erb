@@ -1,5 +1,5 @@
 <%# Cloudflare Turnstile CAPTCHA Widget %>
-<% if Settings.captcha.turnstile.site_key.present? && !Rails.env.test? %>
+<% if CaptchaHelper.enabled? %>
   <div class="space-y-3 pt-4">
     <label class="block text-sm font-semibold text-gray-700 mb-3">
       🛡️ セキュリティ検証
@@ -7,18 +7,8 @@
     
     <!-- Turnstile Widget Container -->
     <div id="turnstile-container" class="flex justify-center">
-      <div class="cf-turnstile" 
-           data-sitekey="<%= Settings.captcha.turnstile.site_key %>"
-           data-theme="light"
-           data-size="normal"
-           data-callback="onTurnstileSuccess"
-           data-error-callback="onTurnstileError"
-           data-expired-callback="onTurnstileExpired">
-      </div>
     </div>
 
-    <!-- Hidden input to store Turnstile token -->
-    <input type="hidden" name="cf-turnstile-response" id="turnstile-token" value="" />
 
     <!-- エラーメッセージ表示エリア -->
     <div id="turnstile-error" class="hidden p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -38,121 +28,285 @@
     </p>
   </div>
 
-  <!-- Turnstile Script -->
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-
   <script>
-    // Turnstile成功時のコールバック
-    window.onTurnstileSuccess = function(token) {
-      console.log('Turnstile verification successful:', token);
+    // 超シンプルなTurnstile管理 - 競合を完全回避
+    window.TurnstileController = window.TurnstileController || {
+      widgetId: null,
+      isInitializing: false,
       
-      // トークンをhiddenフィールドに設定
-      const tokenInput = document.getElementById('turnstile-token');
-      if (tokenInput) {
-        tokenInput.value = token;
-      }
-      
-      // エラーメッセージを非表示
-      const errorDiv = document.getElementById('turnstile-error');
-      if (errorDiv) {
-        errorDiv.classList.add('hidden');
-      }
-
-      // フォーム送信ボタンを有効化（無効化されている場合）
-      const submitButton = document.querySelector('button[type="submit"]');
-      if (submitButton) {
-        submitButton.disabled = false;
-        submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
-      }
-    };
-
-    // Turnstileエラー時のコールバック
-    window.onTurnstileError = function(error) {
-      console.error('Turnstile verification error:', error);
-      showTurnstileError('セキュリティ検証でエラーが発生しました。ページを再読み込みして再度お試しください。');
-    };
-
-    // Turnstile期限切れ時のコールバック
-    window.onTurnstileExpired = function() {
-      console.warn('Turnstile verification expired');
-      showTurnstileError('セキュリティ検証の有効期限が切れました。再度検証してください。');
-    };
-
-    // エラーメッセージ表示関数
-    function showTurnstileError(message) {
-      const errorDiv = document.getElementById('turnstile-error');
-      const errorMessage = document.getElementById('turnstile-error-message');
-      
-      if (errorDiv && errorMessage) {
-        errorMessage.textContent = message;
-        errorDiv.classList.remove('hidden');
-      }
-
-      // フォーム送信ボタンを無効化
-      const submitButton = document.querySelector('button[type="submit"]');
-      if (submitButton) {
-        submitButton.disabled = true;
-        submitButton.classList.add('opacity-50', 'cursor-not-allowed');
-      }
-    }
-
-    // ページ読み込み時の初期化
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('Turnstile: Page loaded, site key:', '<%= Settings.captcha.turnstile.site_key %>');
-      
-      // 初期状態ではフォーム送信ボタンを無効化（本番・開発環境）
-      const submitButton = document.querySelector('button[type="submit"]');
-      if (submitButton && '<%= Rails.env.test? %>' === 'false') {
-        submitButton.disabled = true;
-        submitButton.classList.add('opacity-50', 'cursor-not-allowed');
-        console.log('Turnstile: Submit button disabled, waiting for verification');
-      }
-
-      // フォーム送信前のトークンチェック
-      const form = submitButton?.closest('form');
-      if (form) {
-        form.addEventListener('submit', function(e) {
-          const tokenInput = document.getElementById('turnstile-token');
-          const token = tokenInput?.value;
+      // 一度だけコールバックを設定
+      setupCallbacks: function() {
+        if (window.onTurnstileSuccess) return;
+        
+        window.onTurnstileSuccess = function(token) {
+          console.log('Turnstile success callback triggered, token length:', token.length);
           
-          console.log('Turnstile: Form submit, token:', token);
-          
-          if (!token && '<%= Rails.env.test? %>' === 'false') {
-            e.preventDefault();
-            showTurnstileError('セキュリティ検証が完了していません。しばらくお待ちください。');
-            return false;
+          const tokenInput = document.querySelector('#turnstile-token, #turnstile-token-reg');
+          if (tokenInput) {
+            tokenInput.value = token;
+            console.log('Token set in input field');
+          } else {
+            console.error('Token input field not found');
           }
-        });
+          
+          const errorDiv = document.getElementById('turnstile-error');
+          if (errorDiv) errorDiv.classList.add('hidden');
+
+          const submitButton = document.querySelector('button[type="submit"]');
+          if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            console.log('Submit button enabled');
+          } else {
+            console.error('Submit button not found');
+          }
+        };
+
+        window.onTurnstileError = function(error) {
+          TurnstileController.showError('セキュリティ検証でエラーが発生しました。ページを再読み込みして再度お試しください。');
+        };
+
+        window.onTurnstileExpired = function() {
+          TurnstileController.showError('セキュリティ検証の有効期限が切れました。再度検証してください。');
+        };
+      },
+
+      showError: function(message) {
+        const errorDiv = document.getElementById('turnstile-error');
+        const errorMessage = document.getElementById('turnstile-error-message');
+        
+        if (errorDiv && errorMessage) {
+          errorMessage.textContent = message;
+          errorDiv.classList.remove('hidden');
+        }
+
+        const submitButton = document.querySelector('button[type="submit"]');
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+      },
+      
+      clean: function() {
+        console.log('Cleaning Turnstile widget, current ID:', this.widgetId);
+        if (this.widgetId !== null && window.turnstile) {
+          try {
+            window.turnstile.remove(this.widgetId);
+            console.log('Turnstile widget removed');
+          } catch (e) {
+            console.log('Failed to remove widget:', e);
+          }
+          this.widgetId = null;
+        }
+        const container = document.getElementById('turnstile-container');
+        if (container) container.innerHTML = '';
+        this.isInitializing = false;
+      },
+      
+      init: function() {
+        const container = document.getElementById('turnstile-container');
+        if (!container) {
+          console.log('No Turnstile container found');
+          return;
+        }
+        
+        // DOM要素が実際に表示されているかチェック
+        if (container.offsetParent === null && container.style.display !== 'block') {
+          console.log('Turnstile container is not visible, retrying...');
+          setTimeout(() => this.init(), 500);
+          return;
+        }
+        
+        // コンテナが空の場合は初期化が必要
+        const existingWidget = container.querySelector('.cf-turnstile');
+        if (this.widgetId !== null && existingWidget) {
+          console.log('Turnstile already initialized with widget ID:', this.widgetId);
+          // ウィジェットの状態を確認
+          if (window.turnstile && typeof window.turnstile.getResponse === 'function') {
+            try {
+              const response = window.turnstile.getResponse(this.widgetId);
+              console.log('Current widget response:', response ? 'has token' : 'no token');
+            } catch (e) {
+              console.log('Widget state check failed, reinitializing:', e);
+              this.clean();
+            }
+          }
+          return;
+        }
+        
+        // 新しいページ（コンテナが空）の場合は強制初期化
+        if (!existingWidget) {
+          console.log('Empty container detected - forcing initialization');
+          this.clean(); // 既存の状態をクリア
+        }
+        
+        // 初期化中の場合はスキップ
+        if (this.isInitializing) {
+          console.log('Turnstile initialization already in progress');
+          return;
+        }
+        
+        this.isInitializing = true;
+        console.log('Starting Turnstile initialization');
+        this.setupCallbacks();
+        
+        // Turnstile APIが利用可能になるまで待機
+        const waitForAPI = () => {
+          if (!window.turnstile || !window.turnstile.render) {
+            setTimeout(waitForAPI, 100);
+            return;
+          }
+          
+          this.clean();
+          
+          const widget = document.createElement('div');
+          widget.className = 'cf-turnstile';
+          container.appendChild(widget);
+          
+          try {
+            this.widgetId = window.turnstile.render(widget, {
+              sitekey: '<%= Settings.captcha.turnstile.site_key.to_s %>',
+              theme: 'auto',
+              size: 'normal',
+              callback: 'onTurnstileSuccess',
+              'error-callback': 'onTurnstileError',
+              'expired-callback': 'onTurnstileExpired'
+            });
+            
+            console.log('Turnstile widget rendered with ID:', this.widgetId);
+            
+            // Turnstileの状態を定期的にチェック
+            const checkTurnstileState = () => {
+              if (window.turnstile && this.widgetId !== null) {
+                try {
+                  const response = window.turnstile.getResponse(this.widgetId);
+                  if (response) {
+                    console.log('Turnstile completed automatically, triggering success');
+                    window.onTurnstileSuccess(response);
+                    return;
+                  }
+                } catch (e) {
+                  // getResponseが利用できない場合は無視
+                }
+              }
+              
+              // 30秒後にタイムアウト
+              if (Date.now() - this.renderTime > 30000) {
+                console.log('Turnstile timeout - enabling form anyway');
+                const submitButton = document.querySelector('button[type="submit"]');
+                if (submitButton) {
+                  submitButton.disabled = false;
+                  submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+                return;
+              }
+              
+              // 1秒後に再チェック
+              setTimeout(checkTurnstileState, 1000);
+            };
+            
+            this.renderTime = Date.now();
+            setTimeout(checkTurnstileState, 2000);
+            
+            // 初期状態設定
+            const tokenInput = document.querySelector('#turnstile-token, #turnstile-token-reg');
+            if (tokenInput) tokenInput.value = '';
+            
+            const submitButton = document.querySelector('button[type="submit"]');
+            if (submitButton && '<%= Rails.env.test? %>' === 'false') {
+              submitButton.disabled = true;
+              submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+              console.log('Submit button disabled until CAPTCHA completion');
+              
+              // フォーム送信時の検証を追加
+              const form = submitButton.closest('form');
+              if (form && !form.hasAttribute('data-turnstile-validated')) {
+                form.setAttribute('data-turnstile-validated', 'true');
+                form.addEventListener('submit', function(e) {
+                  const tokenInput = document.querySelector('#turnstile-token, #turnstile-token-reg');
+                  if (!tokenInput?.value) {
+                    e.preventDefault();
+                    TurnstileController.showError('セキュリティ検証が完了していません。');
+                    return false;
+                  }
+                });
+              }
+            }
+            
+          } catch (e) {
+            console.error('Turnstile render failed:', e);
+          }
+          
+          this.isInitializing = false;
+        };
+        
+        waitForAPI();
       }
+    };
+    
+    // イベントハンドラー
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('DOMContentLoaded - initializing Turnstile');
+      TurnstileController.init();
     });
+    
+    document.addEventListener('turbo:load', () => {
+      console.log('turbo:load - initializing Turnstile');
+      // 少し遅延させて確実に初期化
+      setTimeout(() => TurnstileController.init(), 100);
+    });
+    
+    document.addEventListener('turbo:render', () => {
+      console.log('turbo:render - initializing Turnstile');
+      setTimeout(() => TurnstileController.init(), 100);
+    });
+    
+    document.addEventListener('turbo:frame-load', () => {
+      console.log('turbo:frame-load - initializing Turnstile');
+      setTimeout(() => TurnstileController.init(), 100);
+    });
+    
+    // ページの表示が完了したタイミングでも初期化を試行
+    document.addEventListener('turbo:before-cache', () => {
+      console.log('turbo:before-cache - cleaning Turnstile');
+      TurnstileController.clean();
+    });
+    
+    document.addEventListener('turbo:before-visit', () => {
+      console.log('turbo:before-visit - cleaning Turnstile');
+      TurnstileController.clean();
+    });
+    
+    // ページ遷移後の表示完了時にも初期化
+    document.addEventListener('turbo:visit', () => {
+      console.log('turbo:visit - preparing for Turnstile');
+    });
+    
+    // Mutation Observerでコンテナの出現を監視
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              const container = node.querySelector ? node.querySelector('#turnstile-container') : null;
+              if (container || node.id === 'turnstile-container') {
+                console.log('Turnstile container detected via MutationObserver');
+                setTimeout(() => TurnstileController.init(), 200);
+              }
+            }
+          });
+        }
+      });
+    });
+    
+    // body要素の変更を監視
+    if (document.body) {
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    }
   </script>
-<% else %>
-  <!-- テスト環境またはAPIキー未設定時の表示 -->
-  <% if Rails.env.test? %>
-    <div class="space-y-3 pt-4">
-      <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <div class="flex items-center space-x-2">
-          <svg class="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-          <span class="text-sm text-yellow-700">
-            テスト環境: CAPTCHA検証は無効化されています
-          </span>
-        </div>
-      </div>
-    </div>
-  <% elsif Settings.captcha.turnstile.site_key.blank? %>
-    <div class="space-y-3 pt-4">
-      <div class="p-3 bg-red-50 border border-red-200 rounded-lg">
-        <div class="flex items-center space-x-2">
-          <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.962-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-          </svg>
-          <span class="text-sm text-red-700">
-            CAPTCHA設定が未完了です。環境変数 TURNSTILE_SITE_KEY を設定してください。
-          </span>
-        </div>
-      </div>
-    </div>
-  <% end %>
+  
 <% end %>
+<%# 環境変数がない場合は何も表示しない（CAPTCHA機能がないものとして扱う） %>

@@ -51,6 +51,9 @@
 
         <!-- CAPTCHA Widget -->
         <%= render 'shared/turnstile_captcha' %>
+        
+        <!-- Hidden field for Turnstile token -->
+        <input type="hidden" name="cf_turnstile_response" id="turnstile-token" value="" />
 
         <!-- Submit Button -->
         <div class="pt-4">

@@ -44,6 +44,9 @@ create_table "users", force: :cascade do |t|
   t.datetime "otp_backup_codes_generated_at"           # バックアップコード生成日時
   t.text "otp_backup_codes"                            # バックアップコード（暗号化・JSON）
 
+  # WebAuthn (FIDO2) Authentication
+  t.binary "webauthn_user_id"                          # WebAuthn用ユーザーID
+
   t.timestamps null: false
 end
 
@@ -94,3 +97,129 @@ end
 add_index "short_urls", [ "short_code" ], name: "index_short_urls_on_short_code", unique: true
 add_index "short_urls", [ "user_id", "date_created" ], name: "index_short_urls_on_user_id_and_date_created"
 add_index "short_urls", [ "deleted_at" ], name: "index_short_urls_on_deleted_at"
+
+create_table "webauthn_credentials", force: :cascade do |t|
+  # 認証器の固有識別子
+  t.string "external_id", null: false
+
+  # 公開鍵（Base64エンコード）
+  t.text "public_key", null: false
+
+  # サインカウンター（リプレイ攻撃防止）
+  t.bigint "sign_count", default: 0, null: false
+
+  # ユーザー設定のニックネーム
+  t.string "nickname", null: false
+
+  # 最後に使用された日時
+  t.datetime "last_used_at"
+
+  # アクティブ状態
+  t.boolean "active", default: true, null: false
+
+  # ユーザーとの関連
+  t.references :user, null: false, foreign_key: true
+
+  # タイムスタンプ
+  t.timestamps null: false
+end
+
+add_index "webauthn_credentials", [ "external_id" ], name: "index_webauthn_credentials_on_external_id", unique: true
+add_index "webauthn_credentials", [ "user_id", "nickname" ], name: "index_webauthn_credentials_on_user_id_and_nickname", unique: true
+add_index "webauthn_credentials", [ "user_id", "active" ], name: "index_webauthn_credentials_on_user_id_and_active"
+
+# SolidQueue tables for background job processing
+create_table "solid_queue_jobs", force: :cascade do |t|
+  t.string "queue_name", null: false
+  t.string "class_name", null: false
+  t.text "arguments"
+  t.integer "priority", default: 0, null: false
+  t.string "active_job_id"
+  t.datetime "scheduled_at"
+  t.datetime "finished_at"
+  t.string "concurrency_key"
+  t.datetime "created_at", null: false
+  t.datetime "updated_at", null: false
+end
+
+add_index "solid_queue_jobs", [ "queue_name", "finished_at" ], name: "index_solid_queue_jobs_for_filtering"
+add_index "solid_queue_jobs", [ "scheduled_at" ], name: "index_solid_queue_jobs_on_scheduled_at"
+add_index "solid_queue_jobs", [ "active_job_id" ], name: "index_solid_queue_jobs_on_active_job_id"
+add_index "solid_queue_jobs", [ "class_name" ], name: "index_solid_queue_jobs_on_class_name"
+add_index "solid_queue_jobs", [ "finished_at" ], name: "index_solid_queue_jobs_on_finished_at"
+add_index "solid_queue_jobs", [ "concurrency_key", "priority", "created_at" ], name: "index_solid_queue_jobs_for_alerting"
+
+create_table "solid_queue_scheduled_executions", force: :cascade do |t|
+  t.bigint "job_id", null: false
+  t.string "queue_name", null: false
+  t.integer "priority", default: 0, null: false
+  t.datetime "scheduled_at", null: false
+  t.datetime "created_at", null: false
+end
+
+add_index "solid_queue_scheduled_executions", [ "scheduled_at", "priority", "job_id" ], name: "index_solid_queue_scheduled_executions_for_polling"
+
+create_table "solid_queue_ready_executions", force: :cascade do |t|
+  t.bigint "job_id", null: false
+  t.string "queue_name", null: false
+  t.integer "priority", default: 0, null: false
+  t.datetime "created_at", null: false
+end
+
+add_index "solid_queue_ready_executions", [ "priority", "job_id" ], name: "index_solid_queue_ready_executions_for_polling"
+
+create_table "solid_queue_claimed_executions", force: :cascade do |t|
+  t.bigint "job_id", null: false
+  t.string "process_id"
+  t.datetime "created_at", null: false
+end
+
+add_index "solid_queue_claimed_executions", [ "process_id", "job_id" ], name: "index_solid_queue_claimed_executions_on_process_id_and_job_id"
+
+create_table "solid_queue_blocked_executions", force: :cascade do |t|
+  t.bigint "job_id", null: false
+  t.string "queue_name", null: false
+  t.integer "priority", default: 0, null: false
+  t.string "concurrency_key", null: false
+  t.datetime "expires_at", null: false
+  t.datetime "created_at", null: false
+end
+
+add_index "solid_queue_blocked_executions", [ "expires_at", "concurrency_key" ], name: "index_solid_queue_blocked_executions_for_maintenance"
+add_index "solid_queue_blocked_executions", [ "concurrency_key", "priority", "job_id" ], name: "index_solid_queue_blocked_executions_for_polling"
+
+create_table "solid_queue_failed_executions", force: :cascade do |t|
+  t.bigint "job_id", null: false
+  t.text "error"
+  t.datetime "created_at", null: false
+end
+
+add_index "solid_queue_failed_executions", [ "job_id" ], name: "index_solid_queue_failed_executions_on_job_id", unique: true
+
+create_table "solid_queue_paused_queues", force: :cascade do |t|
+  t.string "queue_name", null: false
+  t.datetime "created_at", null: false
+end
+
+add_index "solid_queue_paused_queues", [ "queue_name" ], name: "index_solid_queue_paused_queues_on_queue_name", unique: true
+
+create_table "solid_queue_pauses", force: :cascade do |t|
+  t.string "queue_name", null: false
+  t.datetime "created_at", null: false
+end
+
+add_index "solid_queue_pauses", [ "queue_name" ], name: "index_solid_queue_pauses_on_queue_name", unique: true
+
+create_table "solid_queue_processes", force: :cascade do |t|
+  t.string "kind", null: false
+  t.datetime "last_heartbeat_at", null: false
+  t.bigint "supervisor_id"
+  t.integer "pid", null: false
+  t.string "hostname"
+  t.text "metadata"
+  t.string "name"
+  t.datetime "created_at", null: false
+end
+
+add_index "solid_queue_processes", [ "last_heartbeat_at" ], name: "index_solid_queue_processes_on_last_heartbeat_at"
+add_index "solid_queue_processes", [ "supervisor_id" ], name: "index_solid_queue_processes_on_supervisor_id"

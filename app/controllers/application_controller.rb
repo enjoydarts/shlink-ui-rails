@@ -26,7 +26,16 @@ class ApplicationController < ActionController::Base
   # CAPTCHA検証ヘルパーメソッド
   # @param token [String] Turnstileトークン
   # @return [Boolean] 検証成功の場合true
-  def verify_captcha(token)
+  def verify_captcha(token = nil)
+    # CAPTCHAが無効な場合はスキップ
+    return true if CaptchaHelper.disabled?
+
+    # トークンが引数で渡されない場合はパラメータから取得
+    # Deviseパラメータ、直接パラメータ、ダッシュ形式の順でチェック
+    token ||= params.dig(resource_name, :cf_turnstile_response) ||
+              params[:cf_turnstile_response] ||
+              params["cf-turnstile-response"]
+
     result = CaptchaVerificationService.verify(
       token: token,
       remote_ip: request.remote_ip
@@ -44,9 +53,9 @@ class ApplicationController < ActionController::Base
   # @param error_codes [Array<String>] エラーコード配列
   # @return [String] ユーザー向けエラーメッセージ
   def captcha_error_message(error_codes)
-    return 'セキュリティ検証に失敗しました。しばらく時間をおいて再度お試しください。' if error_codes.include?('timeout')
-    return 'セキュリティ検証でエラーが発生しました。ページを再読み込みして再度お試しください。' if error_codes.include?('network-error')
+    return "セキュリティ検証に失敗しました。しばらく時間をおいて再度お試しください。" if error_codes.include?("timeout")
+    return "セキュリティ検証でエラーが発生しました。ページを再読み込みして再度お試しください。" if error_codes.include?("network-error")
 
-    'セキュリティ検証が完了していません。チェックボックスにチェックを入れてから送信してください。'
+    "セキュリティ検証が完了していません。チェックボックスにチェックを入れてから送信してください。"
   end
 end

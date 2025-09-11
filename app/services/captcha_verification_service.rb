@@ -31,15 +31,15 @@ class CaptchaVerificationService
   # 検証実行
   # @return [CaptchaVerificationService::Result] 検証結果
   def verify
-    return failed_result([ 'missing-input-response' ]) unless valid?
+    return failed_result([ "missing-input-response" ]) unless valid?
     return disabled_result if captcha_disabled?
 
     perform_verification
   rescue Faraday::TimeoutError
-    failed_result([ 'timeout' ])
+    failed_result([ "timeout" ])
   rescue Faraday::Error => e
     Rails.logger.error "CAPTCHA verification failed: #{e.message}"
-    failed_result([ 'network-error' ])
+    failed_result([ "network-error" ])
   end
 
   private
@@ -55,17 +55,17 @@ class CaptchaVerificationService
   # @param response [Faraday::Response] HTTPレスポンス
   # @return [CaptchaVerificationService::Result] 検証結果
   def parse_response(response)
-    return failed_result([ 'invalid-response' ]) unless response.success?
+    return failed_result([ "invalid-response" ]) unless response.success?
 
     body = JSON.parse(response.body)
     Result.new(
-      success: body['success'],
-      error_codes: body['error-codes'] || [],
-      challenge_ts: body['challenge_ts'],
-      hostname: body['hostname']
+      success: body["success"],
+      error_codes: body["error-codes"] || [],
+      challenge_ts: body["challenge_ts"],
+      hostname: body["hostname"]
     )
   rescue JSON::ParserError
-    failed_result([ 'invalid-json' ])
+    failed_result([ "invalid-json" ])
   end
 
   # HTTPクライアントの設定
@@ -106,8 +106,7 @@ class CaptchaVerificationService
   # CAPTCHA機能の有効/無効判定
   # @return [Boolean] 無効の場合true
   def captcha_disabled?
-    Settings.captcha.turnstile.secret_key.blank? ||
-      Rails.env.test?
+    CaptchaHelper.disabled?
   end
 
   # 検証API URL

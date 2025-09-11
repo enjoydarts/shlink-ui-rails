@@ -102,7 +102,7 @@ class User < ApplicationRecord
 
     # まずTOTPコードを試行
     return true if verify_totp_code(code)
-    
+
     # TOTPが失敗した場合、バックアップコードを試行
     verify_backup_code(code)
   end
@@ -126,16 +126,96 @@ class User < ApplicationRecord
     TotpService.generate_backup_codes(self)
   end
 
+  # 新しいバックアップコードを生成（エイリアス）
+  # @return [Array<String>] バックアップコード配列
+  def regenerate_two_factor_backup_codes!
+    regenerate_backup_codes!
+  end
+
+  # QRコードを生成
+  # @return [String] QRコードのSVG
+  def generate_two_factor_qr_code
+    TotpService.generate_qr_code(self)
+  end
+
+  # 2FAシークレットキーを取得
+  # @return [String] Base32エンコードされたシークレットキー
+  def two_factor_secret
+    TotpService.get_secret(self)
+  end
+
+  # バックアップコードを取得
+  # @return [Array<String>] バックアップコード配列
+  def two_factor_backup_codes
+    return [] if otp_backup_codes.blank?
+
+    begin
+      backup_codes = Rails.application.message_verifier(:backup_codes).verify(otp_backup_codes)
+      JSON.parse(backup_codes)
+    rescue StandardError
+      []
+    end
+  end
+
   # バックアップコードの残り数
   # @return [Integer] 残りバックアップコード数
   def backup_codes_count
-    return 0 if otp_backup_codes.blank?
-    
-    begin
-      backup_codes = Rails.application.message_verifier(:backup_codes).verify(otp_backup_codes)
-      JSON.parse(backup_codes).size
-    rescue StandardError
-      0
-    end
+    two_factor_backup_codes.size
+  end
+
+  # FIDO2/WebAuthn関連メソッド
+
+  # WebAuthnクレデンシャルとの関連付け
+  has_many :webauthn_credentials, dependent: :destroy
+
+  # FIDO2セキュリティキーが登録されているか
+  # @return [Boolean] 登録済みの場合true
+  def webauthn_enabled?
+    webauthn_credentials.exists?
+  end
+
+  # アクティブなWebAuthnクレデンシャルを取得
+  # @return [ActiveRecord::Relation] アクティブなクレデンシャル
+  def active_webauthn_credentials
+    webauthn_credentials.where(active: true)
+  end
+
+  # WebAuthn ID（ユーザーハンドル）を生成・取得
+  # @return [String] WebAuthn用のユーザーID
+  def webauthn_id
+    return webauthn_user_id if webauthn_user_id.present?
+
+    # 新しいWebAuthn IDを生成
+    new_id = SecureRandom.random_bytes(64)
+    update!(webauthn_user_id: new_id)
+    new_id
+  end
+
+  # 登録用のWebAuthnオプションを生成
+  # @return [Hash] WebAuthn登録オプション
+  def webauthn_registration_options
+    WebauthnService.registration_options(self)
+  end
+
+  # 認証用のWebAuthnオプションを生成
+  # @return [Hash] WebAuthn認証オプション
+  def webauthn_authentication_options
+    WebauthnService.authentication_options(self)
+  end
+
+  # WebAuthnクレデンシャルを登録
+  # @param credential [WebAuthn::Credential] 検証済みクレデンシャル
+  # @param nickname [String] クレデンシャルのニックネーム
+  # @return [WebauthnCredential] 作成されたクレデンシャルレコード
+  def register_webauthn_credential(credential, nickname: nil)
+    WebauthnService.register_credential(self, credential, nickname)
+  end
+
+  # WebAuthn認証を検証
+  # @param credential [WebAuthn::Credential] 認証レスポンス
+  # @param challenge [String] チャレンジ文字列
+  # @return [Boolean] 認証成功の場合true
+  def verify_webauthn_authentication(credential, challenge)
+    WebauthnService.verify_authentication(self, credential, challenge)
   end
 end

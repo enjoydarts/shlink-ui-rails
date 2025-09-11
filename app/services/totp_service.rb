@@ -24,7 +24,7 @@ class TotpService
   # @param user [User] 対象ユーザー
   # @param issuer [String] 発行者名（アプリ名）
   # @return [String] QRコードのSVG文字列
-  def self.generate_qr_code(user, issuer: 'Shlink-UI-Rails')
+  def self.generate_qr_code(user, issuer: "Shlink-UI-Rails")
     service = new(user: user)
     service.generate_qr_code(issuer: issuer)
   end
@@ -73,6 +73,14 @@ class TotpService
     service.disable_two_factor
   end
 
+  # ユーザーのシークレットキーを取得
+  # @param user [User] 対象ユーザー
+  # @return [String] Base32エンコードされたシークレットキー
+  def self.get_secret(user)
+    service = new(user: user)
+    service.get_secret
+  end
+
   # インスタンスメソッド
 
   # 新しい秘密鍵を生成
@@ -82,13 +90,14 @@ class TotpService
 
     secret = ROTP::Base32.random
     user.otp_secret_key = encrypt_secret(secret)
+    user.save! # 秘密鍵を保存
     secret
   end
 
   # QRコードのSVG文字列を生成
   # @param issuer [String] 発行者名
   # @return [String] QRコードのSVG文字列
-  def generate_qr_code(issuer: 'Shlink-UI-Rails')
+  def generate_qr_code(issuer: "Shlink-UI-Rails")
     return nil unless valid? && user.otp_secret_key.present?
 
     secret = decrypt_secret(user.otp_secret_key)
@@ -96,7 +105,7 @@ class TotpService
 
     totp = ROTP::TOTP.new(secret, issuer: issuer)
     provisioning_uri = totp.provisioning_uri(user.email)
-    
+
     qr_code = RQRCode::QRCode.new(provisioning_uri)
     qr_code.as_svg(
       color: "000",
@@ -135,10 +144,10 @@ class TotpService
 
     codes = Array.new(BACKUP_CODE_COUNT) { generate_backup_code }
     encrypted_codes = encrypt_backup_codes(codes)
-    
+
     user.otp_backup_codes = encrypted_codes
     user.otp_backup_codes_generated_at = Time.current
-    
+
     codes
   end
 
@@ -152,16 +161,16 @@ class TotpService
     backup_codes = decrypt_backup_codes(user.otp_backup_codes)
     return false if backup_codes.blank?
 
-    normalized_code = code.gsub(/\s|-/, '').downcase
+    normalized_code = code.gsub(/\s|-/, "").downcase
     matching_code = backup_codes.find { |bc| bc == normalized_code }
-    
+
     return false unless matching_code
 
     # 使用済みコードを削除
     backup_codes.delete(matching_code)
     user.otp_backup_codes = encrypt_backup_codes(backup_codes)
     user.save!
-    
+
     true
   rescue StandardError => e
     Rails.logger.error "Backup code verification failed: #{e.message}"
@@ -177,7 +186,7 @@ class TotpService
 
     user.otp_required_for_login = true
     generate_backup_codes if user.otp_backup_codes.blank?
-    
+
     user.save!
   rescue StandardError => e
     Rails.logger.error "2FA enablement failed: #{e.message}"
@@ -193,11 +202,23 @@ class TotpService
     user.otp_secret_key = nil
     user.otp_backup_codes = nil
     user.otp_backup_codes_generated_at = nil
-    
+
     user.save!
   rescue StandardError => e
     Rails.logger.error "2FA disabling failed: #{e.message}"
     false
+  end
+
+  # ユーザーのシークレットキーを取得（なければ生成）
+  # @return [String] Base32エンコードされたシークレットキー
+  def get_secret
+    return nil unless valid?
+
+    if user.otp_secret_key.present?
+      decrypt_secret(user.otp_secret_key)
+    else
+      generate_secret
+    end
   end
 
   private
@@ -207,7 +228,7 @@ class TotpService
   # @return [String] 暗号化された秘密鍵
   def encrypt_secret(secret)
     return nil if secret.blank?
-    
+
     Rails.application.message_verifier(:otp_secret).generate(secret)
   end
 
@@ -216,7 +237,7 @@ class TotpService
   # @return [String] 平文の秘密鍵
   def decrypt_secret(encrypted_secret)
     return nil if encrypted_secret.blank?
-    
+
     Rails.application.message_verifier(:otp_secret).verify(encrypted_secret)
   rescue ActiveSupport::MessageVerifier::InvalidSignature
     Rails.logger.error "Invalid OTP secret signature"
@@ -228,7 +249,7 @@ class TotpService
   # @return [String] 暗号化されたJSONデータ
   def encrypt_backup_codes(codes)
     return nil if codes.blank?
-    
+
     Rails.application.message_verifier(:backup_codes).generate(codes.to_json)
   end
 
@@ -237,7 +258,7 @@ class TotpService
   # @return [Array<String>] バックアップコード配列
   def decrypt_backup_codes(encrypted_codes)
     return [] if encrypted_codes.blank?
-    
+
     json_data = Rails.application.message_verifier(:backup_codes).verify(encrypted_codes)
     JSON.parse(json_data)
   rescue ActiveSupport::MessageVerifier::InvalidSignature, JSON::ParserError
