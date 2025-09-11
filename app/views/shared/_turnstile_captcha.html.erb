@@ -17,6 +17,9 @@
       </div>
     </div>
 
+    <!-- Hidden input to store Turnstile token -->
+    <input type="hidden" name="cf-turnstile-response" id="turnstile-token" value="" />
+
     <!-- エラーメッセージ表示エリア -->
     <div id="turnstile-error" class="hidden p-3 bg-red-50 border border-red-200 rounded-lg">
       <div class="flex items-center space-x-2">
@@ -41,7 +44,13 @@
   <script>
     // Turnstile成功時のコールバック
     window.onTurnstileSuccess = function(token) {
-      console.log('Turnstile verification successful');
+      console.log('Turnstile verification successful:', token);
+      
+      // トークンをhiddenフィールドに設定
+      const tokenInput = document.getElementById('turnstile-token');
+      if (tokenInput) {
+        tokenInput.value = token;
+      }
       
       // エラーメッセージを非表示
       const errorDiv = document.getElementById('turnstile-error');
@@ -89,11 +98,31 @@
 
     // ページ読み込み時の初期化
     document.addEventListener('DOMContentLoaded', function() {
+      console.log('Turnstile: Page loaded, site key:', '<%= Settings.captcha.turnstile.site_key %>');
+      
       // 初期状態ではフォーム送信ボタンを無効化（本番・開発環境）
       const submitButton = document.querySelector('button[type="submit"]');
       if (submitButton && '<%= Rails.env.test? %>' === 'false') {
         submitButton.disabled = true;
         submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+        console.log('Turnstile: Submit button disabled, waiting for verification');
+      }
+
+      // フォーム送信前のトークンチェック
+      const form = submitButton?.closest('form');
+      if (form) {
+        form.addEventListener('submit', function(e) {
+          const tokenInput = document.getElementById('turnstile-token');
+          const token = tokenInput?.value;
+          
+          console.log('Turnstile: Form submit, token:', token);
+          
+          if (!token && '<%= Rails.env.test? %>' === 'false') {
+            e.preventDefault();
+            showTurnstileError('セキュリティ検証が完了していません。しばらくお待ちください。');
+            return false;
+          }
+        });
       }
     });
   </script>
