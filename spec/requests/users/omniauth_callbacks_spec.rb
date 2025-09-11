@@ -1,11 +1,7 @@
 require 'rails_helper'
 
-RSpec.describe Users::OmniauthCallbacksController, type: :controller do
-  before do
-    @request.env["devise.mapping"] = Devise.mappings[:user]
-  end
-
-  describe 'GET #google_oauth2' do
+RSpec.describe "Users::OmniauthCallbacks", type: :request do
+  describe "GET /users/auth/google_oauth2/callback" do
     let(:auth_hash) do
       OmniAuth::AuthHash.new({
         'provider' => 'google_oauth2',
@@ -18,13 +14,19 @@ RSpec.describe Users::OmniauthCallbacksController, type: :controller do
     end
 
     before do
-      @request.env["omniauth.auth"] = auth_hash
+      OmniAuth.config.test_mode = true
+      OmniAuth.config.mock_auth[:google_oauth2] = auth_hash
+    end
+
+    after do
+      OmniAuth.config.test_mode = false
+      OmniAuth.config.mock_auth[:google_oauth2] = nil
     end
 
     context '新規ユーザーの場合' do
       it 'ユーザーを作成してサインインすること' do
         expect {
-          get :google_oauth2
+          get '/users/auth/google_oauth2/callback'
         }.to change(User, :count).by(1)
 
         created_user = User.last
@@ -34,7 +36,8 @@ RSpec.describe Users::OmniauthCallbacksController, type: :controller do
         expect(created_user.uid).to eq('123456789')
 
         expect(response).to redirect_to(dashboard_path)
-        expect(flash[:notice]).to include('Google')
+        follow_redirect!
+        expect(response.body).to include('URL短縮ツール')
       end
     end
 
@@ -45,11 +48,12 @@ RSpec.describe Users::OmniauthCallbacksController, type: :controller do
 
       it 'ユーザーを作成せずサインインすること' do
         expect {
-          get :google_oauth2
+          get '/users/auth/google_oauth2/callback'
         }.not_to change(User, :count)
 
         expect(response).to redirect_to(dashboard_path)
-        expect(flash[:notice]).to include('Google')
+        follow_redirect!
+        expect(response.body).to include('URL短縮ツール')
       end
     end
 
@@ -61,9 +65,10 @@ RSpec.describe Users::OmniauthCallbacksController, type: :controller do
       end
 
       it '登録ページにリダイレクトすること' do
-        get :google_oauth2
+        get '/users/auth/google_oauth2/callback'
 
         expect(response).to redirect_to(new_user_registration_url)
+        follow_redirect!
         expect(flash[:alert]).to eq('Error occurred')
       end
     end

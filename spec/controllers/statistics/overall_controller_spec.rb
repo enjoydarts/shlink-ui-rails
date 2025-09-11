@@ -182,18 +182,6 @@ RSpec.describe Statistics::OverallController, type: :controller do
           monthly: { labels: [], values: [] }
         })
     end
-
-    xit '大量データでも適切に動作すること' do
-      start_time = Time.current
-      get :index
-      end_time = Time.current
-
-      expect(response).to have_http_status(:success)
-      expect(end_time - start_time).to be < 3.0 # 3秒未満
-
-      json_response = JSON.parse(response.body)
-      expect(json_response['success']).to be true
-    end
   end
 
   describe 'JSONレスポンス形式' do

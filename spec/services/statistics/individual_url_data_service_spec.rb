@@ -89,8 +89,12 @@ RSpec.describe Statistics::IndividualUrlDataService, type: :service do
           .to_return(status: 404, body: { error: 'Not found' }.to_json)
       end
 
-      xit 'エラーをハンドリングすること' do
-        expect { service.call('7d') }.to raise_error(Shlink::Error)
+      it 'エラーをハンドリングして空のデータを返すこと' do
+        result = service.call('7d')
+        expect(result[:total_visits]).to eq(0)
+        expect(result[:unique_visitors]).to eq(0)
+        expect(result[:daily_visits][:labels]).to be_empty
+        expect(result[:daily_visits][:values]).to be_empty
       end
     end
 

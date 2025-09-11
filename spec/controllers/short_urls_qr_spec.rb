@@ -21,7 +21,7 @@ RSpec.describe ShortUrlsController, "QRコード機能" do
     end
 
     context "有効なshort_codeが指定された場合" do
-      xit "QRコード画像を返すこと" do
+      it "QRコード画像を返すこと" do
         get :qr_code, params: { short_code: short_code }
 
         expect(response).to have_http_status(:ok)
