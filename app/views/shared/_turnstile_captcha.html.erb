@@ -1,0 +1,116 @@
+<%# Cloudflare Turnstile CAPTCHA Widget %>
+<% if Settings.captcha.turnstile.site_key.present? && !Rails.env.test? %>
+  <div class="space-y-3 pt-4">
+    <label class="block text-sm font-semibold text-gray-700 mb-3">
+      🛡️ セキュリティ検証
+    </label>
+    
+    <!-- Turnstile Widget Container -->
+    <div id="turnstile-container" class="flex justify-center">
+      <div class="cf-turnstile" 
+           data-sitekey="<%= Settings.captcha.turnstile.site_key %>"
+           data-theme="light"
+           data-size="normal"
+           data-callback="onTurnstileSuccess"
+           data-error-callback="onTurnstileError"
+           data-expired-callback="onTurnstileExpired">
+      </div>
+    </div>
+
+    <!-- エラーメッセージ表示エリア -->
+    <div id="turnstile-error" class="hidden p-3 bg-red-50 border border-red-200 rounded-lg">
+      <div class="flex items-center space-x-2">
+        <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.962-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+        </svg>
+        <span id="turnstile-error-message" class="text-sm text-red-700"></span>
+      </div>
+    </div>
+
+    <p class="text-sm text-gray-500 flex items-center space-x-1">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <span>このセキュリティ検証は、自動化されたアクセスを防ぐためのものです</span>
+    </p>
+  </div>
+
+  <!-- Turnstile Script -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+  <script>
+    // Turnstile成功時のコールバック
+    window.onTurnstileSuccess = function(token) {
+      console.log('Turnstile verification successful');
+      
+      // エラーメッセージを非表示
+      const errorDiv = document.getElementById('turnstile-error');
+      if (errorDiv) {
+        errorDiv.classList.add('hidden');
+      }
+
+      // フォーム送信ボタンを有効化（無効化されている場合）
+      const submitButton = document.querySelector('button[type="submit"]');
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+    };
+
+    // Turnstileエラー時のコールバック
+    window.onTurnstileError = function(error) {
+      console.error('Turnstile verification error:', error);
+      showTurnstileError('セキュリティ検証でエラーが発生しました。ページを再読み込みして再度お試しください。');
+    };
+
+    // Turnstile期限切れ時のコールバック
+    window.onTurnstileExpired = function() {
+      console.warn('Turnstile verification expired');
+      showTurnstileError('セキュリティ検証の有効期限が切れました。再度検証してください。');
+    };
+
+    // エラーメッセージ表示関数
+    function showTurnstileError(message) {
+      const errorDiv = document.getElementById('turnstile-error');
+      const errorMessage = document.getElementById('turnstile-error-message');
+      
+      if (errorDiv && errorMessage) {
+        errorMessage.textContent = message;
+        errorDiv.classList.remove('hidden');
+      }
+
+      // フォーム送信ボタンを無効化
+      const submitButton = document.querySelector('button[type="submit"]');
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+    }
+
+    // ページ読み込み時の初期化
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初期状態ではフォーム送信ボタンを無効化（オプション）
+      const submitButton = document.querySelector('button[type="submit"]');
+      if (submitButton && '<%= Rails.env.production? %>' === 'true') {
+        submitButton.disabled = true;
+        submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+    });
+  </script>
+<% else %>
+  <!-- 開発・テスト環境またはAPIキー未設定時の表示 -->
+  <% unless Rails.env.production? %>
+    <div class="space-y-3 pt-4">
+      <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div class="flex items-center space-x-2">
+          <svg class="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span class="text-sm text-yellow-700">
+            開発環境: CAPTCHA検証は無効化されています
+          </span>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>

@@ -3,6 +3,19 @@ class Users::RegistrationsController < Devise::RegistrationsController
   before_action :configure_account_update_params, only: [ :update ]
   before_action :configure_account_delete_params, only: [ :destroy ]
 
+  # Override create to add CAPTCHA verification
+  def create
+    # CAPTCHA検証を実行
+    unless verify_captcha(params[:cf_turnstile_response])
+      self.resource = resource_class.new(sign_up_params)
+      resource.validate # バリデーションエラーを表示するため
+      respond_with resource
+      return
+    end
+
+    super
+  end
+
   # Override destroy to handle OAuth users
   def destroy
     # Check confirmation based on user type
