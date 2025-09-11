@@ -1,5 +1,7 @@
 # Shlink UI Rails
 
+<img width="1920" height="793" alt="localhost_3000_account" src="https://github.com/user-attachments/assets/b74e1bba-c9fe-4c89-b8c9-41f1910088d8" />
+
 A modern web application built with Ruby on Rails 8 that provides a user-friendly interface for [Shlink](https://shlink.io/), the self-hosted URL shortener. This application allows users to create, manage, and track their shortened URLs with a beautiful, responsive interface.
 
 ## ✨ Features
