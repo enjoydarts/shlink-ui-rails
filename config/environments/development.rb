@@ -25,6 +25,9 @@ Rails.application.configure do
     config.action_controller.perform_caching = false
   end
 
+  # Enable asset serving in development for error pages and letter_opener
+  config.public_file_server.enabled = true
+
   # Change to :null_store to avoid any caching.
   config.cache_store = :memory_store
 

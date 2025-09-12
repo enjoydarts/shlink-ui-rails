@@ -58,10 +58,10 @@ RSpec.describe 'Accounts', type: :request do
         expect(response.body).to include('data-account-delete-is-oauth-user-value="true"')
       end
 
-      it 'パスワード設定のUI要素が表示される' do
+      it 'パスワード設定が不要の旨が表示される' do
         get account_path
-        expect(response.body).to include('パスワード設定')
-        expect(response.body).to include('Google認証ユーザーのため、現在のパスワードは不要です')
+        expect(response.body).to include('Google 認証アカウント')
+        expect(response.body).to include('Google認証でログインしているため、パスワードの変更は不要です')
       end
 
       it 'メールアドレス変更制限の説明が表示される' do

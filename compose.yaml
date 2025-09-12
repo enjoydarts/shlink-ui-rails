@@ -38,6 +38,19 @@ services:
       - bundle:/usr/local/bundle
     tty: true
 
+  jobs:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    command: bundle exec rake solid_queue:start
+    volumes:
+      - ./:/app
+      - bundle:/usr/local/bundle
+    tty: true
+    environment:
+      - RAILS_ENV=development
+
 volumes:
   dbdata:
   bundle:

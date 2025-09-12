@@ -1,10 +1,10 @@
 require 'rails_helper'
 
-RSpec.describe Statistics::IndividualController, type: :controller do
+RSpec.describe Statistics::IndividualController, type: :request do
   let(:user) { create(:user) }
   let!(:short_url) { create(:short_url, user: user, short_code: 'abc123') }
 
-  before { sign_in user }
+  before { sign_in user, scope: :user }
 
   describe 'GET #show' do
     context '認証されている場合' do
@@ -24,7 +24,7 @@ RSpec.describe Statistics::IndividualController, type: :controller do
       end
 
       it 'JSON形式で統計データを返すこと' do
-        get :show, params: { short_code: 'abc123', period: '30d' }
+        get "/statistics/individual/abc123", params: { period: '30d' }
 
         expect(response).to have_http_status(:success)
         json_response = JSON.parse(response.body)
@@ -37,7 +37,7 @@ RSpec.describe Statistics::IndividualController, type: :controller do
         let!(:other_url) { create(:short_url, user: other_user, short_code: 'xyz789') }
 
         it '404エラーを返すこと' do
-          get :show, params: { short_code: 'xyz789', period: '30d' }
+          get "/statistics/individual/xyz789", params: { period: '30d' }
 
           expect(response).to have_http_status(:not_found)
           json_response = JSON.parse(response.body)
@@ -47,7 +47,7 @@ RSpec.describe Statistics::IndividualController, type: :controller do
 
       context '存在しないshort_codeの場合' do
         it '404エラーを返すこと' do
-          get :show, params: { short_code: 'nonexistent', period: '30d' }
+          get "/statistics/individual/nonexistent", params: { period: '30d' }
 
           expect(response).to have_http_status(:not_found)
         end
@@ -55,10 +55,9 @@ RSpec.describe Statistics::IndividualController, type: :controller do
     end
 
     context '認証されていない場合' do
-      before { sign_out user }
-
       it 'ログインページにリダイレクトすること' do
-        get :show, params: { short_code: 'abc123', period: '30d' }
+        logout :user
+        get "/statistics/individual/abc123", params: { period: '30d' }
         expect(response).to redirect_to(new_user_session_path)
       end
     end
@@ -70,7 +69,7 @@ RSpec.describe Statistics::IndividualController, type: :controller do
       let!(:url2) { create(:short_url, user: user, short_code: 'abc2', title: 'Test URL 2') }
 
       it 'JSON形式でURL一覧を返すこと' do
-        get :url_list
+        get "/statistics/url_list"
 
         expect(response).to have_http_status(:success)
         json_response = JSON.parse(response.body)
@@ -80,7 +79,7 @@ RSpec.describe Statistics::IndividualController, type: :controller do
       end
 
       it 'タイトルと短縮URLを含むこと' do
-        get :url_list
+        get "/statistics/url_list"
 
         json_response = JSON.parse(response.body)
         url_data = json_response['urls'].first
@@ -89,10 +88,10 @@ RSpec.describe Statistics::IndividualController, type: :controller do
     end
 
     context '認証されていない場合' do
-      before { sign_out user }
+      before { sign_out :user }
 
       it 'ログインページにリダイレクトすること' do
-        get :url_list
+        get statistics_url_list_path
         expect(response).to redirect_to(new_user_session_path)
       end
     end

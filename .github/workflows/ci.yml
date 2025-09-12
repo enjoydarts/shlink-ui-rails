@@ -64,6 +64,7 @@ jobs:
       DATABASE_PASSWORD: apppass
       SHLINK_BASE_URL: https://test.example.com
       SHLINK_API_KEY: test-api-key
+      SECRET_KEY_BASE: 67bfe18a9e641a2982daf9dfcd7fb7dc70744e0f37dde079bac5e1c643c8319c7a04a889fb3a99ca48d2fc5a863add6145fb7ee4060b20877f78e5d9a155d4fa
 
     steps:
       - name: Install packages
@@ -80,20 +81,26 @@ jobs:
 
       - name: Setup database
         run: |
-          bundle exec rails db:create
-          echo "=== Database created, now applying schema with ridgepole ==="
-          RAILS_ENV=test bundle exec ridgepole --config config/database.yml --env test --file db/Schemafile --apply
-          echo "=== Schema applied, verifying tables exist ==="
-          RAILS_ENV=test bundle exec rails runner "puts 'Tables: ' + ActiveRecord::Base.connection.tables.join(', ')"
-          echo "=== Checking users table specifically ==="
-          RAILS_ENV=test bundle exec rails runner "puts 'Users table exists: ' + ActiveRecord::Base.connection.table_exists?('users').to_s"
+          echo "=== Creating database ==="
+          RAILS_ENV=test bundle exec rails db:create
+          echo "=== Applying schema with ridgepole ==="
+          RAILS_ENV=test bundle exec ridgepole --config config/database.yml --env test --file db/schemas/Schemafile --apply
+          echo "=== Verifying database setup ==="
+          RAILS_ENV=test bundle exec rails runner "
+            puts 'Database connection: OK'
+            tables = ActiveRecord::Base.connection.tables
+            puts \"Tables found: #{tables.count}\"
+            puts \"Table list: #{tables.join(', ')}\" if tables.any?
+            puts \"Users table exists: #{ActiveRecord::Base.connection.table_exists?('users')}\"
+          "
 
       - name: Precompile assets
         run: bundle exec rails assets:precompile
 
       - name: Run RSpec tests
         run: |
-          bundle exec rspec \
+          echo "=== Running RSpec tests ==="
+          RAILS_ENV=test bundle exec rspec \
             --format progress \
             --format RspecJunitFormatter \
             --out tmp/rspec_results.xml

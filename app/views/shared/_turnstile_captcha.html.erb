@@ -1,0 +1,33 @@
+<%# Cloudflare Turnstile CAPTCHA Widget %>
+<% if CaptchaHelper.enabled? %>
+  <div class="space-y-3 pt-4">
+    <label class="block text-sm font-semibold text-gray-700 mb-3">
+      🛡️ セキュリティ検証
+    </label>
+    
+    <!-- Turnstile Widget Container -->
+    <div id="turnstile-container" class="flex justify-center" data-sitekey="<%= Settings.captcha.turnstile.site_key.to_s %>">
+    </div>
+
+
+    <!-- エラーメッセージ表示エリア -->
+    <div id="turnstile-error" class="hidden p-3 bg-red-50 border border-red-200 rounded-lg">
+      <div class="flex items-center space-x-2">
+        <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.962-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+        </svg>
+        <span id="turnstile-error-message" class="text-sm text-red-700"></span>
+      </div>
+    </div>
+
+    <p class="text-sm text-gray-500 flex items-center space-x-1">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <span>このセキュリティ検証は、自動化されたアクセスを防ぐためのものです</span>
+    </p>
+  </div>
+
+  
+<% end %>
+<%# 環境変数がない場合は何も表示しない（CAPTCHA機能がないものとして扱う） %>

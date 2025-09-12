@@ -7,7 +7,16 @@
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-    <meta name="turbo-cache-control" content="no-cache">
+    
+    <%# 認証ページでは完全キャッシュ無効化 %>
+    <% if devise_controller? %>
+      <meta name="turbo-cache-control" content="no-cache">
+      <meta name="cache-control" content="no-cache, no-store, must-revalidate">
+      <meta name="pragma" content="no-cache">
+      <meta name="expires" content="0">
+    <% else %>
+      <meta name="turbo-cache-control" content="no-cache">
+    <% end %>
 
     <%= yield :head %>
 
@@ -21,10 +30,26 @@
     <link rel="apple-touch-icon" href="/favicon-32x32.png">
 
     <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= stylesheet_link_tag :app %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     
     <%# Chart.js for statistics charts %>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    
+    <%# Cloudflare Turnstile for CAPTCHA (認証ページでのみ読み込み) %>
+    <% if devise_controller? && CaptchaHelper.enabled? %>
+      <script>
+        // Turnstileコールバックを先に定義
+        window.onTurnstileLoad = function() {
+          if (window.SimpleTurnstile) {
+            console.log('Turnstile API loaded, initializing SimpleTurnstile');
+            window.SimpleTurnstile.isReady = true;
+            window.SimpleTurnstile.renderWidget();
+          }
+        };
+      </script>
+      <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad" async defer></script>
+    <% end %>
     
     <%= javascript_importmap_tags %>
   </head>

@@ -12,10 +12,14 @@
 - **タグ管理**: カスタムタグによるURL整理・分類機能
 - **高度なオプション**: 有効期限、訪問制限、タグ機能への簡単アクセス
 
-### 👤 ユーザー管理
+### 👤 ユーザー管理・セキュリティ
 - **ユーザー認証**: Deviseによる安全な登録・ログインシステム
 - **Google OAuth連携**: Googleアカウントでの簡単サインイン
 - **メール確認**: 安全なアカウント認証プロセス
+- **CAPTCHA保護**: Cloudflare Turnstile によるボット攻撃対策
+- **二要素認証（2FA）**: TOTP（RFC 6238）対応の時間ベース認証
+- **WebAuthn/FIDO2**: パスワードレス認証・セキュリティキー対応
+- **バックアップコード**: 2FA用の使い捨て復旧コード
 - **ロールベースアクセス**: 適切な権限を持つ管理者と一般ユーザーロール
 
 ### 📊 マイページダッシュボード
@@ -51,15 +55,18 @@
 - **インタラクティブなデータ視覚化**: 動的でレスポンシブなチャートのためのChart.js統合
 - **リアルタイム更新**: Shlink APIからのライブデータ同期と更新
 - **包括的エラーハンドリング**: ユーザーフレンドリーなエラーメッセージと復旧
-- **セキュリティ**: CSRF保護、セキュアヘッダー、入力検証
+- **高度なセキュリティ**: CSRF保護、CAPTCHA、2FA、WebAuthn、暗号化、セキュアヘッダー
 
 ## 🛠 技術スタック
 
 ### バックエンド
 - **Ruby 3.4.5** パフォーマンス向上のためYJIT有効
-- **Rails 8.0.2.1** 最新機能と改善を含む
+- **Rails 8.0.2** 最新機能と改善を含む
 - **MySQL 8.4** 信頼性とスケーラブルなデータストレージ
 - **Devise** 認証とユーザーセッション管理
+- **WebAuthn** FIDO2/パスワードレス認証サポート
+- **ROTP** RFC 6238準拠のTOTP二要素認証
+- **Cloudflare Turnstile** CAPTCHA保護
 - **Faraday** ShlinkとのHTTP API通信
 - **Ridgepole** データベーススキーマ管理
 
@@ -76,7 +83,7 @@
 - **RuboCop Rails Omakase** 一貫したコード品質
 - **Factory Bot** テストデータ生成
 - **WebMock & VCR** 信頼性のあるAPIテスト
-- **SimpleCov** テストカバレッジ分析（80.8%+カバレッジ）
+- **SimpleCov** テストカバレッジ分析（83.85%カバレッジ）
 - **Docker Compose** 一貫した開発環境
 
 ## 🚀 クイックスタート
@@ -105,6 +112,8 @@
    SHLINK_API_KEY=your-api-key-here
    GOOGLE_CLIENT_ID=your-google-client-id (オプション)
    GOOGLE_CLIENT_SECRET=your-google-client-secret (オプション)
+   TURNSTILE_SITE_KEY=your-turnstile-site-key (オプション)
+   TURNSTILE_SECRET_KEY=your-turnstile-secret-key (オプション)
    ```
 
 4. **アプリケーションを開始**
@@ -205,7 +214,7 @@ make status                  # サービス状況確認
 ### テスト実行
 ```bash
 # Makefileを使用（推奨）
-make test                    # 全テスト実行（255+例、93%+カバレッジ）
+make test                    # 全テスト実行（659例、83.85%カバレッジ）
 make test-file FILE=spec/path/to/file_spec.rb  # 特定のテストファイル実行
 make test-coverage           # カバレッジレポート付きテスト実行
 
@@ -257,6 +266,10 @@ docker-compose exec web bin/rails tailwindcss:build
 ### セキュリティ機能
 - **ユーザー分離**: ユーザーは自分のURLのみアクセス・変更可能
 - **CSRF保護**: Rails組み込みのクロスサイトリクエストフォージェリ保護
+- **CAPTCHA保護**: Cloudflare Turnstile によるボット攻撃防止
+- **二要素認証（2FA）**: TOTP（時間ベース）+ バックアップコード
+- **WebAuthn/FIDO2**: パスワードレス認証・ハードウェアセキュリティキー対応
+- **暗号化**: 機密データ（2FAシークレット、バックアップコード）のデータベース暗号化
 - **入力検証**: ShortenFormオブジェクトでの包括的フォーム検証
 - **セキュアヘッダー**: セキュリティ重視のHTTPヘッダー設定
 - **認証**: 確認付きDevise駆動ユーザー管理
@@ -339,10 +352,11 @@ app/
 
 ### 開発ガイドライン
 - Railsの慣例とベストプラクティスに従う
-- テストカバレッジを90%以上に維持
+- テストカバレッジを80%以上に維持（現在83.85%）
 - RuboCop Rails Omakase設定を使用
 - 明確で説明的なコミットメッセージを記述
 - 新機能についてはドキュメントを更新
+- セキュリティ機能（CAPTCHA、2FA、WebAuthn）のテストを包括的に実装
 
 ## 🆘 トラブルシューティング
 
@@ -395,7 +409,7 @@ docker-compose exec web bin/rails importmap:outdated
 Ruby on Rails で ❤️ を込めて構築
 
 **作成者**: enjoydarts
-**最終更新**: 2025年9月
+**最終更新**: 2025年9月12日
 **バージョン**: 1.0.0
 
 ## 🎯 実装済み機能一覧
@@ -408,11 +422,15 @@ Ruby on Rails で ❤️ を込めて構築
 - ✅ タグ管理機能（高度なオプション）
 - ✅ 有効期限・訪問制限設定
 
-### ユーザー管理
+### ユーザー管理・セキュリティ
 - ✅ ユーザー登録・ログイン
 - ✅ Google OAuth連携
 - ✅ メール確認機能
 - ✅ ロールベースアクセス制御
+- ✅ Cloudflare Turnstile CAPTCHA保護
+- ✅ TOTP二要素認証（QRコード生成、バックアップコード）
+- ✅ WebAuthn/FIDO2セキュリティキー対応
+- ✅ 機密データの暗号化（2FAシークレット、バックアップコード）
 
 ### マイページ機能
 - ✅ 個人URL一覧表示
@@ -438,6 +456,7 @@ Ruby on Rails で ❤️ を込めて構築
 - ✅ Tailwind CSS v4
 - ✅ MySQL 8.4
 - ✅ Docker環境
-- ✅ 包括的テスト（93%+カバレッジ）
+- ✅ 包括的テスト（83.85%カバレッジ、659例ALL GREEN）
 - ✅ RuboCop品質管理
-- ✅ セキュリティ対策
+- ✅ CI/CD GitHub Actions
+- ✅ 高度なセキュリティ対策（CAPTCHA、2FA、WebAuthn）

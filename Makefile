@@ -5,9 +5,10 @@
 .DEFAULT_GOAL := help
 
 # 変数定義
-DOCKER_COMPOSE := docker-compose
+DOCKER_COMPOSE := docker compose
 WEB_SERVICE := web
 CSS_SERVICE := css
+JOBS_SERVICE := jobs
 DB_SERVICE := db
 
 # 色付きヘルプ出力用の変数
@@ -21,12 +22,12 @@ RESET := \033[0m
 .PHONY: up
 up: ## サービス起動（2回目以降）
 	@echo "$(BLUE)Starting services...$(RESET)"
-	$(DOCKER_COMPOSE) up -d
+	$(DOCKER_COMPOSE) up
 
 .PHONY: up-build
 up-build: ## サービス起動（初回ビルド付き）
 	@echo "$(BLUE)Starting services with build...$(RESET)"
-	$(DOCKER_COMPOSE) up --build -d
+	$(DOCKER_COMPOSE) up --build
 
 .PHONY: down
 down: ## サービス停止
@@ -47,6 +48,10 @@ logs-web: ## Webサービスのログ表示
 .PHONY: logs-css
 logs-css: ## CSSサービスのログ表示
 	$(DOCKER_COMPOSE) logs -f $(CSS_SERVICE)
+
+.PHONY: logs-jobs
+logs-jobs: ## ジョブサービスのログ表示
+	$(DOCKER_COMPOSE) logs -f $(JOBS_SERVICE)
 
 ##@ 開発支援
 

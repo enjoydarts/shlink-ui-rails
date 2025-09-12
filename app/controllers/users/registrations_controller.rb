@@ -1,7 +1,22 @@
 class Users::RegistrationsController < Devise::RegistrationsController
-  before_action :authenticate_user!
+  before_action :authenticate_user!, except: [ :new, :create, :cancel ]
+  before_action :disable_turbo_cache, only: [ :new, :create ]
+  before_action :configure_sign_up_params, only: [ :create ]
   before_action :configure_account_update_params, only: [ :update ]
   before_action :configure_account_delete_params, only: [ :destroy ]
+
+  # Override create to add CAPTCHA verification
+  def create
+    # CAPTCHA検証を実行
+    unless verify_captcha
+      self.resource = resource_class.new(sign_up_params)
+      resource.validate # バリデーションエラーを表示するため
+      render :new, status: :unprocessable_entity
+      return
+    end
+
+    super
+  end
 
   # Override destroy to handle OAuth users
   def destroy
@@ -60,6 +75,11 @@ class Users::RegistrationsController < Devise::RegistrationsController
     devise_parameter_sanitizer.permit(:account_update, keys: [ :name ])
   end
 
+  # Configure permitted parameters for sign up
+  def configure_sign_up_params
+    devise_parameter_sanitizer.permit(:sign_up, keys: [ :name ])
+  end
+
   # Configure permitted parameters for account deletion
   def configure_account_delete_params
     params.require(:user).permit(:current_password, :delete_confirmation)
@@ -113,6 +133,13 @@ class Users::RegistrationsController < Devise::RegistrationsController
     resource.respond_to?(:pending_reconfirmation?) &&
       resource.pending_reconfirmation? &&
       previous_unconfirmed_email != resource.unconfirmed_email
+  end
+
+  # Turboキャッシュ無効化
+  def disable_turbo_cache
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
   end
 
   # Override update_resource to handle OAuth users

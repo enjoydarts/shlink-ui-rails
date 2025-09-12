@@ -19,6 +19,10 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 - **Google OAuth Integration**: Quick sign-in with Google accounts
 - **Email Confirmation**: Secure account verification process
 - **Role-based Access**: Admin and normal user roles with proper permissions
+- **Two-Factor Authentication (2FA)**: TOTP-based 2FA with Google Authenticator/Authy support
+- **FIDO2/WebAuthn Security Keys**: Hardware security key authentication support
+- **Backup Codes**: Emergency access codes for 2FA recovery
+- **Account Security Settings**: Comprehensive security management interface
 
 ### 📊 My Page Dashboard
 - **Personal URL Library**: View all your shortened URLs in one organized place
@@ -57,7 +61,8 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 - **Interactive Data Visualization**: Chart.js integration for dynamic, responsive charts
 - **Real-time Updates**: Live data synchronization and updates from Shlink API
 - **Comprehensive Error Handling**: User-friendly error messages and recovery
-- **Security**: CSRF protection, secure headers, and input validation
+- **Advanced Security**: CSRF protection, secure headers, 2FA, FIDO2/WebAuthn, and Cloudflare Turnstile CAPTCHA
+- **Anti-Bot Protection**: Cloudflare Turnstile CAPTCHA integration for login and registration
 
 ## 🛠 Technology Stack
 
@@ -69,6 +74,9 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 - **Faraday** for HTTP API communication with Shlink
 - **Config gem** for centralized configuration management
 - **Ridgepole** for database schema management
+- **ROTP & RQRCode** for TOTP-based two-factor authentication
+- **WebAuthn** for FIDO2/hardware security key authentication
+- **MailerSend** for production email delivery
 
 ### Frontend
 - **Hotwire (Turbo + Stimulus)** for SPA-like interactive experiences
@@ -112,6 +120,8 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
    SHLINK_API_KEY=your-api-key-here
    GOOGLE_CLIENT_ID=your-google-client-id (optional)
    GOOGLE_CLIENT_SECRET=your-google-client-secret (optional)
+   TURNSTILE_SITE_KEY=your-turnstile-site-key (optional)
+   TURNSTILE_SECRET_KEY=your-turnstile-secret-key (optional)
    ```
 
 4. **Start the application**
@@ -278,7 +288,10 @@ docker-compose exec web bin/rails tailwindcss:build
 - **CSRF Protection**: Built-in Rails Cross-Site Request Forgery protection
 - **Input Validation**: Comprehensive form validation with ShortenForm objects
 - **Secure Headers**: Security-focused HTTP headers configuration
-- **Authentication**: Devise-powered user management with confirmation
+- **Multi-Factor Authentication**: TOTP-based 2FA and FIDO2/WebAuthn hardware keys
+- **Anti-Bot Protection**: Cloudflare Turnstile CAPTCHA for automated attack prevention
+- **Secure Sessions**: Session-based 2FA flow with proper challenge-response validation
+- **Authentication**: Devise-powered user management with email confirmation
 
 ### Performance Optimizations
 - **YJIT**: Ruby 3.4+ Just-In-Time compiler for improved performance
@@ -291,39 +304,54 @@ docker-compose exec web bin/rails tailwindcss:build
 ```
 app/
 ├── controllers/
-│   ├── application_controller.rb
+│   ├── application_controller.rb     # CAPTCHA and base functionality
 │   ├── short_urls_controller.rb      # URL creation and QR codes
 │   ├── mypage_controller.rb          # User dashboard and management
 │   ├── pages_controller.rb           # Static pages
+│   ├── accounts_controller.rb        # Account settings and security
 │   ├── statistics/
 │   │   ├── overall_controller.rb     # Overall statistics API
 │   │   └── individual_controller.rb  # Individual URL analytics API
 │   └── users/
-│       └── omniauth_callbacks_controller.rb
+│       ├── sessions_controller.rb            # Login with 2FA support
+│       ├── registrations_controller.rb       # Registration with CAPTCHA
+│       ├── omniauth_callbacks_controller.rb  # OAuth authentication
+│       ├── two_factor_authentications_controller.rb  # 2FA management
+│       └── webauthn_credentials_controller.rb        # FIDO2/WebAuthn
 ├── forms/
 │   └── shorten_form.rb               # URL validation form object
 ├── models/
-│   ├── user.rb                       # User model with Devise
-│   └── short_url.rb                  # Short URL model with validations
-├── services/shlink/
-│   ├── base_service.rb               # HTTP client foundation
-│   ├── create_short_url_service.rb   # URL creation logic
-│   ├── list_short_urls_service.rb    # URL retrieval and pagination
-│   ├── sync_short_urls_service.rb    # Data synchronization
-│   ├── delete_short_url_service.rb   # URL deletion handling
-│   ├── get_qr_code_service.rb        # QR code generation
-│   └── get_url_visits_service.rb     # Visit statistics retrieval
-├── services/statistics/
-│   ├── overall_data_service.rb       # Overall analytics processing
-│   └── individual_url_data_service.rb # Individual URL analytics
+│   ├── user.rb                       # User model with Devise, 2FA, and WebAuthn
+│   ├── short_url.rb                  # Short URL model with validations
+│   └── webauthn_credential.rb        # FIDO2/WebAuthn security keys
+├── services/
+│   ├── shlink/
+│   │   ├── base_service.rb               # HTTP client foundation
+│   │   ├── create_short_url_service.rb   # URL creation logic
+│   │   ├── list_short_urls_service.rb    # URL retrieval and pagination
+│   │   ├── sync_short_urls_service.rb    # Data synchronization
+│   │   ├── delete_short_url_service.rb   # URL deletion handling
+│   │   ├── get_qr_code_service.rb        # QR code generation
+│   │   └── get_url_visits_service.rb     # Visit statistics retrieval
+│   ├── statistics/
+│   │   ├── overall_data_service.rb       # Overall analytics processing
+│   │   └── individual_url_data_service.rb # Individual URL analytics
+│   ├── totp_service.rb                   # Two-factor authentication service
+│   ├── webauthn_service.rb               # FIDO2/WebAuthn service
+│   └── captcha_verification_service.rb  # Cloudflare Turnstile CAPTCHA
 ├── javascript/controllers/
 │   ├── statistics_charts_controller.js    # Overall statistics charts
 │   ├── individual_analysis_controller.js  # Individual URL analysis
-│   └── mypage_tabs_controller.js          # Tab navigation
+│   ├── mypage_tabs_controller.js          # Tab navigation
+│   ├── account_tabs_controller.js         # Account settings tabs
+│   └── webauthn_controller.js             # FIDO2/WebAuthn operations
 └── views/
     ├── layouts/
     ├── short_urls/
     ├── mypage/
+    ├── accounts/                          # Account settings and security
+    ├── users/
+    │   └── two_factor_authentications/    # 2FA setup and verification
     └── pages/
 ```
 
@@ -426,4 +454,4 @@ Built with ❤️ using Ruby on Rails
 
 **Author**: enjoydarts
 **Last Updated**: September 2025
-**Version**: 1.1.0
+**Version**: 1.2.0

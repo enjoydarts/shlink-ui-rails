@@ -1,8 +1,28 @@
 Rails.application.routes.draw do
   devise_for :users, controllers: {
     omniauth_callbacks: "users/omniauth_callbacks",
-    registrations: "users/registrations"
+    registrations: "users/registrations",
+    sessions: "users/sessions"
   }
+
+  # Two-Factor Authentication routes
+  namespace :users do
+    resource :two_factor_authentications, only: [ :show, :new, :create, :destroy ] do
+      collection do
+        post :verify
+        post :backup_codes
+      end
+    end
+
+    # WebAuthn routes
+    resources :webauthn_credentials, only: [ :create, :update, :destroy ] do
+      collection do
+        get :registration_options
+        get :authentication_options
+        get :login_options
+      end
+    end
+  end
 
   # Email preview in development
   if Rails.env.development?

@@ -17,6 +17,36 @@ oauth:
     client_id: <%= ENV.fetch('GOOGLE_CLIENT_ID', '') %>
     client_secret: <%= ENV.fetch('GOOGLE_CLIENT_SECRET', '') %>
 
+# CAPTCHA設定（Cloudflare Turnstile）
+captcha:
+  turnstile:
+    # サイトキー（環境変数 TURNSTILE_SITE_KEY で上書き可能）
+    site_key: <%= ENV.fetch('TURNSTILE_SITE_KEY', '') %>
+    # シークレットキー（環境変数 TURNSTILE_SECRET_KEY で上書き可能）
+    secret_key: <%= ENV.fetch('TURNSTILE_SECRET_KEY', '') %>
+    # 検証API エンドポイント
+    verify_url: 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
+    # タイムアウト設定（秒）
+    timeout: 10
+
+# WebAuthn設定（FIDO2/セキュリティキー認証）
+webauthn:
+  # Relying Party名
+  rp_name: <%= ENV.fetch('WEBAUTHN_RP_NAME', 'Shlink-UI-Rails') %>
+  # Relying Party ID
+  rp_id: <%= ENV.fetch('WEBAUTHN_RP_ID', 'localhost') %>
+  # Origin URL
+  origin: <%= ENV.fetch('WEBAUTHN_ORIGIN', 'http://localhost:3000') %>
+  # サポートするアルゴリズム
+  algorithms:
+    - 'ES256'
+    - 'PS256' 
+    - 'RS256'
+  # エンコーディング設定
+  encoding: 'base64url'
+  # タイムアウト設定（ミリ秒）
+  timeout: 60000
+
 # アプリケーション設定
 app:
   # デフォルトのタイムゾーン

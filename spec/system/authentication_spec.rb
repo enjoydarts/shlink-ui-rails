@@ -7,6 +7,11 @@ RSpec.describe 'ユーザー認証機能', type: :system do
 
   describe 'ユーザー登録' do
     it '新しいユーザーが登録できること' do
+      # CAPTCHA検証をスタブ化
+      allow(CaptchaVerificationService).to receive(:verify).and_return(
+        double(success?: true, error_codes: [])
+      )
+
       visit new_user_registration_path
 
       expect(page).to have_content('新規登録')
@@ -34,6 +39,13 @@ RSpec.describe 'ユーザー認証機能', type: :system do
 
   describe 'ログイン' do
     let!(:user) { create(:user, email: 'test@example.com', password: 'password123') }
+
+    before do
+      # CAPTCHA検証をスタブ化
+      allow(CaptchaVerificationService).to receive(:verify).and_return(
+        double(success?: true, error_codes: [])
+      )
+    end
 
     it '正しい認証情報でログインできること' do
       visit new_user_session_path
