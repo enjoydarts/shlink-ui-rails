@@ -4,7 +4,7 @@ require 'rails_helper'
 
 RSpec.describe AsyncDeviseMailer, type: :mailer do
   include ActiveJob::TestHelper
-  
+
   let(:user) { create(:user) }
   let(:token) { 'test-token' }
   let(:opts) { {} }

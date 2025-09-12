@@ -130,10 +130,10 @@ RSpec.describe CaptchaHelper, type: :helper do
     before do
       allow(sessions_controller).to receive(:is_a?).with(Devise::SessionsController).and_return(true)
       allow(sessions_controller).to receive(:is_a?).with(Devise::RegistrationsController).and_return(false)
-      
+
       allow(registrations_controller).to receive(:is_a?).with(Devise::SessionsController).and_return(false)
       allow(registrations_controller).to receive(:is_a?).with(Devise::RegistrationsController).and_return(true)
-      
+
       allow(other_controller).to receive(:is_a?).with(Devise::SessionsController).and_return(false)
       allow(other_controller).to receive(:is_a?).with(Devise::RegistrationsController).and_return(false)
     end

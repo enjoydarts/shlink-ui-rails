@@ -82,7 +82,7 @@ class User < ApplicationRecord
   # @return [Boolean] スキップする場合true
   def skip_two_factor_for_oauth?
     # Google認証ユーザーは2FA内包とみなしてスキップ
-    from_omniauth? && provider == 'google_oauth2'
+    from_omniauth? && provider == "google_oauth2"
   end
 
   # TOTPコードを検証

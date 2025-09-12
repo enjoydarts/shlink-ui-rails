@@ -89,7 +89,7 @@ RSpec.describe Statistics::IndividualController, type: :request do
 
     context '認証されていない場合' do
       before { sign_out :user }
-      
+
       it 'ログインページにリダイレクトすること' do
         get statistics_url_list_path
         expect(response).to redirect_to(new_user_session_path)

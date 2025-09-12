@@ -3,7 +3,6 @@
 require 'rails_helper'
 
 RSpec.describe Users::TwoFactorAuthenticationsController, type: :request do
-
   let(:user) { create(:user, email: 'test@example.com', password: 'password123') }
   let(:totp_user) do
     user = create(:user, email: 'totp@example.com', password: 'password123')
@@ -187,7 +186,7 @@ RSpec.describe Users::TwoFactorAuthenticationsController, type: :request do
     end
 
     context '有効なTOTPコードの場合' do
-      it '2FAを有効化すること' do        
+      it '2FAを有効化すること' do
         post users_two_factor_authentications_path, params: { totp_code: '123456' }
 
         expect(user).to have_received(:enable_two_factor!).with('123456')

@@ -63,7 +63,7 @@ RSpec.describe Users::WebauthnCredentialsController, type: :request do
 
     context 'login_optionsアクションの場合' do
       let(:webauthn_user) { create(:user, email: 'webauthn@example.com') }
-      
+
       before do
         allow(User).to receive(:find_by).with(email: 'webauthn@example.com').and_return(webauthn_user)
         allow(webauthn_user).to receive(:webauthn_enabled?).and_return(true)
@@ -131,7 +131,7 @@ RSpec.describe Users::WebauthnCredentialsController, type: :request do
       it 'クレデンシャルを登録してJSONで返すこと' do
         # セッションにチャレンジを設定
         get registration_options_users_webauthn_credentials_path
-        
+
         post users_webauthn_credentials_path, params: valid_params
 
         expect(response).to have_http_status(:success)
@@ -150,7 +150,7 @@ RSpec.describe Users::WebauthnCredentialsController, type: :request do
       it 'エラーレスポンスを返すこと' do
         # セッションにチャレンジを設定
         get registration_options_users_webauthn_credentials_path
-        
+
         post users_webauthn_credentials_path, params: valid_params
 
         expect(response).to have_http_status(:unprocessable_entity)
@@ -163,7 +163,7 @@ RSpec.describe Users::WebauthnCredentialsController, type: :request do
       it 'エラーレスポンスを返すこと' do
         # セッションにチャレンジを設定
         get registration_options_users_webauthn_credentials_path
-        
+
         post users_webauthn_credentials_path, params: { credential: 'invalid_json', nickname: 'Test Key' }
 
         expect(response).to have_http_status(:unprocessable_entity)
@@ -189,7 +189,7 @@ RSpec.describe Users::WebauthnCredentialsController, type: :request do
     end
 
     let(:mock_credential) do
-      double('credential', 
+      double('credential',
         update: true,
         display_info: { id: 1, nickname: 'Updated Key' }
       )
@@ -214,7 +214,7 @@ RSpec.describe Users::WebauthnCredentialsController, type: :request do
       before do
         allow(user.webauthn_credentials).to receive(:find).with('1').and_return(mock_credential)
         allow(mock_credential).to receive(:update).and_return(false)
-        allow(mock_credential).to receive(:errors).and_return(double('errors', full_messages: ['Nickname is invalid']))
+        allow(mock_credential).to receive(:errors).and_return(double('errors', full_messages: [ 'Nickname is invalid' ]))
       end
 
       it 'エラーレスポンスを返すこと' do
@@ -223,7 +223,7 @@ RSpec.describe Users::WebauthnCredentialsController, type: :request do
         expect(response).to have_http_status(:unprocessable_entity)
         json_response = JSON.parse(response.body)
         expect(json_response['success']).to be false
-        expect(json_response['errors']).to eq(['Nickname is invalid'])
+        expect(json_response['errors']).to eq([ 'Nickname is invalid' ])
       end
     end
 
@@ -301,5 +301,4 @@ RSpec.describe Users::WebauthnCredentialsController, type: :request do
       end
     end
   end
-
 end

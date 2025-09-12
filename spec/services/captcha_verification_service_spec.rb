@@ -14,14 +14,14 @@ RSpec.describe CaptchaVerificationService, type: :service do
   let(:failed_response) do
     {
       'success' => false,
-      'error-codes' => ['invalid-input-response']
+      'error-codes' => [ 'invalid-input-response' ]
     }
   end
 
   before do
     # Settingsのモック化（DB接続を避けるため）
     settings_mock = double('settings')
-    turnstile_mock = double('turnstile_settings', 
+    turnstile_mock = double('turnstile_settings',
       secret_key: 'test_secret_key',
       verify_url: 'https://challenges.cloudflare.com/turnstile/v0/siteverify',
       timeout: 30
@@ -251,9 +251,9 @@ RSpec.describe CaptchaVerificationService, type: :service do
     it 'インスタンスメソッドverifyを呼び出すこと' do
       mock_result = double('result', success?: true)
       allow_any_instance_of(described_class).to receive(:verify).and_return(mock_result)
-      
+
       result = described_class.verify(token: 'test_token', remote_ip: '127.0.0.1')
-      
+
       expect(result.success?).to be true
     end
 
@@ -261,9 +261,9 @@ RSpec.describe CaptchaVerificationService, type: :service do
       it 'インスタンスメソッドverifyを呼び出すこと' do
         mock_result = double('result', success?: false)
         allow_any_instance_of(described_class).to receive(:verify).and_return(mock_result)
-        
+
         result = described_class.verify(token: 'test_token')
-        
+
         expect(result.success?).to be false
       end
     end
@@ -273,7 +273,7 @@ RSpec.describe CaptchaVerificationService, type: :service do
     describe 'verification_params' do
       it '正しいパラメータを構築すること' do
         params = service.send(:verification_params)
-        
+
         expect(params).to eq({
           secret: 'test_secret_key',
           response: 'test_token',
@@ -286,7 +286,7 @@ RSpec.describe CaptchaVerificationService, type: :service do
 
         it 'remoteipを含まないパラメータを構築すること' do
           params = service_without_ip.send(:verification_params)
-          
+
           expect(params).to eq({
             secret: 'test_secret_key',
             response: 'test_token'

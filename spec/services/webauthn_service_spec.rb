@@ -24,7 +24,7 @@ RSpec.describe WebauthnService, type: :service do
       allow(WebAuthn::Credential).to receive(:options_for_create).and_return(mock_options)
 
       result = described_class.registration_options(user)
-      
+
       expect(result).to eq(mock_options)
       expect(WebAuthn::Credential).to have_received(:options_for_create)
     end
@@ -33,7 +33,7 @@ RSpec.describe WebauthnService, type: :service do
   describe '.authentication_options' do
     it 'WebAuthn認証用オプションを生成すること' do
       credential = create(:webauthn_credential, user: user)
-      allow(user.webauthn_credentials).to receive(:active).and_return([credential])
+      allow(user.webauthn_credentials).to receive(:active).and_return([ credential ])
 
       mock_options = {
         'challenge' => 'test_challenge',
@@ -42,7 +42,7 @@ RSpec.describe WebauthnService, type: :service do
       allow(WebAuthn::Credential).to receive(:options_for_get).and_return(mock_options)
 
       result = described_class.authentication_options(user)
-      
+
       expect(result).to eq(mock_options)
       expect(WebAuthn::Credential).to have_received(:options_for_get)
     end
@@ -80,7 +80,7 @@ RSpec.describe WebauthnService, type: :service do
 
     it 'WebAuthnクレデンシャルを登録すること' do
       result = described_class.register_credential(user, mock_credential_response, challenge, nickname: nickname)
-      
+
       expect(result).not_to be_nil
       expect(user.webauthn_credentials).to have_received(:create!)
     end
@@ -113,12 +113,12 @@ RSpec.describe WebauthnService, type: :service do
           sign_count: 0
         )
         allow(mock_stored_credential).to receive(:update!)
-        
+
         # activeスコープをモック
         active_scope = double('active_scope')
         allow(user.webauthn_credentials).to receive(:active).and_return(active_scope)
         allow(active_scope).to receive(:find_by).and_return(mock_stored_credential)
-        
+
         # WebAuthn検証をモック
         mock_webauthn_credential = double('webauthn_credential')
         allow(WebAuthn::Credential).to receive(:from_get).and_return(mock_webauthn_credential)
@@ -155,11 +155,10 @@ RSpec.describe WebauthnService, type: :service do
 
       it 'クレデンシャルを削除してtrueを返すこと' do
         result = described_class.remove_credential(user, '1')
-        
+
         expect(result).to be true
         expect(mock_credential).to have_received(:destroy!)
       end
     end
   end
-
 end

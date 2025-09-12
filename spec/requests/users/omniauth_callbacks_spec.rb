@@ -44,7 +44,7 @@ RSpec.describe "Users::OmniauthCallbacks", type: :request do
       let!(:existing_user) do
         create(:user, email: 'existing@example.com', name: 'Existing User', provider: 'google_oauth2', uid: '987654321')
       end
-      
+
       let(:existing_user_auth_hash) do
         OmniAuth::AuthHash.new({
           'provider' => 'google_oauth2',

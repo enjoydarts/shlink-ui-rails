@@ -68,10 +68,10 @@ RSpec.describe TotpService, type: :service do
     it 'Base32のランダム秘密鍵を生成して保存すること' do
       allow(ROTP::Base32).to receive(:random).and_return('TESTSECRET123456')
       allow(service).to receive(:encrypt_secret).with('TESTSECRET123456').and_return('encrypted_secret')
-      
+
       expect(user).to receive(:save!)
       secret = service.generate_secret
-      
+
       expect(secret).to eq('TESTSECRET123456')
       expect(user.otp_secret_key).to eq('encrypted_secret')
     end
@@ -111,7 +111,7 @@ RSpec.describe TotpService, type: :service do
   describe '#generate_backup_codes' do
     it 'バックアップコードを生成すること' do
       allow(service).to receive(:generate_backup_code).and_return('backup01', 'backup02', 'backup03', 'backup04', 'backup05', 'backup06', 'backup07', 'backup08')
-      allow(service).to receive(:encrypt_backup_codes).with(['backup01', 'backup02', 'backup03', 'backup04', 'backup05', 'backup06', 'backup07', 'backup08']).and_return('encrypted_codes')
+      allow(service).to receive(:encrypt_backup_codes).with([ 'backup01', 'backup02', 'backup03', 'backup04', 'backup05', 'backup06', 'backup07', 'backup08' ]).and_return('encrypted_codes')
 
       codes = service.generate_backup_codes
 
@@ -125,13 +125,13 @@ RSpec.describe TotpService, type: :service do
   describe '#verify_backup_code' do
     before do
       user.otp_backup_codes = 'encrypted_codes'
-      allow(service).to receive(:decrypt_backup_codes).with('encrypted_codes').and_return(['backup01', 'backup02', 'used123'])
+      allow(service).to receive(:decrypt_backup_codes).with('encrypted_codes').and_return([ 'backup01', 'backup02', 'used123' ])
     end
 
     context '有効なバックアップコードの場合' do
       it 'コードを使用して削除し、trueを返すこと' do
-        # 使用後のコードリストをモック  
-        allow(service).to receive(:encrypt_backup_codes).with(['backup02', 'used123']).and_return('updated_encrypted_codes')
+        # 使用後のコードリストをモック
+        allow(service).to receive(:encrypt_backup_codes).with([ 'backup02', 'used123' ]).and_return('updated_encrypted_codes')
         expect(user).to receive(:save!)
 
         result = service.verify_backup_code('backup01')
@@ -152,7 +152,7 @@ RSpec.describe TotpService, type: :service do
   describe '#enable_two_factor' do
     before do
       allow(service).to receive(:verify_code).with('123456').and_return(true)
-      allow(service).to receive(:generate_backup_codes).and_return(['backup01', 'backup02'])
+      allow(service).to receive(:generate_backup_codes).and_return([ 'backup01', 'backup02' ])
     end
 
     context '有効な検証コードの場合' do

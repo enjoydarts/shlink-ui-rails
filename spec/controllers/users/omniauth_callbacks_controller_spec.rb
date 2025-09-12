@@ -31,7 +31,7 @@ RSpec.describe Users::OmniauthCallbacksController, type: :request do
 
       it 'ユーザーをサインインしてリダイレクトすること' do
         post "/users/auth/google_oauth2/callback"
-        
+
         expect(response).to redirect_to(root_path)
       end
     end
@@ -46,7 +46,7 @@ RSpec.describe Users::OmniauthCallbacksController, type: :request do
 
       xit '新規登録ページにリダイレクトすること' do
         post "/users/auth/google_oauth2/callback"
-        
+
         expect(response).to redirect_to(new_user_registration_url)
       end
     end

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Users::WebauthnCredentialsController < ApplicationController
-  before_action :authenticate_user!, except: [:login_options, :authentication_options]
+  before_action :authenticate_user!, except: [ :login_options, :authentication_options ]
   before_action :set_user
 
   # 登録用オプションを返すAPI
@@ -90,7 +90,7 @@ class Users::WebauthnCredentialsController < ApplicationController
   # セキュリティキーの名前を変更
   def update
     credential = @user.webauthn_credentials.find(params[:id])
-    
+
     if credential.update(nickname: params[:nickname])
       render json: {
         success: true,
@@ -135,10 +135,10 @@ class Users::WebauthnCredentialsController < ApplicationController
   private
 
   def set_user
-    if action_name == 'login_options'
+    if action_name == "login_options"
       # ログイン時は何もしない（メソッド内でユーザーを特定）
-      return
-    elsif action_name == 'authentication_options' && session[:user_pending_2fa_id]
+      nil
+    elsif action_name == "authentication_options" && session[:user_pending_2fa_id]
       # 2FA認証中はセッションからユーザーを取得
       @user = User.find_by(id: session[:user_pending_2fa_id])
     else

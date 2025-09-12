@@ -21,7 +21,7 @@ RSpec.describe DeviseMailerJob, type: :job do
 
       it 'アダプタ経由でメールを送信すること' do
         expect(mail_adapter).to receive(:deliver_mail).with(mail_object)
-        
+
         described_class.perform_now('reset_password_instructions', user, token)
       end
     end
@@ -37,7 +37,7 @@ RSpec.describe DeviseMailerJob, type: :job do
 
       it 'エラーログを出力すること' do
         expect(Rails.logger).to receive(:error).with(/アダプタエラー/)
-        
+
         # ジョブが実行され、ログが出力されることを確認
         begin
           described_class.perform_now('reset_password_instructions', user, token)

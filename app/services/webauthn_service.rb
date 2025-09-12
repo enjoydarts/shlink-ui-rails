@@ -73,7 +73,7 @@ class WebauthnService
     def register_credential(user, credential_response, challenge, nickname: nil)
       # WebAuthn 3.4.1の正しいAPIを使用
       webauthn_credential = WebAuthn::Credential.from_create(credential_response)
-      
+
       # 検証を実行
       webauthn_credential.verify(challenge)
 
@@ -89,7 +89,7 @@ class WebauthnService
       Rails.logger.error "WebAuthn registration failed: #{e.message}"
       Rails.logger.debug "WebAuthn error class: #{e.class}"
       Rails.logger.debug "WebAuthn error full: #{e.inspect}"
-      
+
       # エラーメッセージに基づいてユーザーフレンドリーなメッセージを返す
       error_message = case e.message
       when /already registered/, /contains one of the credentials already registered/
@@ -103,7 +103,7 @@ class WebauthnService
       else
         "セキュリティキーの登録に失敗しました。"
       end
-      
+
       Rails.logger.debug "Converted error message: #{error_message}"
       raise StandardError, error_message
     end

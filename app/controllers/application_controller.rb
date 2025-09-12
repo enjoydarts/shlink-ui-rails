@@ -37,7 +37,7 @@ class ApplicationController < ActionController::Base
       if respond_to?(:resource_name) && resource_name
         token = params.dig(resource_name, :cf_turnstile_response)
       end
-      
+
       # Deviseパラメータで見つからない場合は直接パラメータから取得
       token ||= params[:cf_turnstile_response] || params["cf-turnstile-response"]
     end

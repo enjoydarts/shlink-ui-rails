@@ -63,7 +63,7 @@ RSpec.describe ApplicationController, type: :controller do
 
         it 'CaptchaVerificationServiceを呼び出すこと' do
           get :test_action, params: { cf_turnstile_response: 'test_token' }
-          
+
           expect(CaptchaVerificationService).to have_received(:verify).with(
             token: 'test_token',
             remote_ip: request.remote_ip
@@ -74,7 +74,7 @@ RSpec.describe ApplicationController, type: :controller do
       context '検証に失敗した場合' do
         before do
           allow(mock_result).to receive(:success?).and_return(false)
-          allow(mock_result).to receive(:error_codes).and_return(['invalid-input-response'])
+          allow(mock_result).to receive(:error_codes).and_return([ 'invalid-input-response' ])
           allow(Rails.logger).to receive(:error)
         end
 
@@ -100,7 +100,7 @@ RSpec.describe ApplicationController, type: :controller do
           # resource_nameメソッドを模擬（ただし、paramsで"user"キーは自動で処理される）
           # このテストは直接パラメータに委ねる
           get :test_action, params: { user: { cf_turnstile_response: 'devise_token' } }
-          
+
           # user[cf_turnstile_response]のパラメータが取得されない場合はnilが渡される
           # ApplicationControllerの実装では、resource_nameが利用できない場合は
           # 直接params[:cf_turnstile_response]を使用するため、この場合nilになる
@@ -112,7 +112,7 @@ RSpec.describe ApplicationController, type: :controller do
 
         it '直接パラメータからトークンを取得すること' do
           get :test_action, params: { cf_turnstile_response: 'direct_token' }
-          
+
           expect(CaptchaVerificationService).to have_received(:verify).with(
             token: 'direct_token',
             remote_ip: request.remote_ip
@@ -121,7 +121,7 @@ RSpec.describe ApplicationController, type: :controller do
 
         it 'ダッシュ形式パラメータからトークンを取得すること' do
           get :test_action, params: { 'cf-turnstile-response' => 'dash_token' }
-          
+
           expect(CaptchaVerificationService).to have_received(:verify).with(
             token: 'dash_token',
             remote_ip: request.remote_ip
@@ -131,9 +131,9 @@ RSpec.describe ApplicationController, type: :controller do
         it '引数で渡されたトークンを優先すること' do
           # 直接verify_captchaメソッドをテスト
           allow(controller).to receive(:params).and_return(ActionController::Parameters.new(cf_turnstile_response: 'param_token'))
-          
+
           controller.send(:verify_captcha, 'argument_token')
-          
+
           expect(CaptchaVerificationService).to have_received(:verify).with(
             token: 'argument_token',
             remote_ip: request.remote_ip
@@ -146,28 +146,28 @@ RSpec.describe ApplicationController, type: :controller do
   describe '#captcha_error_message' do
     context 'timeoutエラーの場合' do
       it 'タイムアウト用メッセージを返すこと' do
-        message = controller.send(:captcha_error_message, ['timeout'])
+        message = controller.send(:captcha_error_message, [ 'timeout' ])
         expect(message).to eq('セキュリティ検証に失敗しました。しばらく時間をおいて再度お試しください。')
       end
     end
 
     context 'network-errorの場合' do
       it 'ネットワークエラー用メッセージを返すこと' do
-        message = controller.send(:captcha_error_message, ['network-error'])
+        message = controller.send(:captcha_error_message, [ 'network-error' ])
         expect(message).to eq('セキュリティ検証でエラーが発生しました。ページを再読み込みして再度お試しください。')
       end
     end
 
     context 'その他のエラーの場合' do
       it 'デフォルトメッセージを返すこと' do
-        message = controller.send(:captcha_error_message, ['invalid-input-response'])
+        message = controller.send(:captcha_error_message, [ 'invalid-input-response' ])
         expect(message).to eq('セキュリティ検証が完了していません。チェックボックスにチェックを入れてから送信してください。')
       end
     end
 
     context '複数のエラーコードでtimeoutが含まれる場合' do
       it 'タイムアウト用メッセージを返すこと' do
-        message = controller.send(:captcha_error_message, ['invalid-input-response', 'timeout'])
+        message = controller.send(:captcha_error_message, [ 'invalid-input-response', 'timeout' ])
         expect(message).to eq('セキュリティ検証に失敗しました。しばらく時間をおいて再度お試しください。')
       end
     end
@@ -184,12 +184,12 @@ RSpec.describe ApplicationController, type: :controller do
 
     it 'sign_upでnameパラメータを許可すること' do
       controller.send(:configure_permitted_parameters)
-      expect(devise_parameter_sanitizer).to have_received(:permit).with(:sign_up, keys: [:name])
+      expect(devise_parameter_sanitizer).to have_received(:permit).with(:sign_up, keys: [ :name ])
     end
 
     it 'account_updateでnameパラメータを許可すること' do
       controller.send(:configure_permitted_parameters)
-      expect(devise_parameter_sanitizer).to have_received(:permit).with(:account_update, keys: [:name])
+      expect(devise_parameter_sanitizer).to have_received(:permit).with(:account_update, keys: [ :name ])
     end
   end
 end

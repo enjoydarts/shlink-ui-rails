@@ -63,7 +63,7 @@ RSpec.describe WebauthnCredential, type: :model do
   describe '#display_info' do
     it 'クレデンシャル情報を含むハッシュを返すこと' do
       result = credential.display_info
-      
+
       expect(result).to include(
         :id,
         :nickname,
@@ -112,7 +112,7 @@ RSpec.describe WebauthnCredential, type: :model do
 
     context 'sign_countがあるが最近使用されていない場合' do
       before { credential.update!(sign_count: 5) }
-      
+
       it '"medium"を返すこと' do
         expect(credential.security_level).to eq('medium')
       end
@@ -123,7 +123,7 @@ RSpec.describe WebauthnCredential, type: :model do
         credential.update!(sign_count: 5)
         credential.touch_last_used!
       end
-      
+
       it '"high"を返すこと' do
         expect(credential.security_level).to eq('high')
       end

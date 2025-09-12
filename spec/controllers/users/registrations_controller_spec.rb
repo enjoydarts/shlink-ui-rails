@@ -71,7 +71,7 @@ RSpec.describe Users::RegistrationsController, type: :request do
 
       it 'キャッシュ無効化ヘッダーが設定されること' do
         post user_registration_path, params: valid_params
-        
+
         expect(response.headers['Cache-Control']).to include('no-store')
       end
     end
@@ -80,7 +80,7 @@ RSpec.describe Users::RegistrationsController, type: :request do
   describe 'GET #new' do
     it 'キャッシュ無効化ヘッダーが設定されること' do
       get new_user_registration_path
-      
+
       expect(response.headers['Cache-Control']).to include('no-store')
     end
   end
@@ -93,11 +93,11 @@ RSpec.describe Users::RegistrationsController, type: :request do
     context '通常ユーザーの場合' do
       context '名前のみ更新' do
         it 'アカウント情報を更新すること' do
-          put user_registration_path, params: { 
-            user: { 
+          put user_registration_path, params: {
+            user: {
               name: 'Updated Name',
               current_password: 'password123'
-            } 
+            }
           }
 
           expect(response).to redirect_to(account_path)

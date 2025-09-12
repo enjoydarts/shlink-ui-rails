@@ -88,7 +88,7 @@ RSpec.describe MailAdapter::BaseAdapter do
         let(:error) { StandardError.new('test error') }
 
         before do
-          allow(error).to receive(:backtrace).and_return(['line1', 'line2'])
+          allow(error).to receive(:backtrace).and_return([ 'line1', 'line2' ])
         end
 
         it 'Rails.loggerにerrorレベルでログ出力すること' do
