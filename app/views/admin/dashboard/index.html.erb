@@ -1,0 +1,241 @@
+<div class="mb-6">
+  <h1 class="text-3xl font-bold text-gray-900 mb-2">ダッシュボード</h1>
+  <p class="text-gray-600">システム全体の状況を確認できます</p>
+</div>
+
+<!-- システム統計 -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+  <div class="card p-6">
+    <div class="flex items-center">
+      <div class="p-2 bg-blue-100 rounded-lg">
+        <span class="text-2xl">👤</span>
+      </div>
+      <div class="ml-4">
+        <h3 class="text-lg font-semibold text-gray-900">総ユーザー数</h3>
+        <p class="text-2xl font-bold text-blue-600"><%= @system_stats[:users][:total] %></p>
+        <p class="text-sm text-gray-500">
+          管理者: <%= @system_stats[:users][:admin] %> | 
+          一般: <%= @system_stats[:users][:normal] %>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card p-6">
+    <div class="flex items-center">
+      <div class="p-2 bg-green-100 rounded-lg">
+        <span class="text-2xl">🔗</span>
+      </div>
+      <div class="ml-4">
+        <h3 class="text-lg font-semibold text-gray-900">短縮URL数</h3>
+        <p class="text-2xl font-bold text-green-600"><%= @system_stats[:short_urls][:total] %></p>
+        <p class="text-sm text-gray-500">
+          今週: +<%= @system_stats[:short_urls][:created_this_week] %>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card p-6">
+    <div class="flex items-center">
+      <div class="p-2 bg-purple-100 rounded-lg">
+        <span class="text-2xl">👁️</span>
+      </div>
+      <div class="ml-4">
+        <h3 class="text-lg font-semibold text-gray-900">総アクセス数</h3>
+        <p class="text-2xl font-bold text-purple-600"><%= @system_stats[:short_urls][:total_visits] %></p>
+        <p class="text-sm text-gray-500">
+          今週: +<%= @system_stats[:short_urls][:visits_this_week] %>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card p-6">
+    <div class="flex items-center">
+      <div class="p-2 bg-yellow-100 rounded-lg">
+        <span class="text-2xl">🚀</span>
+      </div>
+      <div class="ml-4">
+        <h3 class="text-lg font-semibold text-gray-900">システム稼働</h3>
+        <p class="text-lg font-bold text-yellow-600">
+          <%= @system_stats[:system][:uptime][:formatted] %>
+        </p>
+        <p class="text-sm text-gray-500">
+          <%= @system_stats[:system][:version][:environment].upcase %>環境
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- システム健康状態 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <div class="card p-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">システム健康状態</h2>
+    <div class="space-y-4">
+      <div class="flex justify-between items-center">
+        <span class="text-gray-700">データベース</span>
+        <span class="<%= @system_health[:database] ? 'status-good' : 'status-critical' %>">
+          <%= @system_health[:database] ? '✅ 正常' : '❌ 異常' %>
+        </span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-gray-700">Redis</span>
+        <span class="<%= @system_health[:redis] ? 'status-good' : 'status-critical' %>">
+          <%= @system_health[:redis] ? '✅ 正常' : '❌ 異常' %>
+        </span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-gray-700">ストレージ</span>
+        <span class="<%= @system_health[:storage] ? 'status-good' : 'status-warning' %>">
+          <%= @system_health[:storage] ? '✅ 正常' : '⚠️ 警告' %>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card p-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">サーバーリソース</h2>
+    <div class="space-y-4">
+      <% if @server_monitor[:system][:memory][:error] %>
+        <div class="text-red-600">
+          メモリ情報: <%= @server_monitor[:system][:memory][:error] %>
+        </div>
+      <% else %>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-700">メモリ使用率</span>
+          <span class="<%= case @server_monitor[:system][:memory][:status]
+                             when 'good' then 'status-good'
+                             when 'warning' then 'status-warning'
+                             else 'status-critical'
+                             end %>">
+            <%= @server_monitor[:system][:memory][:usage_percent] %>%
+          </span>
+        </div>
+      <% end %>
+      
+      <% if @server_monitor[:system][:disk][:error] %>
+        <div class="text-red-600">
+          ディスク情報: <%= @server_monitor[:system][:disk][:error] %>
+        </div>
+      <% else %>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-700">ディスク使用率</span>
+          <span class="<%= case @server_monitor[:system][:disk][:status]
+                             when 'good' then 'status-good'
+                             when 'warning' then 'status-warning'
+                             else 'status-critical'
+                             end %>">
+            <%= @server_monitor[:system][:disk][:usage_percent] %>%
+          </span>
+        </div>
+      <% end %>
+      
+      <% if @server_monitor[:system][:cpu][:error] %>
+        <div class="text-red-600">
+          CPU情報: <%= @server_monitor[:system][:cpu][:error] %>
+        </div>
+      <% else %>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-700">CPU負荷</span>
+          <span class="<%= case @server_monitor[:system][:cpu][:status]
+                             when 'good' then 'status-good'
+                             when 'warning' then 'status-warning'
+                             else 'status-critical'
+                             end %>">
+            <%= @server_monitor[:system][:cpu][:usage_percent] %>%
+          </span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- 人気の短縮URL -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <div class="card p-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">人気の短縮URL</h2>
+    <% if @system_stats[:short_urls][:most_popular].any? %>
+      <div class="space-y-3">
+        <% @system_stats[:short_urls][:most_popular].each do |url| %>
+          <div class="border-b border-gray-200 pb-2">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <div class="font-medium text-blue-600 text-sm">
+                  <%= url[:short_url] %>
+                </div>
+                <div class="text-gray-600 text-sm truncate">
+                  <%= url[:long_url] %>
+                </div>
+              </div>
+              <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">
+                <%= url[:visit_count] %> visits
+              </span>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-gray-500">データがありません</p>
+    <% end %>
+  </div>
+
+  <div class="card p-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">最近の短縮URL</h2>
+    <% if @system_stats[:short_urls][:recent_created].any? %>
+      <div class="space-y-3">
+        <% @system_stats[:short_urls][:recent_created].each do |url| %>
+          <div class="border-b border-gray-200 pb-2">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <div class="font-medium text-blue-600 text-sm">
+                  <%= url[:short_url] %>
+                </div>
+                <div class="text-gray-600 text-sm truncate">
+                  <%= url[:long_url] %>
+                </div>
+                <div class="text-gray-400 text-xs">
+                  by <%= url[:user_name] %> - <%= time_ago_in_words(url[:created_at]) %>前
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-gray-500">データがありません</p>
+    <% end %>
+  </div>
+</div>
+
+<!-- バックグラウンドジョブ状況 -->
+<div class="card p-6">
+  <h2 class="text-xl font-bold text-gray-900 mb-4">バックグラウンドジョブ</h2>
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="text-center">
+      <div class="text-2xl font-bold text-yellow-600">
+        <%= @system_stats[:system][:background_jobs][:pending] %>
+      </div>
+      <div class="text-sm text-gray-600">待機中</div>
+    </div>
+    <div class="text-center">
+      <div class="text-2xl font-bold text-blue-600">
+        <%= @system_stats[:system][:background_jobs][:scheduled] %>
+      </div>
+      <div class="text-sm text-gray-600">予約済み</div>
+    </div>
+    <div class="text-center">
+      <div class="text-2xl font-bold text-green-600">
+        <%= @system_stats[:system][:background_jobs][:completed] %>
+      </div>
+      <div class="text-sm text-gray-600">完了</div>
+    </div>
+    <div class="text-center">
+      <div class="text-2xl font-bold text-red-600">
+        <%= @system_stats[:system][:background_jobs][:failed] %>
+      </div>
+      <div class="text-sm text-gray-600">失敗</div>
+    </div>
+  </div>
+</div>

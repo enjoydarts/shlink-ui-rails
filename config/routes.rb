@@ -60,6 +60,38 @@ Rails.application.routes.draw do
     end
   end
 
+  # Admin routes
+  namespace :admin do
+    # 管理者ログイン（通常のログインとは別ページ）
+    get "login", to: "sessions#new"
+    post "login", to: "sessions#create"
+    delete "logout", to: "sessions#destroy"
+
+    # 管理者認証が必要なルート
+    authenticate :user, lambda { |u| u.admin? } do
+      get "dashboard", to: "dashboard#index"
+      root "dashboard#index"
+
+      # ユーザー管理
+      resources :users, only: [ :index, :show, :update, :destroy ] do
+        member do
+          patch :toggle_role
+          patch :lock_user
+          patch :unlock_user
+        end
+      end
+
+      # システム設定
+      resource :settings, only: [ :show, :update ] do
+        collection do
+          get :category
+          post :reset
+          post :test
+        end
+      end
+    end
+  end
+
   # Public pages
   get "home", to: "pages#home"
   root "pages#home"
