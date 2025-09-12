@@ -1,268 +1,214 @@
-<!-- 二段階認証設定フォーム -->
-<div class="space-y-6">
+<!-- セキュリティ設定 (Google OAuth ユーザーには非表示) -->
+<% unless @user.skip_two_factor_for_oauth? %>
+<div class="space-y-4">
   
   <!-- TOTP設定セクション -->
-  <div class="bg-gray-50/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-gray-200/50">
-    <div class="flex items-center justify-between mb-4">
-      <div class="flex items-center space-x-3">
-        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-          <svg width="16" height="16" viewBox="0 0 24 24" class="text-blue-600">
-            <path fill="currentColor" d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M10,17L6,13L7.41,11.59L10,14.17L16.59,7.58L18,9L10,17Z"/>
-          </svg>
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div class="px-4 py-3 border-b border-gray-100">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" class="text-blue-600">
+              <path fill="currentColor" d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M10,17L6,13L7.41,11.59L10,14.17L16.59,7.58L18,9L10,17Z"/>
+            </svg>
+          </div>
+          <div>
+            <h4 class="font-semibold text-gray-900">認証アプリ</h4>
+            <p class="text-sm text-gray-500">Google Authenticator、Authy</p>
+          </div>
         </div>
-        <div>
-          <h4 class="text-lg font-semibold text-gray-800">認証アプリ（TOTP）</h4>
-          <p class="text-sm text-gray-600">Google Authenticator、Authy などの認証アプリを使用</p>
+        
+        <div class="flex items-center">
+          <% if @user.totp_enabled? %>
+            <div class="flex items-center text-green-700 text-sm font-medium">
+              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              有効
+            </div>
+          <% else %>
+            <div class="text-gray-500 text-sm">無効</div>
+          <% end %>
         </div>
-      </div>
-      
-      <div class="flex items-center space-x-2">
-        <% if @user.two_factor_enabled? %>
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-            ✓ 有効
-          </span>
-        <% else %>
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-            無効
-          </span>
-        <% end %>
       </div>
     </div>
     
-    <% if @user.two_factor_enabled? %>
-      <!-- 2FA有効時の管理UI -->
-      <div class="space-y-4">
-        <div class="bg-green-50 border border-green-200 rounded-xl p-4">
-          <div class="flex items-center space-x-2 mb-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" class="text-green-600">
-              <path fill="currentColor" d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M11,16.5L18,9.5L16.59,8.09L11,13.67L7.41,10.09L6,11.5L11,16.5Z"/>
-            </svg>
-            <p class="text-sm font-medium text-green-800">二段階認証が有効になっています</p>
-          </div>
-          <p class="text-sm text-green-700">
-            ログイン時に認証アプリで生成されるコードの入力が必要です。
-          </p>
-        </div>
-        
-        <!-- バックアップコード表示/再生成 -->
-        <div class="flex flex-col sm:flex-row gap-3">
-          <%= link_to "バックアップコードを表示", "#", 
+    <% if @user.totp_enabled? %>
+      <!-- TOTP有効時の管理UI -->
+      <div class="p-4 space-y-3">
+        <div class="flex flex-col space-y-3">
+          <%= link_to "バックアップコード表示", "#", 
                 data: { 
                   controller: "modal",
                   action: "click->modal#open",
                   modal_target_value: "#backup-codes-modal"
                 },
-                class: "inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200" %>
+                class: "inline-flex items-center justify-center px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors" %>
           
-          <%= link_to "新しいバックアップコードを生成", backup_codes_users_two_factor_authentications_path, 
-                method: :post,
-                data: { 
-                  confirm: "新しいバックアップコードを生成しますか？現在のコードは無効になります。",
-                  turbo_method: :post
-                },
-                class: "inline-flex items-center justify-center px-4 py-2 border border-blue-300 text-sm font-medium rounded-lg text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors duration-200" %>
-          
-          <%= link_to "二段階認証を無効にする", users_two_factor_authentications_path, 
-                method: :delete,
-                data: { 
-                  confirm: "二段階認証を無効にしますか？セキュリティが低下する可能性があります。",
-                  turbo_method: :delete
-                },
-                class: "inline-flex items-center justify-center px-4 py-2 border border-red-300 text-sm font-medium rounded-lg text-red-700 bg-red-50 hover:bg-red-100 transition-colors duration-200" %>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <%= form_with url: backup_codes_users_two_factor_authentications_path, method: :post, local: true, 
+                  data: { 
+                    confirm: "新しいバックアップコードを生成しますか？現在のコードは無効になります。",
+                    controller: "backup-codes-form",
+                    action: "turbo:submit-end->backup-codes-form#handleSubmitEnd"
+                  },
+                  class: "flex-1" do |f| %>
+              <%= f.submit "新しいバックアップコード生成",
+                  class: "w-full px-4 py-2.5 bg-blue-100 hover:bg-blue-200 text-blue-700 text-sm font-medium rounded-lg transition-colors" %>
+            <% end %>
+            
+            <%= form_with url: users_two_factor_authentications_path, method: :delete, local: true,
+                  data: { confirm: "認証アプリを無効にしますか？" },
+                  class: "flex-1" do |f| %>
+              <%= f.submit "無効にする",
+                  class: "w-full px-4 py-2.5 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-lg transition-colors" %>
+            <% end %>
+          </div>
         </div>
       </div>
       
     <% else %>
       <!-- 2FA無効時の設定UI -->
-      <div class="space-y-4">
-        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
-          <div class="flex items-center space-x-2 mb-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" class="text-amber-600">
-              <path fill="currentColor" d="M13,13H11V7H13M12,17.3A1.3,1.3 0 0,1 10.7,16A1.3,1.3 0 0,1 12,14.7A1.3,1.3 0 0,1 13.3,16A1.3,1.3 0 0,1 12,17.3M15.73,3H8.27L3,8.27V15.73L8.27,21H15.73L21,15.73V8.27L15.73,3Z"/>
-            </svg>
-            <p class="text-sm font-medium text-amber-800">二段階認証が無効になっています</p>
-          </div>
-          <p class="text-sm text-amber-700">
-            アカウントのセキュリティを向上させるため、二段階認証の有効化を強く推奨します。
-          </p>
+      <div class="p-4">
+        <div class="text-center">
+          <p class="text-sm text-gray-600 mb-3">セキュリティ向上のため、二段階認証を有効にすることを推奨します</p>
+          <%= link_to "有効にする", new_users_two_factor_authentications_path, 
+                class: "inline-flex items-center justify-center px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors" %>
         </div>
-        
-        <%= link_to "二段階認証を有効にする", new_users_two_factor_authentications_path, 
-              class: "inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200" %>
       </div>
     <% end %>
   </div>
   
   <!-- セキュリティキー設定セクション -->
-  <div class="bg-gray-50/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-gray-200/50">
-    <div class="flex items-center justify-between mb-4">
-      <div class="flex items-center space-x-3">
-        <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-          <svg width="16" height="16" viewBox="0 0 24 24" class="text-purple-600">
-            <path fill="currentColor" d="M6,2A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2H6M6,4H13V9H18V20H6V4Z"/>
-          </svg>
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div class="px-4 py-3 border-b border-gray-100">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" class="text-purple-600">
+              <path fill="currentColor" d="M6,2A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2H6M6,4H13V9H18V20H6V4Z"/>
+            </svg>
+          </div>
+          <div>
+            <h4 class="font-semibold text-gray-900">セキュリティキー</h4>
+            <p class="text-sm text-gray-500">YubiKey、パスキーなど</p>
+          </div>
         </div>
-        <div>
-          <h4 class="text-lg font-semibold text-gray-800">セキュリティキー（FIDO2）</h4>
-          <p class="text-sm text-gray-600">YubiKey などの物理的なセキュリティキーを使用した認証</p>
+        
+        <div class="flex items-center">
+          <% if @user.webauthn_enabled? %>
+            <div class="flex items-center text-green-700 text-sm font-medium">
+              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              <%= @user.active_webauthn_credentials.count %>個
+            </div>
+          <% else %>
+            <div class="text-gray-500 text-sm">未登録</div>
+          <% end %>
         </div>
-      </div>
-      
-      <div class="flex items-center space-x-2">
-        <% if @user.webauthn_enabled? %>
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-            ✓ 登録済み（<%= @user.active_webauthn_credentials.count %>個）
-          </span>
-        <% else %>
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-            未登録
-          </span>
-        <% end %>
       </div>
     </div>
     
     <% if @user.webauthn_enabled? %>
       <!-- セキュリティキー管理UI -->
-      <div class="space-y-4">
-        <div class="bg-green-50 border border-green-200 rounded-xl p-4">
-          <div class="flex items-center space-x-2 mb-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" class="text-green-600">
-              <path fill="currentColor" d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M11,16.5L18,9.5L16.59,8.09L11,13.67L7.41,10.09L6,11.5L11,16.5Z"/>
-            </svg>
-            <p class="text-sm font-medium text-green-800">セキュリティキーが登録されています</p>
-          </div>
-          <p class="text-sm text-green-700">
-            登録されたセキュリティキーでログイン時の認証が可能です。
-          </p>
-        </div>
-        
+      <div class="divide-y divide-gray-100">
         <!-- 登録済みキー一覧 -->
-        <div class="space-y-3">
-          <h5 class="text-sm font-medium text-gray-700">登録済みセキュリティキー</h5>
-          <% @user.active_webauthn_credentials.each do |credential| %>
-            <div class="bg-white border border-gray-200 rounded-lg p-3 flex items-center justify-between">
-              <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <svg width="14" height="14" viewBox="0 0 24 24" class="text-purple-600">
-                    <path fill="currentColor" d="M6,2A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2H6M6,4H13V9H18V20H6V4Z"/>
-                  </svg>
-                </div>
-                <div class="flex-1">
-                  <p class="text-sm font-medium text-gray-900"><%= credential.nickname %></p>
-                  <div class="flex items-center space-x-3 text-xs text-gray-500">
-                    <span>登録: <%= credential.created_at.strftime('%Y/%m/%d') %></span>
+        <% @user.active_webauthn_credentials.each do |credential| %>
+          <div class="p-4" data-controller="webauthn" data-webauthn-credential-id-value="<%= credential.id %>">
+            <div class="flex items-center justify-between">
+              <div class="flex-1 min-w-0">
+                <!-- 表示モード -->
+                <div data-webauthn-target="displayName">
+                  <div class="flex items-center">
+                    <h5 class="text-sm font-medium text-gray-900 truncate"><%= credential.nickname %></h5>
+                    <button type="button" data-action="click->webauthn#startEdit"
+                            class="ml-2 text-gray-400 hover:text-gray-600">
+                      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1">
+                    登録: <%= credential.created_at.strftime('%m/%d') %>
                     <% if credential.last_used_at %>
-                      <span>最終使用: <%= credential.last_used_at.strftime('%Y/%m/%d') %></span>
+                      • 最終使用: <%= credential.last_used_at.strftime('%m/%d') %>
                     <% end %>
-                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium <%= credential.security_level_color %>">
-                      信頼度: <%= credential.security_level_label %>
-                    </span>
+                  </p>
+                </div>
+                
+                <!-- 編集モード -->
+                <div data-webauthn-target="editForm" class="hidden">
+                  <div class="flex items-center space-x-2">
+                    <input type="text" data-webauthn-target="editInput" value="<%= credential.nickname %>"
+                           class="flex-1 text-sm px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                           maxlength="50">
+                    <button type="button" data-action="click->webauthn#saveEdit" class="text-green-600 hover:text-green-700">
+                      <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    </button>
+                    <button type="button" data-action="click->webauthn#cancelEdit" class="text-gray-400 hover:text-gray-600">
+                      <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
               
-              <%= link_to "削除", users_webauthn_credential_path(credential), 
-                    method: :delete,
-                    data: { 
-                      confirm: "このセキュリティキーを削除しますか？"
-                    },
-                    class: "text-red-600 hover:text-red-700 text-sm font-medium transition-colors duration-200" %>
+              <button type="button" 
+                      onclick="deleteWebauthnCredential(<%= credential.id %>, '<%= credential.nickname %>', '<%= credential.last_used_at&.strftime('%Y年%m月%d日') %>')"
+                      class="ml-4 text-red-600 hover:text-red-700 text-sm font-medium">
+                削除
+              </button>
             </div>
-          <% end %>
-        </div>
+          </div>
+        <% end %>
         
-        <!-- 新しいキー登録 -->
-        <div class="flex flex-col sm:flex-row gap-3">
-          <button type="button"
-                  data-controller="webauthn"
-                  data-action="click->webauthn#register"
-                  class="inline-flex items-center justify-center px-4 py-2 border border-purple-300 text-sm font-medium rounded-lg text-purple-700 bg-purple-50 hover:bg-purple-100 transition-colors duration-200">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-            </svg>
-            新しいセキュリティキーを登録
-          </button>
+        <!-- 新規登録 -->
+        <div class="p-4 bg-gray-50" data-controller="webauthn">
+          <div class="flex flex-col sm:flex-row gap-3">
+            <input type="text" data-webauthn-target="nicknameInput"
+                   placeholder="キー名（オプション）"
+                   class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                   maxlength="50">
+            <button type="button" data-action="click->webauthn#register"
+                    class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors whitespace-nowrap">
+              + 新しいキーを追加
+            </button>
+          </div>
         </div>
       </div>
       
     <% else %>
       <!-- セキュリティキー未登録時の設定UI -->
-      <div class="space-y-4">
-        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
-          <div class="flex items-center space-x-2 mb-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" class="text-blue-600">
-              <path fill="currentColor" d="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
-            </svg>
-            <p class="text-sm font-medium text-blue-800">物理セキュリティキーについて</p>
-          </div>
-          <p class="text-sm text-blue-700">
-            YubiKey、Titan Security Key などの物理セキュリティキーを使用してより安全な認証が可能です。セキュリティキーは盗聴や偽装が困難で、最も安全な認証方法の一つです。
-          </p>
+      <div class="p-4">
+        <div class="text-center">
+          <p class="text-sm text-gray-600 mb-3">YubiKeyなどの物理セキュリティキーで、より安全な認証が可能です</p>
+          <button type="button" data-controller="webauthn" data-action="click->webauthn#register"
+                  class="inline-flex items-center justify-center px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors">
+            登録する
+          </button>
         </div>
-        
-        <button type="button"
-                data-controller="webauthn"
-                data-action="click->webauthn#register"
-                class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-          </svg>
-          セキュリティキーを登録する
-        </button>
       </div>
     <% end %>
   </div>
   
 </div>
-
-<!-- バックアップコード表示モーダル -->
-<div id="backup-codes-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" data-controller="modal">
-  <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-2xl bg-white">
-    <div class="mt-3">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-bold text-gray-900">バックアップコード</h3>
-        <button data-action="click->modal#close" class="text-gray-400 hover:text-gray-600 transition-colors">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-        </button>
-      </div>
-      
-      <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
-        <div class="flex items-center space-x-2 mb-2">
-          <svg width="16" height="16" viewBox="0 0 24 24" class="text-yellow-600">
-            <path fill="currentColor" d="M13,13H11V7H13M12,17.3A1.3,1.3 0 0,1 10.7,16A1.3,1.3 0 0,1 12,14.7A1.3,1.3 0 0,1 13.3,16A1.3,1.3 0 0,1 12,17.3M15.73,3H8.27L3,8.27V15.73L8.27,21H15.73L21,15.73V8.27L15.73,3Z"/>
-          </svg>
-          <p class="text-sm font-medium text-yellow-800">重要：安全な場所に保管してください</p>
-        </div>
-        <p class="text-sm text-yellow-700">
-          これらのコードは認証アプリにアクセスできない場合の緊急用です。各コードは一度のみ使用可能です。
-        </p>
-      </div>
-      
-      <% if @user.two_factor_enabled? && @user.two_factor_backup_codes.present? %>
-        <div class="bg-gray-50 rounded-xl p-4 font-mono text-sm">
-          <% @user.two_factor_backup_codes.each do |code| %>
-            <div class="py-1"><%= code %></div>
-          <% end %>
-        </div>
-        
-        <div class="flex justify-between items-center mt-4">
-          <button onclick="navigator.clipboard.writeText('<%= @user.two_factor_backup_codes.join('\n') %>')" 
-                  class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-            </svg>
-            コピー
-          </button>
-          <button data-action="click->modal#close" 
-                  class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200">
-            閉じる
-          </button>
-        </div>
-      <% else %>
-        <p class="text-gray-600">バックアップコードがありません。</p>
-      <% end %>
+<% else %>
+  <!-- Google OAuth ユーザー向けメッセージ -->
+  <div class="bg-green-50 rounded-xl border border-green-200 p-6 text-center">
+    <div class="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-xl mb-4">
+      <svg width="24" height="24" viewBox="0 0 24 24" class="text-green-600">
+        <path fill="currentColor" d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M10,17L6,13L7.41,11.59L10,14.17L16.59,7.58L18,9L10,17Z"/>
+      </svg>
     </div>
+    <h3 class="text-lg font-semibold text-green-800 mb-2">認証済みアカウント</h3>
+    <p class="text-sm text-green-700">
+      Google認証でログインしているため、追加の二段階認証は不要です。<br>
+      Googleアカウント側で二段階認証が保護されています。
+    </p>
   </div>
-</div>
+<% end %>
+

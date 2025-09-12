@@ -52,12 +52,38 @@ RSpec.describe CaptchaHelper, type: :helper do
   end
 
   describe '.disabled?' do
-    it 'returns the opposite of enabled?' do
-      allow(CaptchaHelper).to receive(:enabled?).and_return(true)
-      expect(CaptchaHelper.disabled?).to be false
+    context 'when in test environment' do
+      before do
+        allow(Rails.env).to receive(:test?).and_return(true)
+      end
 
-      allow(CaptchaHelper).to receive(:enabled?).and_return(false)
-      expect(CaptchaHelper.disabled?).to be true
+      it 'returns true' do
+        expect(CaptchaHelper.disabled?).to be true
+      end
+    end
+
+    context 'when keys are missing' do
+      before do
+        allow(Rails.env).to receive(:test?).and_return(false)
+        allow(Settings.captcha.turnstile).to receive(:site_key).and_return('')
+        allow(Settings.captcha.turnstile).to receive(:secret_key).and_return('test_secret_key')
+      end
+
+      it 'returns true' do
+        expect(CaptchaHelper.disabled?).to be true
+      end
+    end
+
+    context 'when properly configured and not in test environment' do
+      before do
+        allow(Rails.env).to receive(:test?).and_return(false)
+        allow(Settings.captcha.turnstile).to receive(:site_key).and_return('test_site_key')
+        allow(Settings.captcha.turnstile).to receive(:secret_key).and_return('test_secret_key')
+      end
+
+      it 'returns false' do
+        expect(CaptchaHelper.disabled?).to be false
+      end
     end
   end
 
@@ -97,15 +123,36 @@ RSpec.describe CaptchaHelper, type: :helper do
   end
 
   describe '.required_for?' do
-    let(:action) { 'login' }
+    let(:sessions_controller) { instance_double('Users::SessionsController') }
+    let(:registrations_controller) { instance_double('Users::RegistrationsController') }
+    let(:other_controller) { instance_double('ApplicationController') }
+
+    before do
+      allow(sessions_controller).to receive(:is_a?).with(Devise::SessionsController).and_return(true)
+      allow(sessions_controller).to receive(:is_a?).with(Devise::RegistrationsController).and_return(false)
+      
+      allow(registrations_controller).to receive(:is_a?).with(Devise::SessionsController).and_return(false)
+      allow(registrations_controller).to receive(:is_a?).with(Devise::RegistrationsController).and_return(true)
+      
+      allow(other_controller).to receive(:is_a?).with(Devise::SessionsController).and_return(false)
+      allow(other_controller).to receive(:is_a?).with(Devise::RegistrationsController).and_return(false)
+    end
 
     context 'when CAPTCHA is enabled' do
       before do
         allow(CaptchaHelper).to receive(:enabled?).and_return(true)
       end
 
-      it 'returns true' do
-        expect(CaptchaHelper.required_for?(action)).to be true
+      it 'returns true for sessions controller' do
+        expect(CaptchaHelper.required_for?(sessions_controller)).to be true
+      end
+
+      it 'returns true for registrations controller' do
+        expect(CaptchaHelper.required_for?(registrations_controller)).to be true
+      end
+
+      it 'returns false for other controllers' do
+        expect(CaptchaHelper.required_for?(other_controller)).to be false
       end
     end
 
@@ -115,7 +162,7 @@ RSpec.describe CaptchaHelper, type: :helper do
       end
 
       it 'returns false' do
-        expect(CaptchaHelper.required_for?(action)).to be false
+        expect(CaptchaHelper.required_for?(sessions_controller)).to be false
       end
     end
   end

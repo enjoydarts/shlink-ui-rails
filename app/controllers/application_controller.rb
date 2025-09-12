@@ -32,9 +32,15 @@ class ApplicationController < ActionController::Base
 
     # トークンが引数で渡されない場合はパラメータから取得
     # Deviseパラメータ、直接パラメータ、ダッシュ形式の順でチェック
-    token ||= params.dig(resource_name, :cf_turnstile_response) ||
-              params[:cf_turnstile_response] ||
-              params["cf-turnstile-response"]
+    unless token
+      # Deviseのresource_nameが利用可能な場合（devise_controller?の場合）
+      if respond_to?(:resource_name) && resource_name
+        token = params.dig(resource_name, :cf_turnstile_response)
+      end
+      
+      # Deviseパラメータで見つからない場合は直接パラメータから取得
+      token ||= params[:cf_turnstile_response] || params["cf-turnstile-response"]
+    end
 
     result = CaptchaVerificationService.verify(
       token: token,

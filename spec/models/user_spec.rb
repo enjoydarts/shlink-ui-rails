@@ -138,4 +138,205 @@ RSpec.describe User, type: :model do
       end
     end
   end
+
+  describe '二段階認証（2FA）' do
+    let(:user) { create(:user) }
+    let(:oauth_user) { create(:user, :from_oauth, provider: 'google_oauth2') }
+
+    describe '#two_factor_enabled?' do
+      context 'TOTPもWebAuthnも無効の場合' do
+        it 'falseを返すこと' do
+          expect(user.two_factor_enabled?).to be false
+        end
+      end
+
+      context 'TOTPが有効の場合' do
+        before do
+          user.otp_required_for_login = true
+          user.otp_secret_key = 'test_secret'
+        end
+
+        it 'trueを返すこと' do
+          expect(user.two_factor_enabled?).to be true
+        end
+      end
+
+      context 'WebAuthnが有効の場合' do
+        before do
+          allow(user).to receive(:webauthn_enabled?).and_return(true)
+        end
+
+        it 'trueを返すこと' do
+          expect(user.two_factor_enabled?).to be true
+        end
+      end
+
+      context 'TOTPとWebAuthn両方が有効の場合' do
+        before do
+          user.otp_required_for_login = true
+          user.otp_secret_key = 'test_secret'
+          allow(user).to receive(:webauthn_enabled?).and_return(true)
+        end
+
+        it 'trueを返すこと' do
+          expect(user.two_factor_enabled?).to be true
+        end
+      end
+    end
+
+    describe '#totp_enabled?' do
+      context 'otp_required_for_loginがfalseの場合' do
+        before { user.otp_required_for_login = false }
+
+        it 'falseを返すこと' do
+          expect(user.totp_enabled?).to be false
+        end
+      end
+
+      context 'otp_secret_keyがない場合' do
+        before do
+          user.otp_required_for_login = true
+          user.otp_secret_key = nil
+        end
+
+        it 'falseを返すこと' do
+          expect(user.totp_enabled?).to be false
+        end
+      end
+
+      context 'otp_required_for_loginがtrueでotp_secret_keyがある場合' do
+        before do
+          user.otp_required_for_login = true
+          user.otp_secret_key = 'test_secret'
+        end
+
+        it 'trueを返すこと' do
+          expect(user.totp_enabled?).to be true
+        end
+      end
+    end
+
+    describe '#webauthn_enabled?' do
+      context 'WebAuthnクレデンシャルがない場合' do
+        it 'falseを返すこと' do
+          expect(user.webauthn_enabled?).to be false
+        end
+      end
+
+      context 'WebAuthnクレデンシャルがある場合' do
+        before do
+          # WebAuthnCredential modelが存在することを想定
+          allow(user.webauthn_credentials).to receive(:exists?).and_return(true)
+        end
+
+        it 'trueを返すこと' do
+          expect(user.webauthn_enabled?).to be true
+        end
+      end
+    end
+
+    describe '#requires_two_factor?' do
+      context '2FAが無効の場合' do
+        it 'falseを返すこと' do
+          expect(user.requires_two_factor?).to be false
+        end
+      end
+
+      context '2FAが有効で通常ユーザーの場合' do
+        before do
+          user.otp_required_for_login = true
+          user.otp_secret_key = 'test_secret'
+        end
+
+        it 'trueを返すこと' do
+          expect(user.requires_two_factor?).to be true
+        end
+      end
+
+      context '2FAが有効でGoogle OAuthユーザーの場合' do
+        before do
+          oauth_user.otp_required_for_login = true
+          oauth_user.otp_secret_key = 'test_secret'
+        end
+
+        it 'falseを返すこと（OAuth認証は2FAをスキップ）' do
+          expect(oauth_user.requires_two_factor?).to be false
+        end
+      end
+    end
+
+    describe '#skip_two_factor_for_oauth?' do
+      context '通常ユーザーの場合' do
+        it 'falseを返すこと' do
+          expect(user.skip_two_factor_for_oauth?).to be false
+        end
+      end
+
+      context 'Google OAuthユーザーの場合' do
+        it 'trueを返すこと' do
+          expect(oauth_user.skip_two_factor_for_oauth?).to be true
+        end
+      end
+
+      context 'OAuth以外のプロバイダーの場合' do
+        let(:other_oauth_user) { create(:user, :from_oauth, provider: 'github') }
+
+        it 'falseを返すこと' do
+          expect(other_oauth_user.skip_two_factor_for_oauth?).to be false
+        end
+      end
+    end
+
+    describe '#verify_two_factor_code' do
+      let(:totp_service) { class_double('TotpService') }
+
+      before do
+        stub_const('TotpService', totp_service)
+        user.otp_required_for_login = true
+        user.otp_secret_key = 'test_secret'
+      end
+
+      context '空のコードの場合' do
+        it 'falseを返すこと' do
+          expect(user.verify_two_factor_code('')).to be false
+          expect(user.verify_two_factor_code(nil)).to be false
+        end
+      end
+
+      context '有効なTOTPコードの場合' do
+        it 'TotpServiceを呼び出してtrueを返すこと' do
+          allow(totp_service).to receive(:verify_code).with(user, '123456').and_return(true)
+          expect(user.verify_two_factor_code('123456')).to be true
+        end
+      end
+
+      context 'TOTPが無効でバックアップコードが有効の場合' do
+        it 'TotpServiceを呼び出してバックアップコードを検証すること' do
+          allow(totp_service).to receive(:verify_code).with(user, 'backup123').and_return(false)
+          allow(totp_service).to receive(:verify_backup_code).with(user, 'backup123').and_return(true)
+          expect(user.verify_two_factor_code('backup123')).to be true
+        end
+      end
+    end
+
+    describe '#webauthn_id' do
+      context 'webauthn_user_idが既に設定されている場合' do
+        before { user.webauthn_user_id = 'existing_id' }
+
+        it '既存のIDを返すこと' do
+          expect(user.webauthn_id).to eq('existing_id')
+        end
+      end
+
+      context 'webauthn_user_idが未設定の場合' do
+        before { user.webauthn_user_id = nil }
+
+        it '新しいIDを生成して保存すること' do
+          expect(SecureRandom).to receive(:random_bytes).with(64).and_return('new_random_id')
+          expect(user).to receive(:update!).with(webauthn_user_id: 'new_random_id')
+          expect(user.webauthn_id).to eq('new_random_id')
+        end
+      end
+    end
+  end
 end

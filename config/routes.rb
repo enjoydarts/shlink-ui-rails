@@ -15,10 +15,11 @@ Rails.application.routes.draw do
     end
 
     # WebAuthn routes
-    resources :webauthn_credentials, only: [ :create, :destroy ] do
+    resources :webauthn_credentials, only: [ :create, :update, :destroy ] do
       collection do
         get :registration_options
         get :authentication_options
+        get :login_options
       end
     end
   end

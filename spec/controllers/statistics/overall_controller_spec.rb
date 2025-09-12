@@ -1,12 +1,12 @@
 require 'rails_helper'
 
-RSpec.describe Statistics::OverallController, type: :controller do
+RSpec.describe Statistics::OverallController, type: :request do
   let(:user) { create(:user) }
 
   describe 'GET #index' do
     context '認証されていない場合' do
       it 'ログインページにリダイレクトされること' do
-        get :index
+        get statistics_overall_path
         expect(response).to redirect_to(new_user_session_path)
       end
     end
@@ -18,14 +18,14 @@ RSpec.describe Statistics::OverallController, type: :controller do
 
       context 'デフォルトパラメータ' do
         it '正常にレスポンスを返すこと' do
-          get :index
+          get statistics_overall_path
 
           expect(response).to have_http_status(:success)
           expect(response.content_type).to include('application/json')
         end
 
         it '統計データを含むJSONを返すこと' do
-          get :index
+          get statistics_overall_path
 
           json_response = JSON.parse(response.body)
 
@@ -45,14 +45,14 @@ RSpec.describe Statistics::OverallController, type: :controller do
 
       context 'periodパラメータ指定' do
         it '指定された期間でデータを返すこと' do
-          get :index, params: { period: '7d' }
+          get statistics_overall_path, params: { period: '7d' }
 
           json_response = JSON.parse(response.body)
           expect(json_response['period']).to eq('7d')
         end
 
         it '無効な期間パラメータの場合はデフォルトを使用すること' do
-          get :index, params: { period: 'invalid' }
+          get statistics_overall_path, params: { period: 'invalid' }
 
           json_response = JSON.parse(response.body)
           expect(json_response['period']).to eq('invalid') # パラメータはそのまま返される
@@ -65,7 +65,7 @@ RSpec.describe Statistics::OverallController, type: :controller do
         end
 
         it 'エラーレスポンスを返すこと' do
-          get :index
+          get statistics_overall_path
 
           expect(response).to have_http_status(:internal_server_error)
 
@@ -80,7 +80,7 @@ RSpec.describe Statistics::OverallController, type: :controller do
         it 'エラーログが出力されること' do
           expect(Rails.logger).to receive(:error).with(/統計データ生成エラー/)
 
-          get :index
+          get statistics_overall_path
         end
       end
 
@@ -110,7 +110,7 @@ RSpec.describe Statistics::OverallController, type: :controller do
         end
 
         it '正しい統計値を返すこと' do
-          get :index
+          get statistics_overall_path
 
           json_response = JSON.parse(response.body)
           overall_data = json_response['data']['overall']
@@ -126,7 +126,7 @@ RSpec.describe Statistics::OverallController, type: :controller do
       context 'レスポンス時間の測定' do
         it '適切な時間でレスポンスを返すこと' do
           start_time = Time.current
-          get :index
+          get statistics_overall_path
           end_time = Time.current
 
           expect(response).to have_http_status(:success)
@@ -156,7 +156,7 @@ RSpec.describe Statistics::OverallController, type: :controller do
     end
 
     it '他ユーザーのデータが含まれないこと' do
-      get :index
+      get statistics_overall_path
 
       json_response = JSON.parse(response.body)
       overall_data = json_response['data']['overall']
@@ -191,7 +191,7 @@ RSpec.describe Statistics::OverallController, type: :controller do
     end
 
     it '正しいJSONスキーマを返すこと' do
-      get :index
+      get statistics_overall_path
 
       json_response = JSON.parse(response.body)
 
@@ -221,7 +221,7 @@ RSpec.describe Statistics::OverallController, type: :controller do
     end
 
     it 'generated_atが有効なISO8601形式であること' do
-      get :index
+      get statistics_overall_path
 
       json_response = JSON.parse(response.body)
       generated_at = json_response['generated_at']

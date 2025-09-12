@@ -60,9 +60,15 @@ class User < ApplicationRecord
 
   # Two-Factor Authentication関連メソッド
 
-  # 2FAが有効かどうか
+  # 2FAが有効かどうか（TOTP または WebAuthn のいずれかが有効）
   # @return [Boolean] 2FA有効の場合true
   def two_factor_enabled?
+    totp_enabled? || webauthn_enabled?
+  end
+
+  # TOTP（認証アプリ）が有効かどうか
+  # @return [Boolean] TOTP有効の場合true
+  def totp_enabled?
     otp_required_for_login? && otp_secret_key.present?
   end
 
@@ -75,9 +81,8 @@ class User < ApplicationRecord
   # OAuth認証ユーザーの2FAスキップ判定
   # @return [Boolean] スキップする場合true
   def skip_two_factor_for_oauth?
-    # Google認証ユーザーは2FA内包とみなしてスキップする場合の判定
-    # 現在は全ユーザーで2FAを要求
-    false
+    # Google認証ユーザーは2FA内包とみなしてスキップ
+    from_omniauth? && provider == 'google_oauth2'
   end
 
   # TOTPコードを検証
@@ -123,7 +128,9 @@ class User < ApplicationRecord
   # 新しいバックアップコードを生成
   # @return [Array<String>] バックアップコード配列
   def regenerate_backup_codes!
-    TotpService.generate_backup_codes(self)
+    backup_codes = TotpService.generate_backup_codes(self)
+    save!
+    backup_codes
   end
 
   # 新しいバックアップコードを生成（エイリアス）

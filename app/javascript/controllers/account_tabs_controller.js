@@ -8,8 +8,36 @@ export default class extends Controller {
   }
 
   connect() {
+    // URLハッシュからタブを判定
+    const hash = window.location.hash.replace('#', '')
+    const validTabs = this.tabTargets.map(tab => tab.dataset.tab)
+    const initialTab = validTabs.includes(hash) ? hash : this.activeValue
+    
     // 初期化時にアクティブなタブを設定
-    this.showTab(this.activeValue)
+    this.showTab(initialTab)
+    
+    // Turbo navigation後のハッシュ変更を監視
+    window.addEventListener('hashchange', this.handleHashChange.bind(this))
+    document.addEventListener('turbo:load', this.handleTurboLoad.bind(this))
+  }
+
+  handleHashChange() {
+    const hash = window.location.hash.replace('#', '')
+    const validTabs = this.tabTargets.map(tab => tab.dataset.tab)
+    if (validTabs.includes(hash)) {
+      this.showTab(hash)
+    }
+  }
+
+  handleTurboLoad() {
+    // Turbo navigation後にハッシュを再確認
+    setTimeout(() => {
+      const hash = window.location.hash.replace('#', '')
+      const validTabs = this.tabTargets.map(tab => tab.dataset.tab)
+      if (validTabs.includes(hash)) {
+        this.showTab(hash)
+      }
+    }, 100)
   }
 
   // タブクリック時の処理
@@ -106,5 +134,11 @@ export default class extends Controller {
   activateTab(tabName) {
     this.showTab(tabName)
     this.activeValue = tabName
+  }
+
+  disconnect() {
+    // イベントリスナーをクリーンアップ
+    window.removeEventListener('hashchange', this.handleHashChange.bind(this))
+    document.removeEventListener('turbo:load', this.handleTurboLoad.bind(this))
   }
 }

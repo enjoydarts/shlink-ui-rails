@@ -5,12 +5,17 @@
 # https://guides.rubyonrails.org/security.html#content-security-policy-header
 
 Rails.application.configure do
+  # Development環境ではCSPを無効化（letter_opener対応）
+  unless Rails.env.production?
+    config.content_security_policy_report_only = true
+  end
+
   config.content_security_policy do |policy|
     policy.default_src :self, :https
     policy.font_src    :self, :https, :data
     policy.img_src     :self, :https, :data
     policy.object_src  :none
-    policy.script_src  :self, :https, "https://challenges.cloudflare.com"
+    policy.script_src  :self, :https, :unsafe_inline, "https://challenges.cloudflare.com", "https://cdn.jsdelivr.net"
     policy.style_src   :self, :https, :unsafe_inline
     policy.connect_src :self, :https, "https://challenges.cloudflare.com"
     policy.frame_src   "https://challenges.cloudflare.com"
@@ -20,8 +25,10 @@ Rails.application.configure do
 
   # Generate session nonces for permitted importmap, inline scripts, and inline styles.
   config.content_security_policy_nonce_generator = ->(request) { request.session.id.to_s }
-  config.content_security_policy_nonce_directives = %w[script-src style-src]
-
-  # Report violations without enforcing the policy.
-  # config.content_security_policy_report_only = true
+  # Development環境ではnonce無効化（unsafe-inlineを有効にするため）
+  unless Rails.env.production?
+    config.content_security_policy_nonce_directives = %w[]
+  else
+    config.content_security_policy_nonce_directives = %w[script-src style-src]
+  end
 end

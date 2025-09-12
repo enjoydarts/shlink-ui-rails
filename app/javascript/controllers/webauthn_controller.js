@@ -2,7 +2,8 @@ import { Controller } from "@hotwired/stimulus"
 
 // WebAuthn操作を管理するStimulusコントローラー
 export default class extends Controller {
-  static targets = ["nicknameInput", "errorMessage"]
+  static targets = ["nicknameInput", "errorMessage", "editForm", "editInput", "displayName"]
+  static values = { credentialId: Number, optionsUrl: String }
   
   connect() {
     console.log("WebAuthn controller connected")
@@ -43,14 +44,23 @@ export default class extends Controller {
       
       this.showSuccess("セキュリティキーを登録しました")
       
-      // ページをリロードして最新の状態を表示
+      // ページをリロードして最新の状態を表示（セキュリティタブを維持）
       setTimeout(() => {
-        window.location.reload()
+        console.log('Force reloading page after WebAuthn registration')
+        // セキュリティタブのハッシュを保持してリロード
+        const currentUrl = new URL(window.location.href)
+        currentUrl.hash = '#security'
+        // タイムスタンプを追加してキャッシュを無効化
+        currentUrl.searchParams.set('_t', Date.now().toString())
+        window.location.href = currentUrl.href
       }, 1500)
       
     } catch (error) {
       console.error('WebAuthn registration failed:', error)
-      this.showError(error.message || 'セキュリティキーの登録に失敗しました')
+      
+      // エラーメッセージをより詳しく分析
+      const errorMessage = this.getWebAuthnErrorMessage(error)
+      this.showError(errorMessage)
     }
   }
   
@@ -60,8 +70,9 @@ export default class extends Controller {
       this.hideError()
       this.showLoading("認証準備中...")
       
-      // 認証用オプションを取得
-      const optionsResponse = await fetch('/users/webauthn_credentials/authentication_options', {
+      // 認証用オプションを取得（data属性から動的にURLを取得）
+      const optionsUrl = this.hasOptionsUrlValue ? this.optionsUrlValue : '/users/webauthn_credentials/authentication_options'
+      const optionsResponse = await fetch(optionsUrl, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -87,7 +98,10 @@ export default class extends Controller {
       
     } catch (error) {
       console.error('WebAuthn authentication failed:', error)
-      this.showError(error.message || 'セキュリティキーでの認証に失敗しました')
+      
+      // エラーメッセージをより詳しく分析（認証用）
+      const errorMessage = this.getWebAuthnAuthErrorMessage(error)
+      this.showError(errorMessage)
     }
   }
   
@@ -121,7 +135,7 @@ export default class extends Controller {
     const userId = this.base64urlDecode(options.user.id)
     
     // exclude credentialsをデコード
-    const excludeCredentials = options.exclude_credentials?.map(cred => ({
+    const excludeCredentials = options.excludeCredentials?.map(cred => ({
       id: this.base64urlDecode(cred.id),
       type: cred.type
     })) || []
@@ -132,11 +146,11 @@ export default class extends Controller {
       user: {
         id: userId,
         name: options.user.name,
-        displayName: options.user.display_name
+        displayName: options.user.displayName
       },
-      pubKeyCredParams: options.pub_key_cred_params,
+      pubKeyCredParams: options.pubKeyCredParams,
       excludeCredentials: excludeCredentials,
-      authenticatorSelection: options.authenticator_selection,
+      authenticatorSelection: options.authenticatorSelection,
       timeout: options.timeout
     }
     
@@ -147,7 +161,9 @@ export default class extends Controller {
     })
     
     if (!credential) {
-      throw new Error('セキュリティキーでの操作がキャンセルされました')
+      const cancelError = new Error('セキュリティキーでの操作がキャンセルされました')
+      cancelError.name = 'NotAllowedError'
+      throw cancelError
     }
     
     // レスポンスをサーバー送信用に変換
@@ -168,7 +184,7 @@ export default class extends Controller {
     const challenge = this.base64urlDecode(options.challenge)
     
     // allow credentialsをデコード
-    const allowCredentials = options.allow_credentials?.map(cred => ({
+    const allowCredentials = options.allowCredentials?.map(cred => ({
       id: this.base64urlDecode(cred.id),
       type: cred.type
     })) || []
@@ -177,7 +193,7 @@ export default class extends Controller {
       challenge: challenge,
       allowCredentials: allowCredentials,
       timeout: options.timeout,
-      userVerification: options.user_verification
+      userVerification: options.userVerification
     }
     
     console.log('Get options:', getOptions)
@@ -187,7 +203,9 @@ export default class extends Controller {
     })
     
     if (!credential) {
-      throw new Error('セキュリティキーでの操作がキャンセルされました')
+      const cancelError = new Error('セキュリティキーでの操作がキャンセルされました')
+      cancelError.name = 'NotAllowedError'
+      throw cancelError
     }
     
     // レスポンスをサーバー送信用に変換
@@ -294,5 +312,197 @@ export default class extends Controller {
       binary += String.fromCharCode(bytes[i])
     }
     return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+  }
+  
+  // WebAuthn認証エラーメッセージを日本語化
+  getWebAuthnAuthErrorMessage(error) {
+    console.log('Analyzing auth error:', error.name, error.message)
+    
+    // ユーザーキャンセルのチェック
+    if (this.isUserCancellation(error)) {
+      return 'セキュリティキーでの認証がキャンセルされました'
+    }
+    
+    // WebAuthn固有エラーの判定
+    if (error.message) {
+      const message = error.message.toLowerCase()
+      
+      if (message.includes('timeout') || message.includes('timed out')) {
+        return 'セキュリティキーの認証がタイムアウトしました。再度お試しください。'
+      }
+      
+      if (message.includes('not allowed') || 
+          message.includes('operation either timed out or was not allowed')) {
+        return 'セキュリティキーでの認証が許可されませんでした。再度お試しください。'
+      }
+      
+      if (message.includes('invalid') || message.includes('verification failed')) {
+        return 'セキュリティキーの認証に失敗しました。正しいセキュリティキーを使用してください。'
+      }
+    }
+    
+    // エラー名による判定
+    if (error.name === 'NotAllowedError') {
+      return 'セキュリティキーでの認証が許可されませんでした。再度お試しください。'
+    }
+    
+    if (error.name === 'AbortError') {
+      return 'セキュリティキーでの認証がキャンセルされました'
+    }
+    
+    if (error.name === 'NotSupportedError') {
+      return 'このセキュリティキーはサポートされていません。'
+    }
+    
+    // デフォルトエラーメッセージ
+    return error.message || 'セキュリティキーでの認証に失敗しました'
+  }
+
+  // WebAuthn登録エラーメッセージを日本語化
+  getWebAuthnErrorMessage(error) {
+    console.log('Analyzing error:', error.name, error.message)
+    
+    // ユーザーキャンセルのチェック
+    if (this.isUserCancellation(error)) {
+      return 'セキュリティキーの登録がキャンセルされました'
+    }
+    
+    // WebAuthn固有エラーの判定
+    if (error.message) {
+      const message = error.message.toLowerCase()
+      
+      if (message.includes('already registered') || 
+          message.includes('contains one of the credentials already registered')) {
+        return 'このセキュリティキーは既に登録されています。別のセキュリティキーを使用してください。'
+      }
+      
+      if (message.includes('timeout') || message.includes('timed out')) {
+        return 'セキュリティキーの操作がタイムアウトしました。再度お試しください。'
+      }
+      
+      if (message.includes('not allowed') || 
+          message.includes('operation either timed out or was not allowed')) {
+        return 'セキュリティキーの操作が許可されませんでした。再度お試しください。'
+      }
+      
+      if (message.includes('invalid') || message.includes('verification failed')) {
+        return 'セキュリティキーの検証に失敗しました。正しいセキュリティキーを使用してください。'
+      }
+    }
+    
+    // エラー名による判定
+    if (error.name === 'InvalidStateError') {
+      return 'このセキュリティキーは既に登録されています。別のセキュリティキーを使用してください。'
+    }
+    
+    if (error.name === 'NotAllowedError') {
+      return 'セキュリティキーの操作が許可されませんでした。再度お試しください。'
+    }
+    
+    if (error.name === 'AbortError') {
+      return 'セキュリティキーの登録がキャンセルされました'
+    }
+    
+    if (error.name === 'NotSupportedError') {
+      return 'このセキュリティキーはサポートされていません。'
+    }
+    
+    // デフォルトエラーメッセージ
+    return error.message || 'セキュリティキーの登録に失敗しました'
+  }
+
+  // ユーザーキャンセルかどうかを判定
+  isUserCancellation(error) {
+    // WebAuthn仕様に基づく一般的なキャンセルエラーの判定
+    const cancelMessages = [
+      'The operation either timed out or was not allowed',
+      'User cancelled',
+      'The request has been cancelled',
+      'Operation was cancelled',
+      'NotAllowedError'
+    ]
+    
+    // 重複登録エラーは別途処理するためキャンセルとしない
+    const duplicateMessages = [
+      'already registered',
+      'contains one of the credentials already registered'
+    ]
+    
+    const isDuplicate = duplicateMessages.some(msg => error.message?.includes(msg))
+    
+    return !isDuplicate && cancelMessages.some(msg => 
+      error.message?.includes(msg) || 
+      error.name === 'NotAllowedError' ||
+      error.name === 'AbortError'
+    )
+  }
+  
+  // 名前編集モードを開始
+  startEdit(event) {
+    event.preventDefault()
+    
+    if (this.hasDisplayNameTarget && this.hasEditFormTarget && this.hasEditInputTarget) {
+      this.displayNameTarget.classList.add('hidden')
+      this.editFormTarget.classList.remove('hidden')
+      this.editInputTarget.focus()
+      this.editInputTarget.select()
+    }
+  }
+  
+  // 名前編集をキャンセル
+  cancelEdit(event) {
+    event.preventDefault()
+    
+    if (this.hasDisplayNameTarget && this.hasEditFormTarget) {
+      this.editFormTarget.classList.add('hidden')
+      this.displayNameTarget.classList.remove('hidden')
+    }
+  }
+  
+  // 名前を保存
+  async saveEdit(event) {
+    event.preventDefault()
+    
+    if (!this.hasEditInputTarget) return
+    
+    const newNickname = this.editInputTarget.value.trim()
+    if (!newNickname) {
+      this.showError('名前を入力してください')
+      return
+    }
+    
+    try {
+      const response = await fetch(`/users/webauthn_credentials/${this.credentialIdValue}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-Token': this.getCSRFToken()
+        },
+        body: JSON.stringify({
+          nickname: newNickname
+        })
+      })
+      
+      const result = await response.json()
+      
+      if (response.ok && result.success) {
+        // 表示名を更新
+        if (this.hasDisplayNameTarget) {
+          this.displayNameTarget.textContent = newNickname
+        }
+        
+        // 編集モードを終了
+        this.cancelEdit(event)
+        
+        this.showSuccess(result.message || 'セキュリティキーの名前を変更しました')
+      } else {
+        throw new Error(result.error || result.message || '名前の変更に失敗しました')
+      }
+      
+    } catch (error) {
+      console.error('WebAuthn name update failed:', error)
+      this.showError(error.message || 'セキュリティキーの名前変更に失敗しました')
+    }
   }
 }

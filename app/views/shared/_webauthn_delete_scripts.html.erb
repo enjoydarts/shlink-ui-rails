@@ -1,0 +1,155 @@
+<script>
+// WebAuthn削除対象の情報を保存する変数
+let pendingWebauthnDeleteData = null;
+
+function deleteWebauthnCredential(credentialId, nickname, lastUsed) {
+  // 削除対象の情報を保存
+  pendingWebauthnDeleteData = { credentialId, nickname, lastUsed };
+  
+  // モーダルに情報を設定
+  document.getElementById('webauthn-delete-modal-title').textContent = nickname;
+  document.getElementById('webauthn-delete-modal-date').textContent = lastUsed ? `最終使用: ${lastUsed}` : '未使用';
+  
+  // モーダルを表示
+  openWebauthnDeleteModal();
+}
+
+function openWebauthnDeleteModal() {
+  const modal = document.getElementById('webauthn-delete-modal');
+  const backdrop = document.getElementById('webauthn-delete-modal-backdrop');
+  const content = document.getElementById('webauthn-delete-modal-content');
+  
+  // ボタンの状態をリセット
+  resetWebauthnDeleteButton();
+  
+  modal.classList.remove('hidden');
+  
+  // アニメーション用の少し遅延
+  setTimeout(() => {
+    backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    content.style.transform = 'scale(1)';
+    content.style.opacity = '1';
+  }, 10);
+  
+  // ESCキーでモーダルを閉じる
+  document.addEventListener('keydown', handleWebauthnDeleteEscapeKey);
+}
+
+function closeWebauthnDeleteModal() {
+  const modal = document.getElementById('webauthn-delete-modal');
+  const backdrop = document.getElementById('webauthn-delete-modal-backdrop');
+  const content = document.getElementById('webauthn-delete-modal-content');
+  
+  backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+  content.style.transform = 'scale(0.95)';
+  content.style.opacity = '0';
+  
+  setTimeout(() => {
+    modal.classList.add('hidden');
+    pendingWebauthnDeleteData = null;
+    resetWebauthnDeleteButton();
+  }, 300);
+  
+  // ESCキーリスナーを削除
+  document.removeEventListener('keydown', handleWebauthnDeleteEscapeKey);
+}
+
+function handleWebauthnDeleteEscapeKey(event) {
+  if (event.key === 'Escape') {
+    closeWebauthnDeleteModal();
+  }
+}
+
+async function confirmWebauthnDelete() {
+  if (!pendingWebauthnDeleteData) {
+    return;
+  }
+  
+  const { credentialId } = pendingWebauthnDeleteData;
+  const confirmBtn = document.getElementById('webauthn-confirm-delete-btn');
+  const btnText = document.getElementById('webauthn-delete-btn-text');
+  const btnSpinner = document.getElementById('webauthn-delete-btn-spinner');
+  
+  // ボタンをローディング状態に
+  confirmBtn.disabled = true;
+  btnText.textContent = '削除中...';
+  btnSpinner.classList.remove('hidden');
+  btnSpinner.classList.add('inline');
+  
+  try {
+    const response = await fetch(`/users/webauthn_credentials/${credentialId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      }
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok && data.success) {
+      showToast(data.message || 'セキュリティキーを削除しました', 'success');
+      closeWebauthnDeleteModal();
+      // 成功時はページを強制リロードして最新データを表示
+      setTimeout(() => {
+        console.log('Force reloading page after WebAuthn deletion');
+        // セキュリティタブのハッシュを保持してリロード
+        const currentUrl = new URL(window.location.href);
+        currentUrl.hash = '#security';
+        // タイムスタンプを追加してキャッシュを無効化
+        currentUrl.searchParams.set('_t', Date.now().toString());
+        window.location.href = currentUrl.href;
+      }, 1000);
+    } else {
+      showToast(data.message || 'セキュリティキーの削除に失敗しました', 'error');
+      resetWebauthnDeleteButton();
+    }
+  } catch (error) {
+    console.error('WebAuthn delete error:', error);
+    showToast('ネットワークエラーが発生しました', 'error');
+    resetWebauthnDeleteButton();
+  }
+}
+
+function resetWebauthnDeleteButton() {
+  const confirmBtn = document.getElementById('webauthn-confirm-delete-btn');
+  const btnText = document.getElementById('webauthn-delete-btn-text');
+  const btnSpinner = document.getElementById('webauthn-delete-btn-spinner');
+  
+  // 要素が存在することを確認してから操作
+  if (confirmBtn) confirmBtn.disabled = false;
+  if (btnText) btnText.textContent = '削除する';
+  if (btnSpinner) {
+    btnSpinner.classList.add('hidden');
+    btnSpinner.classList.remove('inline');
+  }
+}
+
+// showToast関数が定義されていない場合のフォールバック
+if (typeof showToast === 'undefined') {
+  function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.innerHTML = message;
+    
+    let bgColor = 'bg-blue-500';
+    if (type === 'success') {
+      bgColor = 'bg-green-500';
+    } else if (type === 'error') {
+      bgColor = 'bg-red-500';
+    }
+    
+    toast.className = `fixed top-4 right-4 ${bgColor} text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300 max-w-sm`;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => {
+        if (document.body.contains(toast)) {
+          document.body.removeChild(toast);
+        }
+      }, 300);
+    }, type === 'success' ? 2000 : 4000);
+  }
+}
+</script>

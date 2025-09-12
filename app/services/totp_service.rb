@@ -185,9 +185,15 @@ class TotpService
     return false unless verify_code(verification_code)
 
     user.otp_required_for_login = true
-    generate_backup_codes if user.otp_backup_codes.blank?
+    # バックアップコードを確実に生成
+    if user.otp_backup_codes.blank?
+      Rails.logger.info "Generating backup codes for user #{user.id}"
+      backup_codes = generate_backup_codes
+      Rails.logger.info "Generated #{backup_codes.size} backup codes"
+    end
 
     user.save!
+    true
   rescue StandardError => e
     Rails.logger.error "2FA enablement failed: #{e.message}"
     false

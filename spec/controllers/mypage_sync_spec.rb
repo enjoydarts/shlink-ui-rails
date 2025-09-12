@@ -1,10 +1,10 @@
 require 'rails_helper'
 
-RSpec.describe MypageController, type: :controller do
+RSpec.describe MypageController, type: :request do
   let(:user) { create(:user) }
 
   describe "POST #sync" do
-    before { sign_in user }
+    before { sign_in user, scope: :user }
 
     context "同期が成功した場合" do
       let(:mock_sync_service) { instance_double(Shlink::SyncShortUrlsService) }
@@ -15,7 +15,7 @@ RSpec.describe MypageController, type: :controller do
       end
 
       it "正常なJSONレスポンスを返すこと" do
-        post :sync
+        post mypage_sync_path
 
         expect(response).to have_http_status(:success)
         expect(response.content_type).to include('application/json')
@@ -27,7 +27,7 @@ RSpec.describe MypageController, type: :controller do
       end
 
       it "同期サービスが呼び出されること" do
-        post :sync
+        post mypage_sync_path
 
         expect(Shlink::SyncShortUrlsService).to have_received(:new).with(user)
         expect(mock_sync_service).to have_received(:call)
@@ -45,7 +45,7 @@ RSpec.describe MypageController, type: :controller do
       end
 
       it "エラーレスポンスを返すこと" do
-        post :sync
+        post mypage_sync_path
 
         expect(response).to have_http_status(:bad_gateway)
         expect(response.content_type).to include('application/json')
@@ -56,7 +56,7 @@ RSpec.describe MypageController, type: :controller do
       end
 
       it "エラーログが記録されること" do
-        post :sync
+        post mypage_sync_path
 
         expect(Rails.logger).to have_received(:error).with(/Sync failed for user #{user.id}/)
       end
@@ -72,7 +72,7 @@ RSpec.describe MypageController, type: :controller do
       end
 
       it "汎用エラーレスポンスを返すこと" do
-        post :sync
+        post mypage_sync_path
 
         expect(response).to have_http_status(:internal_server_error)
         expect(response.content_type).to include('application/json')
@@ -83,17 +83,17 @@ RSpec.describe MypageController, type: :controller do
       end
 
       it "エラーログが記録されること" do
-        post :sync
+        post mypage_sync_path
 
         expect(Rails.logger).to have_received(:error).with(/Unexpected error during sync for user #{user.id}/)
       end
     end
 
     context "認証されていない場合" do
-      before { sign_out user }
+      before { sign_out :user }
 
       it "リダイレクトされること" do
-        post :sync
+        post mypage_sync_path
 
         expect(response).to have_http_status(:redirect)
       end

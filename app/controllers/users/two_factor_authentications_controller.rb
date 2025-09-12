@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Users::TwoFactorAuthenticationsController < ApplicationController
-  before_action :authenticate_user_for_2fa!
+  before_action :authenticate_user_for_2fa!, only: [ :show, :verify ]
   before_action :check_2fa_required, only: [ :show, :verify ]
   before_action :authenticate_user!, only: [ :new, :create, :destroy, :backup_codes ]
 
@@ -39,9 +39,14 @@ class Users::TwoFactorAuthenticationsController < ApplicationController
 
   # 2FA用のユーザー認証チェック
   def authenticate_user_for_2fa!
-    return if user_pending_2fa? || user_signed_in?
+    # 2FA待ちのユーザーのみ許可（完全ログイン済みユーザーはダッシュボードへ）
+    return if user_pending_2fa?
 
-    redirect_to new_user_session_path, alert: "ログインが必要です。"
+    if user_signed_in?
+      redirect_to dashboard_path
+    else
+      redirect_to new_user_session_path, alert: "ログインが必要です。"
+    end
   end
 
   # 2FA が必要かどうかをチェック
@@ -62,11 +67,9 @@ class Users::TwoFactorAuthenticationsController < ApplicationController
     session[:user_pending_2fa_id].present?
   end
 
-  # 2FA待ち、または既にログイン済みのユーザーを取得
+  # 2FA待ちのユーザーのみを取得
   def current_user_for_2fa
-    if user_signed_in?
-      current_user
-    elsif session[:user_pending_2fa_id]
+    if session[:user_pending_2fa_id]
       User.find_by(id: session[:user_pending_2fa_id])
     end
   end
@@ -91,6 +94,7 @@ class Users::TwoFactorAuthenticationsController < ApplicationController
   # WebAuthn認証を検証
   def verify_webauthn_credential
     challenge = session.delete(:webauthn_authentication_challenge)
+
 
     unless challenge
       flash.now[:alert] = "セッションが無効です。再度お試しください。"
@@ -141,8 +145,13 @@ class Users::TwoFactorAuthenticationsController < ApplicationController
 
   # 2FA設定画面表示
   def new
-    if current_user.two_factor_enabled?
-      redirect_to account_path, notice: "二段階認証は既に有効になっています。"
+    if current_user.skip_two_factor_for_oauth?
+      redirect_to account_path, notice: "Google認証ユーザーは追加の二段階認証は不要です。"
+      return
+    end
+
+    if current_user.totp_enabled?
+      redirect_to account_path, notice: "認証アプリによる二段階認証は既に有効になっています。"
       return
     end
 
@@ -155,6 +164,11 @@ class Users::TwoFactorAuthenticationsController < ApplicationController
 
   # 2FA有効化
   def create
+    if current_user.skip_two_factor_for_oauth?
+      redirect_to account_path, alert: "Google認証ユーザーは追加の二段階認証は不要です。"
+      return
+    end
+
     code = params[:totp_code]&.strip
 
     if code.blank?
@@ -165,7 +179,7 @@ class Users::TwoFactorAuthenticationsController < ApplicationController
 
     if current_user.enable_two_factor!(code)
       flash[:notice] = "二段階認証が有効になりました。バックアップコードを安全な場所に保管してください。"
-      redirect_to account_path
+      redirect_to account_path(anchor: "security")
     else
       flash.now[:alert] = "認証コードが正しくありません。再度お試しください。"
       redirect_to new_users_two_factor_authentications_path
@@ -174,24 +188,39 @@ class Users::TwoFactorAuthenticationsController < ApplicationController
 
   # 2FA無効化
   def destroy
+    if current_user.skip_two_factor_for_oauth?
+      redirect_to account_path, alert: "Google認証ユーザーは追加の二段階認証は不要です。"
+      return
+    end
+
     if current_user.disable_two_factor!
       flash[:notice] = "二段階認証を無効にしました。"
     else
       flash[:alert] = "二段階認証の無効化に失敗しました。"
     end
 
-    redirect_to account_path
+    redirect_to account_path(anchor: "security")
   end
 
   # バックアップコード再生成
   def backup_codes
-    if current_user.two_factor_enabled?
+    if current_user.skip_two_factor_for_oauth?
+      redirect_to account_path, alert: "Google認証ユーザーは追加の二段階認証は不要です。"
+      return
+    end
+
+    if current_user.totp_enabled?
       current_user.regenerate_two_factor_backup_codes!
       flash[:notice] = "新しいバックアップコードを生成しました。"
     else
-      flash[:alert] = "二段階認証が有効ではありません。"
+      flash[:alert] = "認証アプリによる二段階認証が有効ではありません。"
     end
 
-    redirect_to account_path
+    respond_to do |format|
+      format.html { redirect_to account_path(anchor: "security") }
+      format.turbo_stream {
+        redirect_to account_path(anchor: "security"), status: :see_other
+      }
+    end
   end
 end

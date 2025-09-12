@@ -43,6 +43,9 @@ class Users::SessionsController < Devise::SessionsController
     # リダイレクト先を保存
     store_location_for(:user, after_sign_in_path_for(user))
 
+    # 現在のセッションからDeviseのユーザー情報をクリア（重要！）
+    sign_out(user) if user_signed_in?
+
     # 2FA画面にリダイレクト
     redirect_to users_two_factor_authentications_path
   end
