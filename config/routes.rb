@@ -67,27 +67,25 @@ Rails.application.routes.draw do
     post "login", to: "sessions#create"
     delete "logout", to: "sessions#destroy"
 
-    # 管理者認証が必要なルート
-    authenticate :user, lambda { |u| u.admin? } do
-      get "dashboard", to: "dashboard#index"
-      root "dashboard#index"
+    # 管理者認証が必要なルート（AdminControllerで認証チェック）
+    get "dashboard", to: "dashboard#index"
+    root "dashboard#index"
 
-      # ユーザー管理
-      resources :users, only: [ :index, :show, :update, :destroy ] do
-        member do
-          patch :toggle_role
-          patch :lock_user
-          patch :unlock_user
-        end
+    # ユーザー管理
+    resources :users, only: [ :index, :show, :update, :destroy ] do
+      member do
+        patch :toggle_role
+        patch :lock_user
+        patch :unlock_user
       end
+    end
 
-      # システム設定
-      resource :settings, only: [ :show, :update ] do
-        collection do
-          get :category
-          post :reset
-          post :test
-        end
+    # システム設定
+    resource :settings, only: [ :show, :update ] do
+      collection do
+        get :category
+        post :reset
+        post :test
       end
     end
   end

@@ -5,7 +5,16 @@ class ApplicationController < ActionController::Base
 
   protect_from_forgery with: :exception, prepend: true
 
+  # システム設定ヘルパーを全コントローラーで使用可能にする
+  include SystemSettingsHelper
+  helper_method :system_setting, :site_name, :site_url, :maintenance_mode?, 
+                :captcha_enabled?, :rate_limit_enabled?, :page_size,
+                :password_min_length, :require_2fa_for_admin?,
+                :max_short_urls_per_user, :default_short_code_length,
+                :allowed_domains
+
   before_action :configure_permitted_parameters, if: :devise_controller?
+  before_action :check_maintenance_mode, unless: :devise_controller?
 
   # Deviseの認証後リダイレクト先を設定
   def after_sign_in_path_for(resource)
@@ -17,6 +26,13 @@ class ApplicationController < ActionController::Base
   end
 
   private
+
+  def check_maintenance_mode
+    return unless maintenance_mode?
+    return if current_user&.admin? # 管理者は除外
+
+    render 'errors/maintenance', status: :service_unavailable
+  end
 
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up, keys: [ :name ])

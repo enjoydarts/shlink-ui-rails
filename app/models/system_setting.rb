@@ -83,13 +83,13 @@ class SystemSetting < ApplicationRecord
         value: "",
         type: "string",
         category: "captcha",
-        description: "Turnstile Site Key"
+        description: "Cloudflare Turnstile Site Key"
       },
       "captcha.secret_key" => {
         value: "",
         type: "string",
         category: "captcha",
-        description: "Turnstile Secret Key"
+        description: "Cloudflare Turnstile Secret Key"
       },
 
       # レート制限設定
@@ -105,6 +105,12 @@ class SystemSetting < ApplicationRecord
         category: "rate_limit",
         description: "1分間あたりの最大リクエスト数"
       },
+      "rate_limit.burst_limit" => {
+        value: "100",
+        type: "integer",
+        category: "rate_limit",
+        description: "バースト制限（一時的なリクエスト急増許容数）"
+      },
 
       # メール設定
       "email.adapter" => {
@@ -113,11 +119,23 @@ class SystemSetting < ApplicationRecord
         category: "email",
         description: "メール送信アダプター（smtp, mailersend）"
       },
+      "email.from_address" => {
+        value: "noreply@example.com",
+        type: "string",
+        category: "email",
+        description: "送信元メールアドレス"
+      },
       "email.smtp_settings" => {
-        value: "{}",
+        value: "{\"address\":\"smtp.gmail.com\",\"port\":587,\"authentication\":\"plain\",\"enable_starttls_auto\":true}",
         type: "json",
         category: "email",
         description: "SMTP設定（JSON形式）"
+      },
+      "email.mailersend_api_key" => {
+        value: "",
+        type: "string",
+        category: "email",
+        description: "MailerSend APIキー"
       },
 
       # パフォーマンス設定
@@ -126,6 +144,70 @@ class SystemSetting < ApplicationRecord
         type: "integer",
         category: "performance",
         description: "キャッシュの有効期間（秒）"
+      },
+      "performance.page_size" => {
+        value: "20",
+        type: "integer",
+        category: "performance",
+        description: "ページネーションのページサイズ"
+      },
+      "performance.max_short_urls_per_user" => {
+        value: "1000",
+        type: "integer",
+        category: "performance",
+        description: "ユーザー1人あたりの最大短縮URL数"
+      },
+
+      # セキュリティ設定
+      "security.require_2fa_for_admin" => {
+        value: "true",
+        type: "boolean",
+        category: "security",
+        description: "管理者に2FA認証を必須とする"
+      },
+      "security.session_timeout" => {
+        value: "7200",
+        type: "integer",
+        category: "security",
+        description: "セッション有効期間（秒）"
+      },
+      "security.password_min_length" => {
+        value: "8",
+        type: "integer",
+        category: "security",
+        description: "パスワード最小長"
+      },
+
+      # システム設定
+      "system.site_name" => {
+        value: "Shlink-UI-Rails",
+        type: "string",
+        category: "system",
+        description: "サイト名"
+      },
+      "system.site_url" => {
+        value: "http://localhost:3000",
+        type: "string",
+        category: "system",
+        description: "サイトURL"
+      },
+      "system.maintenance_mode" => {
+        value: "false",
+        type: "boolean",
+        category: "system",
+        description: "メンテナンスモード"
+      },
+      "system.default_short_code_length" => {
+        value: "5",
+        type: "integer",
+        category: "system",
+        description: "デフォルト短縮コード長"
+      },
+      "system.allowed_domains" => {
+        value: "[]",
+        type: "array",
+        category: "system",
+        description: "許可ドメイン一覧（空の場合は全て許可）"
       }
     }
 

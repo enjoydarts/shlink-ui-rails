@@ -124,6 +124,17 @@
                       </svg>
                       <span class="font-medium">アカウント設定</span>
                     <% end %>
+                    
+                    <!-- Admin Panel Link (Only for admin users) -->
+                    <% if current_user.admin? %>
+                      <%= link_to admin_dashboard_path, 
+                            class: "flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200" do %>
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+                        </svg>
+                        <span class="font-medium">🔧 管理者パネル</span>
+                      <% end %>
+                    <% end %>
 
                     <!-- Divider -->
                     <div class="border-t border-gray-100 my-1"></div>
@@ -179,6 +190,16 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                 </svg>
                 <span class="font-medium">アカウント設定</span>
+              <% end %>
+              
+              <!-- Admin Panel Link for Mobile (Only for admin users) -->
+              <% if current_user.admin? %>
+                <%= link_to admin_dashboard_path, class: "flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200" do %>
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+                  </svg>
+                  <span class="font-medium">🔧 管理者パネル</span>
+                <% end %>
               <% end %>
             </div>
 

@@ -5,7 +5,7 @@
 
 <!-- システム統計 -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-  <div class="card p-6">
+  <%= link_to admin_users_path, class: "card p-6 hover:shadow-lg transition-shadow cursor-pointer" do %>
     <div class="flex items-center">
       <div class="p-2 bg-blue-100 rounded-lg">
         <span class="text-2xl">👤</span>
@@ -19,7 +19,7 @@
         </p>
       </div>
     </div>
-  </div>
+  <% end %>
 
   <div class="card p-6">
     <div class="flex items-center">
@@ -51,7 +51,7 @@
     </div>
   </div>
 
-  <div class="card p-6">
+  <%= link_to admin_settings_path, class: "card p-6 hover:shadow-lg transition-shadow cursor-pointer" do %>
     <div class="flex items-center">
       <div class="p-2 bg-yellow-100 rounded-lg">
         <span class="text-2xl">🚀</span>
@@ -66,7 +66,7 @@
         </p>
       </div>
     </div>
-  </div>
+  <% end %>
 </div>
 
 <!-- システム健康状態 -->

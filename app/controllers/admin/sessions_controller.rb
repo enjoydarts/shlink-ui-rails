@@ -19,7 +19,7 @@ class Admin::SessionsController < ApplicationController
       else
                            "メールアドレスまたはパスワードが正しくありません。"
       end
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 

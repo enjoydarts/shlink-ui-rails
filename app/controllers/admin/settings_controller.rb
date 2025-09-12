@@ -19,6 +19,9 @@ class Admin::SettingsController < Admin::AdminController
       end
     end
 
+    # システム設定変更後はキャッシュをクリア
+    refresh_system_settings!
+
     redirect_to admin_settings_path, notice: "システム設定を更新しました。"
   rescue ActiveRecord::RecordInvalid => e
     redirect_to admin_settings_path, alert: "設定の更新に失敗しました: #{e.message}"
