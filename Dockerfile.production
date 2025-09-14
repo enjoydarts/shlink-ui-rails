@@ -74,7 +74,17 @@ ENV RAILS_ENV="production" \
 RUN mkdir -p tmp/cache
 
 # アセットをプリコンパイル（DATABASE_URL不要でプリコンパイル可能にする）
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
+RUN SECRET_KEY_BASE_DUMMY=1 \
+    DATABASE_URL=sqlite3:///tmp/dummy.sqlite3 \
+    EMAIL_FROM_ADDRESS=dummy@example.com \
+    EMAIL_SMTP_ADDRESS=smtp.example.com \
+    EMAIL_SMTP_PORT=587 \
+    EMAIL_SMTP_USER_NAME=dummy@example.com \
+    EMAIL_SMTP_PASSWORD=dummy \
+    SHLINK_BASE_URL=https://example.com \
+    SHLINK_API_KEY=dummy \
+    REDIS_URL=redis://localhost:6379/0 \
+    ./bin/rails assets:precompile
 
 # Bootsnap cache precompile
 RUN bundle exec bootsnap precompile app/ lib/
