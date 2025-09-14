@@ -96,9 +96,13 @@ Rails.application.configure do
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
   # Devise and Mail settings for production
+  site_url = ApplicationConfig.get("system.site_url", "https://localhost")
+  uri = URI.parse(site_url)
+
   config.action_mailer.default_url_options = {
-    host: Settings.mailer.host,
-    port: Settings.mailer.port
+    host: uri.host,
+    port: uri.port,
+    protocol: uri.scheme
   }
 
   config.action_mailer.delivery_method = :smtp
