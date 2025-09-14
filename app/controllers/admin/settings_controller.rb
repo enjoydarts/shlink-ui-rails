@@ -203,21 +203,49 @@ class Admin::SettingsController < Admin::AdminController
       return
     end
 
-    # Shlink APIの health エンドポイントでテスト
-    uri = URI.parse("#{base_url.chomp('/')}/rest/health")
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = (uri.scheme == "https")
-    http.open_timeout = 10
-    http.read_timeout = 10
+    # Shlink APIの health エンドポイントでテスト（より安全な実装）
+    begin
+      # URLの安全性検証
+      sanitized_base_url = base_url.chomp("/").strip
+      raise URI::InvalidURIError unless sanitized_base_url.match?(/\Ahttps?:\/\//)
 
-    request = Net::HTTP::Get.new(uri.request_uri)
-    request["X-Api-Key"] = api_key
-    request["Accept"] = "application/json"
+      uri = URI.parse("#{sanitized_base_url}/rest/health")
+      # HTTPSまたはHTTPのみ許可
+      raise URI::InvalidURIError unless %w[http https].include?(uri.scheme)
+      raise URI::InvalidURIError if uri.host.blank?
 
-    response = http.request(request)
+      # ホワイトリストによる追加検証
+      allowed_hosts = [
+        /\A[\w\-\.]+\z/  # 基本的なホスト名パターン
+      ]
+      unless allowed_hosts.any? { |pattern| uri.host.match?(pattern) }
+        raise URI::InvalidURIError
+      end
 
-    if response.code == "200"
-      result = JSON.parse(response.body)
+      # ポート番号の検証（1-65535の範囲）
+      unless uri.port.between?(1, 65535)
+        raise URI::InvalidURIError
+      end
+
+      # FaradayでHTTP接続を作成（Net::HTTPの代わり）
+      connection = Faraday.new(url: uri.to_s) do |config|
+        config.options.timeout = 10
+        config.options.open_timeout = 10
+      end
+
+    rescue URI::InvalidURIError
+      render json: { success: false, message: "無効なShlink URLです。正しいHTTP/HTTPSのURLを入力してください。" }
+      return
+    end
+
+    # Faradayを使用してAPIリクエストを実行
+    response = connection.get("/rest/health") do |req|
+      req.headers["X-Api-Key"] = api_key
+      req.headers["Accept"] = "application/json"
+    end
+
+    if response.success?
+      result = JSON.parse(response.body) rescue {}
       render json: {
         success: true,
         message: "Shlink API接続テストが成功しました。サーバー: #{result['status'] || 'OK'}"
@@ -225,12 +253,12 @@ class Admin::SettingsController < Admin::AdminController
     else
       render json: {
         success: false,
-        message: "Shlink API接続に失敗しました。HTTPステータス: #{response.code}"
+        message: "Shlink API接続に失敗しました。HTTPステータス: #{response.status}"
       }
     end
   rescue JSON::ParserError => e
     render json: { success: false, message: "Shlink APIのレスポンス解析に失敗しました: #{e.message}" }
-  rescue Net::OpenTimeout, Net::ReadTimeout => e
+  rescue Faraday::ConnectionFailed, Faraday::TimeoutError => e
     render json: { success: false, message: "Shlink APIへの接続がタイムアウトしました: #{e.message}" }
   rescue StandardError => e
     render json: { success: false, message: "Shlink API接続テストに失敗しました: #{e.message}" }
