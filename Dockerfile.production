@@ -1,0 +1,114 @@
+# Dockerfile.production
+# 本番環境向けマルチステージビルド（マルチプラットフォーム対応）
+
+# ベースイメージ設定
+ARG RUBY_VERSION=3.4.5
+FROM ruby:${RUBY_VERSION}-bullseye AS base
+
+# 作業ディレクトリ設定
+WORKDIR /app
+
+# システムパッケージ更新とランタイム依存関係インストール
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends \
+      curl \
+      libmariadb3 \
+      libyaml-0-2 \
+      zlib1g \
+      shared-mime-info \
+      tzdata \
+      ca-certificates \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+
+# 本番用のユーザー作成（セキュリティ向上）
+RUN groupadd --gid 1000 rails && \
+    useradd --uid 1000 --gid rails --shell /bin/bash --create-home rails
+
+# Gemfile用の中間ステージ
+FROM base AS gems
+
+# ビルド用パッケージインストール
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends \
+      build-essential \
+      git \
+      libmariadb-dev \
+      libmariadb-dev-compat \
+      libyaml-dev \
+      libreadline-dev \
+      zlib1g-dev \
+      pkg-config \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+
+# Bundler設定
+ENV BUNDLE_DEPLOYMENT="1" \
+    BUNDLE_PATH="/usr/local/bundle" \
+    BUNDLE_WITHOUT="development:test"
+
+# Gemfileをコピーして依存関係をインストール
+COPY Gemfile Gemfile.lock ./
+RUN bundle install && \
+    rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
+    bundle exec bootsnap precompile --gemfile
+
+# アプリケーションコード用の中間ステージ
+FROM base AS app_build
+
+# Node.js インストール（アセットコンパイル用）
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs
+
+# アプリケーションコード全体をコピー
+COPY . .
+
+# Gemを前のステージからコピー
+COPY --from=gems /usr/local/bundle /usr/local/bundle
+
+# Rails環境設定
+ENV RAILS_ENV="production" \
+    BUNDLE_DEPLOYMENT="1" \
+    BUNDLE_PATH="/usr/local/bundle" \
+    BUNDLE_WITHOUT="development:test"
+
+# Bootsnap使用のためのtmpディレクトリ作成
+RUN mkdir -p tmp/cache
+
+# アセットをプリコンパイル（DATABASE_URL不要でプリコンパイル可能にする）
+RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
+
+# Bootsnap cache precompile
+RUN bundle exec bootsnap precompile app/ lib/
+
+# 最終本番イメージ
+FROM base AS production
+
+# Gemを前のステージからコピー
+COPY --from=gems /usr/local/bundle /usr/local/bundle
+
+# アプリケーションを前のステージからコピー
+COPY --from=app_build --chown=rails:rails /app /app
+
+# Rails環境設定
+ENV RAILS_ENV="production" \
+    BUNDLE_DEPLOYMENT="1" \
+    BUNDLE_PATH="/usr/local/bundle" \
+    BUNDLE_WITHOUT="development:test" \
+    RAILS_SERVE_STATIC_FILES="true" \
+    RAILS_LOG_TO_STDOUT="true"
+
+# 必要なディレクトリの権限設定
+RUN mkdir -p /app/tmp /app/log && \
+    chown -R rails:rails /app/tmp /app/log
+
+# ヘルスチェック用エンドポイント設定
+HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
+
+# 非rootユーザーに切り替え
+USER rails
+
+# ポート公開
+EXPOSE 3000
+
+# 起動コマンド
+CMD ["./bin/rails", "server", "-b", "0.0.0.0", "-p", "3000"]

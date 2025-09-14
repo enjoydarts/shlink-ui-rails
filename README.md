@@ -142,17 +142,34 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
 
 ## 🚀 Production Deployment
 
-For production deployment and initial setup, please refer to our setup guides:
+For production deployment, we support multiple deployment options:
 
-- **[📋 Setup Guide (English)](SETUP_EN.md)** - Complete production setup instructions
-- **[📋 セットアップガイド (日本語)](SETUP_JA.md)** - 本番環境セットアップ手順
+### 📋 Initial Setup Guides
+- **[Setup Guide (English)](SETUP_EN.md)** - Complete production setup instructions
+- **[セットアップガイド (日本語)](SETUP_JA.md)** - 本番環境セットアップ手順
 
-These guides cover:
-- Initial admin account setup
-- System configuration via admin panel
-- Email settings (SMTP/MailerSend)
-- CAPTCHA configuration
-- Security and performance settings
+These guides cover initial admin account setup, system configuration, email settings, CAPTCHA, and security settings.
+
+### 🚢 Production Deployment Guides
+- **[Production Deployment Guide (English)](docs/deployment.md)** - Comprehensive deployment instructions for OCI/Docker
+- **[本番デプロイ手順書 (日本語)](docs/deployment_ja.md)** - OCI/Docker環境での詳細なデプロイ手順
+
+**Deployment Architecture:**
+- **Server:** OCI Ampere A1 instances (ARM64)
+- **Web Server:** Caddy with automatic HTTPS
+- **Application:** Docker-containerized Rails app
+- **Database:** External managed MySQL
+- **Cache:** Upstash Redis
+- **CI/CD:** GitHub Actions with automated deployment
+- **Domain:** Custom domain with Cloudflare DNS
+- **Monitoring:** Comprehensive logging and health checks
+
+**Key Features:**
+- Multi-platform Docker builds (AMD64/ARM64)
+- Automated CI/CD with GitHub Actions
+- Secure deployment with dedicated system users
+- Comprehensive backup and monitoring setup
+- Production-ready security configuration
 
 ## 📱 Application Features
 

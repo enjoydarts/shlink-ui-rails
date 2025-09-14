@@ -1,0 +1,155 @@
+# docker-compose.prod.yml
+# 本番環境用 Docker Compose 設定
+#
+# このファイルは本番サーバー上でのコンテナ運用に使用します。
+# 外部のマネージドサービス（MySQL、Redis）を使用することを前提としています。
+
+services:
+  # Rails アプリケーションサーバー
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+      # マルチプラットフォームビルド対応
+      platforms:
+        - linux/amd64
+        - linux/arm64
+
+    # コンテナ名設定
+    container_name: shlink-ui-rails-app
+
+    # 自動再起動設定
+    restart: unless-stopped
+
+    # ポート設定（ローカルポート3000でアクセス可能）
+    ports:
+      - "3000:3000"
+
+    # 環境変数ファイル読み込み
+    env_file:
+      - .env.production
+
+    # 追加の環境変数
+    environment:
+      - RAILS_ENV=production
+      - RAILS_SERVE_STATIC_FILES=true
+      - RAILS_LOG_TO_STDOUT=true
+
+    # ボリューム設定（ログとtmpディレクトリを永続化）
+    volumes:
+      - app_logs:/app/log
+      - app_tmp:/app/tmp
+      - app_storage:/app/storage
+
+    # ヘルスチェック設定
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # リソース制限（本番環境に応じて調整）
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+
+    # ログ設定
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # バックグラウンドジョブ処理（Solid Queue）
+  jobs:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+      # マルチプラットフォームビルド対応
+      platforms:
+        - linux/amd64
+        - linux/arm64
+
+    # コンテナ名設定
+    container_name: shlink-ui-rails-jobs
+
+    # 自動再起動設定
+    restart: unless-stopped
+
+    # ジョブ処理コマンド実行
+    command: bundle exec solid_queue
+
+    # 環境変数ファイル読み込み
+    env_file:
+      - .env.production
+
+    # 追加の環境変数
+    environment:
+      - RAILS_ENV=production
+      - SOLID_QUEUE_LOG_LEVEL=info
+
+    # ボリューム設定（appサービスと共有）
+    volumes:
+      - app_logs:/app/log
+      - app_tmp:/app/tmp
+      - app_storage:/app/storage
+
+    # アプリケーションサービスの起動を待機
+    depends_on:
+      app:
+        condition: service_healthy
+
+    # リソース制限
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+
+    # ログ設定
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# 永続化ボリューム設定
+volumes:
+  # アプリケーションログ（ローテーション対象）
+  app_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/shlink-ui-rails/logs
+
+  # 一時ファイル（キャッシュ、セッション等）
+  app_tmp:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/shlink-ui-rails/tmp
+
+  # アプリケーションストレージ（ファイルアップロード等）
+  app_storage:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/shlink-ui-rails/storage
+
+# ネットワーク設定
+networks:
+  default:
+    name: shlink-ui-rails-network
+    driver: bridge
