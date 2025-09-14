@@ -1,4 +1,4 @@
-require 'shellwords'
+require "shellwords"
 
 class Admin::ServerMonitorService
   def call
