@@ -1,24 +1,23 @@
 class ApplicationMailer < ActionMailer::Base
-  # 設定から送信者情報を動的に取得
-  default from: -> { default_from_address }
+  include ConfigShortcuts
+
+  # 統一設定システムから送信者情報を動的に取得
+  default from: -> { email_from_address.presence || "from@example.com" }
   layout "mailer"
 
   private
 
-  # デフォルトの送信者アドレスを設定から取得
   def default_from_address
-    if Rails.env.production? && Settings.mail_delivery_method == "mailersend"
-      # MailerSend使用時は専用設定から取得
-      "#{Settings.mailersend.from_name} <#{Settings.mailersend.from_email}>"
-    elsif Rails.env.production? && Settings.mailer.from.present?
-      # SMTP使用時は設定から取得
-      Settings.mailer.from
-    else
-      # 開発・テスト環境やフォールバック用
+    if Rails.env.development? || Rails.env.test?
       "from@example.com"
+    else
+      begin
+        # 本番環境での設定取得ロジック（必要に応じて実装）
+        email_from_address.presence || "from@example.com"
+      rescue StandardError => e
+        Rails.logger.error "送信者アドレス取得中にエラーが発生しました: #{e.message}"
+        "from@example.com"
+      end
     end
-  rescue StandardError => e
-    Rails.logger.error("送信者アドレス取得中にエラーが発生: #{e.message}")
-    "from@example.com"
   end
 end

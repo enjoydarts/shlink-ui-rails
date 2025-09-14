@@ -47,6 +47,9 @@ create_table "users", force: :cascade do |t|
   # WebAuthn (FIDO2) Authentication
   t.binary "webauthn_user_id"                          # WebAuthn用ユーザーID
 
+  # Counter cache for short_urls association
+  t.integer "short_urls_count", default: 0, null: false
+
   t.timestamps null: false
 end
 
@@ -127,6 +130,33 @@ end
 add_index "webauthn_credentials", [ "external_id" ], name: "index_webauthn_credentials_on_external_id", unique: true
 add_index "webauthn_credentials", [ "user_id", "nickname" ], name: "index_webauthn_credentials_on_user_id_and_nickname", unique: true
 add_index "webauthn_credentials", [ "user_id", "active" ], name: "index_webauthn_credentials_on_user_id_and_active"
+
+create_table "system_settings", force: :cascade do |t|
+  # 設定キー（一意）
+  t.string "key_name", null: false
+
+  # 設定値（JSON対応のため TEXT型を使用）
+  t.text "value"
+
+  # 設定の説明
+  t.text "description"
+
+  # 設定値のデータ型（string, integer, boolean, json等）
+  t.string "setting_type", default: "string", null: false
+
+  # 設定カテゴリ（captcha, rate_limit, email等）
+  t.string "category"
+
+  # 設定が有効かどうか
+  t.boolean "enabled", default: true, null: false
+
+  # タイムスタンプ
+  t.timestamps null: false
+end
+
+add_index "system_settings", [ "key_name" ], name: "index_system_settings_on_key_name", unique: true
+add_index "system_settings", [ "category" ], name: "index_system_settings_on_category"
+add_index "system_settings", [ "enabled" ], name: "index_system_settings_on_enabled"
 
 # SolidQueue tables for background job processing
 create_table "solid_queue_jobs", force: :cascade do |t|

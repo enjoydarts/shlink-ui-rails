@@ -131,7 +131,10 @@ RSpec.describe MailAdapter::SmtpAdapter do
     end
 
     context 'テスト環境の場合' do
-      before { allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('test')) }
+      before do
+        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('test'))
+        mock_smtp_settings
+      end
 
       it 'trueを返すこと' do
         expect(adapter.configured?).to be true
@@ -159,7 +162,8 @@ RSpec.describe MailAdapter::SmtpAdapter do
 
       context '設定の取得でエラーが発生した場合' do
         before do
-          allow(Settings).to receive(:mailer).and_raise(StandardError.new('設定エラー'))
+          allow(SystemSetting).to receive(:get).with("email.adapter", "smtp").and_return("smtp")
+          allow(SystemSetting).to receive(:get).with("email.smtp_address", "").and_raise(StandardError.new('設定エラー'))
           allow(Rails.logger).to receive(:error)
         end
 

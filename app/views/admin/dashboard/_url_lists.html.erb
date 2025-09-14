@@ -1,0 +1,64 @@
+<!-- 人気の短縮URL & 最近の短縮URL -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <!-- 人気の短縮URL -->
+  <div class="card p-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">🔥 人気の短縮URL</h2>
+    <% if @system_stats[:short_urls][:most_popular].any? %>
+      <div class="space-y-3">
+        <% @system_stats[:short_urls][:most_popular].each do |url| %>
+          <div class="border-b border-gray-200 pb-3 last:border-b-0">
+            <div class="flex justify-between items-start">
+              <div class="flex-1 min-w-0">
+                <div class="font-medium text-blue-600 text-sm truncate">
+                  <%= url[:short_url] %>
+                </div>
+                <div class="text-gray-600 text-sm truncate">
+                  <%= url[:long_url] %>
+                </div>
+              </div>
+              <span class="bg-gradient-to-r from-orange-100 to-red-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium ml-2 flex-shrink-0">
+                <%= url[:visit_count] %> visits
+              </span>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-8">
+        <div class="text-gray-400 text-4xl mb-2">📊</div>
+        <p class="text-gray-500">データがありません</p>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- 最近の短縮URL -->
+  <div class="card p-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">🕒 最近の短縮URL</h2>
+    <% if @system_stats[:short_urls][:recent_created].any? %>
+      <div class="space-y-3">
+        <% @system_stats[:short_urls][:recent_created].each do |url| %>
+          <div class="border-b border-gray-200 pb-3 last:border-b-0">
+            <div class="flex justify-between items-start">
+              <div class="flex-1 min-w-0">
+                <div class="font-medium text-blue-600 text-sm truncate">
+                  <%= url[:short_url] %>
+                </div>
+                <div class="text-gray-600 text-sm truncate">
+                  <%= url[:long_url] %>
+                </div>
+                <div class="text-gray-400 text-xs mt-1">
+                  <span class="font-medium"><%= url[:user_name] %></span> • <%= time_ago_in_words(url[:created_at]) %>前
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-8">
+        <div class="text-gray-400 text-4xl mb-2">🔗</div>
+        <p class="text-gray-500">データがありません</p>
+      </div>
+    <% end %>
+  </div>
+</div>

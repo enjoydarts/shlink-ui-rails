@@ -5,11 +5,13 @@ module Shlink
   class Error < StandardError; end
 
   class BaseService
+    include ConfigShortcuts
+
     attr_reader :base_url, :api_key, :conn
 
-    def initialize(base_url: Settings.shlink.base_url, api_key: Settings.shlink.api_key)
-      @base_url = base_url
-      @api_key = api_key
+    def initialize(base_url: nil, api_key: nil)
+      @base_url = base_url || shlink_base_url
+      @api_key = api_key || shlink_api_key
       @conn = build_connection
     end
 
@@ -19,7 +21,7 @@ module Shlink
       Faraday.new(url: base_url) do |f|
         f.request :json
         f.response :json, content_type: /\bjson$/
-        f.options.timeout = Settings.shlink.timeout
+        f.options.timeout = shlink_timeout
         f.adapter Faraday.default_adapter
       end
     end

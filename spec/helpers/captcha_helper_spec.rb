@@ -7,8 +7,9 @@ RSpec.describe CaptchaHelper, type: :helper do
     context 'when CAPTCHA is configured and not in test environment' do
       before do
         allow(Rails.env).to receive(:test?).and_return(false)
-        allow(Settings.captcha.turnstile).to receive(:site_key).and_return('test_site_key')
-        allow(Settings.captcha.turnstile).to receive(:secret_key).and_return('test_secret_key')
+        allow(SystemSetting).to receive(:get).with("captcha.enabled", false).and_return(true)
+        allow(SystemSetting).to receive(:get).with("captcha.site_key", "").and_return('test_site_key')
+        allow(SystemSetting).to receive(:get).with("captcha.secret_key", "").and_return('test_secret_key')
       end
 
       it 'returns true' do
@@ -29,8 +30,9 @@ RSpec.describe CaptchaHelper, type: :helper do
     context 'when site_key is blank' do
       before do
         allow(Rails.env).to receive(:test?).and_return(false)
-        allow(Settings.captcha.turnstile).to receive(:site_key).and_return('')
-        allow(Settings.captcha.turnstile).to receive(:secret_key).and_return('test_secret_key')
+        allow(SystemSetting).to receive(:get).with("captcha.enabled", false).and_return(true)
+        allow(SystemSetting).to receive(:get).with("captcha.site_key", "").and_return('')
+        allow(SystemSetting).to receive(:get).with("captcha.secret_key", "").and_return('test_secret_key')
       end
 
       it 'returns false' do
@@ -41,8 +43,9 @@ RSpec.describe CaptchaHelper, type: :helper do
     context 'when secret_key is blank' do
       before do
         allow(Rails.env).to receive(:test?).and_return(false)
-        allow(Settings.captcha.turnstile).to receive(:site_key).and_return('test_site_key')
-        allow(Settings.captcha.turnstile).to receive(:secret_key).and_return('')
+        allow(SystemSetting).to receive(:get).with("captcha.enabled", false).and_return(true)
+        allow(SystemSetting).to receive(:get).with("captcha.site_key", "").and_return('test_site_key')
+        allow(SystemSetting).to receive(:get).with("captcha.secret_key", "").and_return('')
       end
 
       it 'returns false' do
@@ -65,8 +68,9 @@ RSpec.describe CaptchaHelper, type: :helper do
     context 'when keys are missing' do
       before do
         allow(Rails.env).to receive(:test?).and_return(false)
-        allow(Settings.captcha.turnstile).to receive(:site_key).and_return('')
-        allow(Settings.captcha.turnstile).to receive(:secret_key).and_return('test_secret_key')
+        allow(SystemSetting).to receive(:get).with("captcha.enabled", false).and_return(true)
+        allow(SystemSetting).to receive(:get).with("captcha.site_key", "").and_return('')
+        allow(SystemSetting).to receive(:get).with("captcha.secret_key", "").and_return('test_secret_key')
       end
 
       it 'returns true' do
@@ -77,8 +81,9 @@ RSpec.describe CaptchaHelper, type: :helper do
     context 'when properly configured and not in test environment' do
       before do
         allow(Rails.env).to receive(:test?).and_return(false)
-        allow(Settings.captcha.turnstile).to receive(:site_key).and_return('test_site_key')
-        allow(Settings.captcha.turnstile).to receive(:secret_key).and_return('test_secret_key')
+        allow(SystemSetting).to receive(:get).with("captcha.enabled", false).and_return(true)
+        allow(SystemSetting).to receive(:get).with("captcha.site_key", "").and_return('test_site_key')
+        allow(SystemSetting).to receive(:get).with("captcha.secret_key", "").and_return('test_secret_key')
       end
 
       it 'returns false' do
@@ -90,8 +95,9 @@ RSpec.describe CaptchaHelper, type: :helper do
   describe '.configured?' do
     context 'when both keys are present' do
       before do
-        allow(Settings.captcha.turnstile).to receive(:site_key).and_return('test_site_key')
-        allow(Settings.captcha.turnstile).to receive(:secret_key).and_return('test_secret_key')
+        allow(SystemSetting).to receive(:get).with("captcha.enabled", false).and_return(true)
+        allow(SystemSetting).to receive(:get).with("captcha.site_key", "").and_return('test_site_key')
+        allow(SystemSetting).to receive(:get).with("captcha.secret_key", "").and_return('test_secret_key')
       end
 
       it 'returns true' do
@@ -101,8 +107,9 @@ RSpec.describe CaptchaHelper, type: :helper do
 
     context 'when site_key is missing' do
       before do
-        allow(Settings.captcha.turnstile).to receive(:site_key).and_return(nil)
-        allow(Settings.captcha.turnstile).to receive(:secret_key).and_return('test_secret_key')
+        allow(SystemSetting).to receive(:get).with("captcha.enabled", false).and_return(true)
+        allow(SystemSetting).to receive(:get).with("captcha.site_key", "").and_return('')
+        allow(SystemSetting).to receive(:get).with("captcha.secret_key", "").and_return('test_secret_key')
       end
 
       it 'returns false' do
@@ -112,8 +119,9 @@ RSpec.describe CaptchaHelper, type: :helper do
 
     context 'when secret_key is missing' do
       before do
-        allow(Settings.captcha.turnstile).to receive(:site_key).and_return('test_site_key')
-        allow(Settings.captcha.turnstile).to receive(:secret_key).and_return(nil)
+        allow(SystemSetting).to receive(:get).with("captcha.enabled", false).and_return(true)
+        allow(SystemSetting).to receive(:get).with("captcha.site_key", "").and_return('test_site_key')
+        allow(SystemSetting).to receive(:get).with("captcha.secret_key", "").and_return('')
       end
 
       it 'returns false' do

@@ -52,6 +52,12 @@ gem "config"
 # Pagination
 gem "kaminari"
 
+# Rate limiting
+gem "rack-attack"
+
+# Redis for caching and rate limiting
+gem "redis"
+
 # MailerSend API for email delivery (production)
 gem "mailersend-ruby"
 

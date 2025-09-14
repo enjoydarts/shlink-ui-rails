@@ -24,7 +24,15 @@ Devise.setup do |config|
   # Configure the e-mail address which will be shown in Devise::Mailer,
   # note that it will be overwritten if you use your own mailer class
   # with default "from" parameter.
-  config.mailer_sender = "please-change-me-at-config-initializers-devise@example.com"
+  # SystemSettingから動的に送信者アドレスを設定
+  # Procは引数を受け取る可能性があるので、*argsで受け取り無視する
+  config.mailer_sender = ->(*args) {
+    begin
+      SystemSetting.get("email.from_address", "noreply@example.com")
+    rescue
+      "noreply@example.com"
+    end
+  }
 
   # Configure the class responsible to send e-mails.
   config.mailer = "AsyncDeviseMailer"

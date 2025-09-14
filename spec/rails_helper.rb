@@ -73,4 +73,55 @@ RSpec.configure do |config|
 
   # Include FactoryBot methods
   config.include FactoryBot::Syntax::Methods
+
+  # Include Settings helper
+  config.include SettingsHelper
+
+  # Global test configuration
+  config.before(:each) do
+    # WebMockスタブをクリア
+    WebMock.reset!
+
+    # RSpec モックレジストリをクリア（重要！）
+    RSpec::Mocks.space.reset_all
+
+    # Rack::Attackのカウンターをリセット
+    Rack::Attack.cache.store.clear if Rack::Attack.cache.store.respond_to?(:clear)
+
+    # Redisキャッシュをクリア（テスト環境のみ）
+    if defined?(Redis) && Rails.env.test?
+      begin
+        redis_client = Redis.new
+        redis_client.flushdb
+        redis_client.close
+      rescue Redis::CannotConnectError, Redis::ConnectionError, Redis::TimeoutError
+        # Redisが利用できない場合は無視
+      end
+    end
+
+    # Rails.cacheをクリア
+    Rails.cache.clear if Rails.cache.respond_to?(:clear)
+
+    # 基本設定を適用
+    disable_strong_password_requirement
+  end
+
+  # テスト後のクリーンアップを強化
+  config.after(:each) do
+    # WebMockスタブをクリア
+    WebMock.reset!
+
+    # RSpec モックレジストリをクリア
+    RSpec::Mocks.space.reset_all
+  end
+
+  # 共通のStub設定は各テストで個別に設定するように変更
+  config.before(:each) do
+    # 基本的なShlink API スタブのみをグローバルで設定
+    stub_request(:get, %r{https://.*\.example\.com/rest/health})
+      .to_return(status: 200, body: { status: 'pass' }.to_json, headers: { 'Content-Type' => 'application/json' })
+
+    stub_request(:get, %r{https://.*\.example\.com/rest/v3/short-urls/.+/visits})
+      .to_return(status: 200, body: { visits: { data: [] } }.to_json, headers: { 'Content-Type' => 'application/json' })
+  end
 end

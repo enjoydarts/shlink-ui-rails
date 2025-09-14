@@ -1,0 +1,94 @@
+<!-- システム詳細情報 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <!-- データベース & Redis詳細 -->
+  <div class="space-y-6">
+    <!-- データベース詳細 -->
+    <div class="card p-6">
+      <h2 class="text-lg font-bold text-gray-900 mb-4">🗄️ データベース詳細</h2>
+      <div class="space-y-3">
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-gray-600">接続状態</span>
+          <span class="<%= @server_monitor[:health][:database][:connected] ? 'status-good' : 'status-critical' %>">
+            <%= @server_monitor[:health][:database][:connected] ? '✅ 接続中' : '❌ 切断' %>
+          </span>
+        </div>
+        <% if @server_monitor[:health][:database][:response_time] %>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600">レスポンス時間</span>
+            <span class="text-sm font-medium text-blue-600"><%= @server_monitor[:health][:database][:response_time] %>ms</span>
+          </div>
+        <% end %>
+        <% if @server_monitor[:health][:database][:connections] %>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600">アクティブ接続数</span>
+            <span class="text-sm font-medium text-green-600"><%= @server_monitor[:health][:database][:connections] %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Redis詳細 -->
+    <div class="card p-6">
+      <h2 class="text-lg font-bold text-gray-900 mb-4">🔴 Redis詳細</h2>
+      <div class="space-y-3">
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-gray-600">接続状態</span>
+          <span class="<%= @server_monitor[:health][:redis][:connected] ? 'status-good' : 'status-critical' %>">
+            <%= @server_monitor[:health][:redis][:connected] ? '✅ 接続中' : '❌ 切断' %>
+          </span>
+        </div>
+        <% if @server_monitor[:health][:redis][:response_time] %>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600">レスポンス時間</span>
+            <span class="text-sm font-medium text-blue-600"><%= @server_monitor[:health][:redis][:response_time] %>ms</span>
+          </div>
+        <% end %>
+        <% if @server_monitor[:health][:redis][:memory_usage] && !@server_monitor[:health][:redis][:memory_usage][:error] %>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600">メモリ使用量</span>
+            <span class="text-sm font-medium text-purple-600"><%= @server_monitor[:health][:redis][:memory_usage][:used] %></span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600">断片化率</span>
+            <span class="text-sm font-medium text-yellow-600"><%= @server_monitor[:health][:redis][:memory_usage][:fragmentation_ratio] %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- 外部API詳細 -->
+  <div class="card p-6">
+    <h2 class="text-lg font-bold text-gray-900 mb-4">🔗 外部API詳細</h2>
+    <div class="space-y-3">
+      <div class="flex justify-between items-center">
+        <span class="text-sm text-gray-600">Shlink API</span>
+        <span class="<%= @server_monitor[:health][:external_apis][:shlink_api][:status] == 'healthy' ? 'status-good' : 'status-critical' %>">
+          <%= @server_monitor[:health][:external_apis][:shlink_api][:status] == 'healthy' ? '✅ 正常' : '❌ 異常' %>
+        </span>
+      </div>
+      <% if @server_monitor[:health][:external_apis][:shlink_api][:response_time] %>
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-gray-600">レスポンス時間</span>
+          <span class="text-sm font-medium text-blue-600"><%= @server_monitor[:health][:external_apis][:shlink_api][:response_time] %>ms</span>
+        </div>
+      <% end %>
+      <% if @server_monitor[:health][:external_apis][:shlink_api][:version] %>
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-gray-600">バージョン</span>
+          <span class="text-sm font-medium text-purple-600"><%= @server_monitor[:health][:external_apis][:shlink_api][:version] %></span>
+        </div>
+      <% end %>
+      <% if @server_monitor[:health][:external_apis][:shlink_api][:error] %>
+        <div class="text-xs text-red-500 mt-1 p-2 bg-red-50 rounded">
+          <strong>エラー:</strong> <%= @server_monitor[:health][:external_apis][:shlink_api][:error] %>
+        </div>
+      <% end %>
+      <% if @server_monitor[:health][:external_apis][:shlink_api][:last_check] %>
+        <div class="text-xs text-gray-500 mt-1 border-t pt-2">
+          最終チェック: <%= time_ago_in_words(@server_monitor[:health][:external_apis][:shlink_api][:last_check]) %>前
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

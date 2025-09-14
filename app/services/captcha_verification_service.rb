@@ -74,7 +74,7 @@ class CaptchaVerificationService
     @http_client ||= Faraday.new do |faraday|
       faraday.request :url_encoded
       faraday.adapter Faraday.default_adapter
-      faraday.options.timeout = Settings.captcha.turnstile.timeout
+      faraday.options.timeout = CaptchaHelper.timeout
     end
   end
 
@@ -82,7 +82,7 @@ class CaptchaVerificationService
   # @return [Hash] APIリクエストパラメータ
   def verification_params
     params = {
-      secret: Settings.captcha.turnstile.secret_key,
+      secret: CaptchaHelper.secret_key,
       response: token
     }
     params[:remoteip] = remote_ip if remote_ip.present?
@@ -112,6 +112,6 @@ class CaptchaVerificationService
   # 検証API URL
   # @return [String] Turnstile検証エンドポイント
   def verify_url
-    Settings.captcha.turnstile.verify_url
+    CaptchaHelper.verify_url
   end
 end

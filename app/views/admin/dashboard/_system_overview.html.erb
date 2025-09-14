@@ -1,0 +1,90 @@
+<!-- システム概要 - ヘルスチェックとリソース情報を統合 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <!-- システム健康状態 -->
+  <div class="card p-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">🏥 システム健康状態</h2>
+    <div class="space-y-4">
+      <div class="flex justify-between items-center">
+        <span class="text-gray-700">データベース</span>
+        <span class="<%= @system_health[:database] ? 'status-good' : 'status-critical' %>">
+          <%= @system_health[:database] ? '✅ 正常' : '❌ 異常' %>
+        </span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-gray-700">Redis</span>
+        <span class="<%= @system_health[:redis] ? 'status-good' : 'status-critical' %>">
+          <%= @system_health[:redis] ? '✅ 正常' : '❌ 異常' %>
+        </span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-gray-700">ストレージ</span>
+        <span class="<%= @system_health[:storage] ? 'status-good' : 'status-warning' %>">
+          <%= @system_health[:storage] ? '✅ 正常' : '⚠️ 警告' %>
+        </span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-gray-700">Shlink API</span>
+        <span class="<%= @server_monitor[:health][:external_apis][:shlink_api][:status] == 'healthy' ? 'status-good' : 'status-critical' %>">
+          <%= @server_monitor[:health][:external_apis][:shlink_api][:status] == 'healthy' ? '✅ 正常' : '❌ 異常' %>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- サーバーリソース -->
+  <div class="card p-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">📊 サーバーリソース</h2>
+    <div class="space-y-4">
+      <% if @server_monitor[:system][:memory][:error] %>
+        <div class="text-red-600 text-sm">
+          メモリ情報: <%= @server_monitor[:system][:memory][:error] %>
+        </div>
+      <% else %>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-700">メモリ使用率</span>
+          <span class="<%= case @server_monitor[:system][:memory][:status]
+                             when 'good' then 'status-good'
+                             when 'warning' then 'status-warning'
+                             else 'status-critical'
+                             end %>">
+            <%= @server_monitor[:system][:memory][:usage_percent] %>%
+          </span>
+        </div>
+      <% end %>
+      
+      <% if @server_monitor[:system][:disk][:error] %>
+        <div class="text-red-600 text-sm">
+          ディスク情報: <%= @server_monitor[:system][:disk][:error] %>
+        </div>
+      <% else %>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-700">ディスク使用率</span>
+          <span class="<%= case @server_monitor[:system][:disk][:status]
+                             when 'good' then 'status-good'
+                             when 'warning' then 'status-warning'
+                             else 'status-critical'
+                             end %>">
+            <%= @server_monitor[:system][:disk][:usage_percent] %>%
+          </span>
+        </div>
+      <% end %>
+      
+      <% if @server_monitor[:system][:cpu][:error] %>
+        <div class="text-red-600 text-sm">
+          CPU情報: <%= @server_monitor[:system][:cpu][:error] %>
+        </div>
+      <% else %>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-700">CPU負荷</span>
+          <span class="<%= case @server_monitor[:system][:cpu][:status]
+                             when 'good' then 'status-good'
+                             when 'warning' then 'status-warning'
+                             else 'status-critical'
+                             end %>">
+            <%= @server_monitor[:system][:cpu][:usage_percent] %>%
+          </span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -5,11 +5,29 @@ class ApplicationController < ActionController::Base
 
   protect_from_forgery with: :exception, prepend: true
 
+  # Letter Opener WebをCSRF保護から除外（開発環境のみ）
+  skip_before_action :verify_authenticity_token, if: -> { Rails.env.development? && request.path.start_with?("/letter_opener") }
+
+  # 統一設定システムを全コントローラーで使用可能にする
+  include ConfigShortcuts
+  include SystemSettingsHelper
+  helper_method :system_setting, :site_name, :site_url, :maintenance_mode?,
+                :captcha_enabled?, :rate_limit_enabled?, :page_size,
+                :password_min_length, :require_2fa_for_admin?,
+                :max_short_urls_per_user, :default_short_code_length,
+                :allowed_domains
+
   before_action :configure_permitted_parameters, if: :devise_controller?
+  before_action :check_maintenance_mode, unless: :devise_controller?
+  before_action :detect_coffee_request
 
   # Deviseの認証後リダイレクト先を設定
   def after_sign_in_path_for(resource)
-    dashboard_path
+    if resource.admin?
+      admin_dashboard_path
+    else
+      dashboard_path
+    end
   end
 
   def after_sign_out_path_for(resource_or_scope)
@@ -17,6 +35,13 @@ class ApplicationController < ActionController::Base
   end
 
   private
+
+  def check_maintenance_mode
+    return unless maintenance_mode?
+    return if current_user&.admin? # 管理者は除外
+
+    render "errors/maintenance", status: :service_unavailable
+  end
 
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up, keys: [ :name ])
@@ -63,5 +88,30 @@ class ApplicationController < ActionController::Base
     return "セキュリティ検証でエラーが発生しました。ページを再読み込みして再度お試しください。" if error_codes.include?("network-error")
 
     "セキュリティ検証が完了していません。チェックボックスにチェックを入れてから送信してください。"
+  end
+
+  # RFC 2324 Easter Egg: コーヒー関連のリクエストを検出
+  def detect_coffee_request
+    # 開発環境でのみ動作（本番では無効化）
+    return unless Rails.env.development?
+
+    # 特定のルートは除外
+    return if controller_name == "pages" && action_name == "teapot"
+    return if request.path.start_with?("/assets/") || request.path.start_with?("/letter_opener")
+
+    coffee_keywords = %w[coffee espresso latte cappuccino mocha americano macchiato frappuccino brew]
+
+    # URL、パラメータ、ヘッダーからコーヒー関連キーワードを検出
+    coffee_detected = coffee_keywords.any? do |keyword|
+      request.path.downcase.include?(keyword) ||
+      request.query_string.downcase.include?(keyword) ||
+      params.values.join(" ").downcase.include?(keyword) ||
+      request.headers["User-Agent"]&.downcase&.include?(keyword)
+    end
+
+    if coffee_detected
+      Rails.logger.info "☕ Coffee detected! Redirecting to teapot: #{request.fullpath}"
+      redirect_to "/teapot" and return
+    end
   end
 end

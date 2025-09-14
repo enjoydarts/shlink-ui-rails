@@ -6,31 +6,31 @@ RSpec.describe Statistics::IndividualUrlDataService, type: :service do
   let(:service) { described_class.new(user, short_code) }
 
   before do
-    # Mock Shlink API responses
-    stub_request(:get, %r{https://test\.example\.com/rest/v3/short-urls/abc123/visits})
+    # SystemSetting基本モック設定
+    allow(SystemSetting).to receive(:get).and_call_original
+    allow(SystemSetting).to receive(:get).with("shlink.base_url", nil).and_return("https://test.example.com")
+    allow(SystemSetting).to receive(:get).with("shlink.api_key", nil).and_return("test-api-key")
+    allow(SystemSetting).to receive(:get).with("performance.items_per_page", 20).and_return(20)
+    allow(SystemSetting).to receive(:get).with('system.maintenance_mode', false).and_return(false)
+
+    # ApplicationConfig基本モック設定
+    allow(ApplicationConfig).to receive(:string).and_call_original
+    allow(ApplicationConfig).to receive(:string).with('shlink.base_url', anything).and_return("https://test.example.com")
+    allow(ApplicationConfig).to receive(:string).with('shlink.api_key', anything).and_return("test-api-key")
+    allow(ApplicationConfig).to receive(:string).with('redis.url', anything).and_return("redis://redis:6379/0")
+    allow(ApplicationConfig).to receive(:number).and_call_original
+    allow(ApplicationConfig).to receive(:number).with('shlink.timeout', anything).and_return(30)
+    allow(ApplicationConfig).to receive(:number).with('redis.timeout', anything).and_return(5)
+
+    # WebMockスタブを追加
+    stub_request(:get, %r{https://test\.example\.com/rest/v3/short-urls/.+/visits})
       .to_return(
         status: 200,
-        body: {
-          visits: {
-            data: [
-              {
-                date: '2025-09-09',
-                userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                referer: 'https://google.com',
-                country: 'Japan'
-              },
-              {
-                date: '2025-09-08',
-                userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-                referer: '',
-                country: 'Japan'
-              }
-            ]
-          }
-        }.to_json,
+        body: { visits: { data: [] } }.to_json,
         headers: { 'Content-Type' => 'application/json' }
       )
   end
+
 
   describe '#call' do
     it '統計データを正しく返すこと' do
@@ -84,13 +84,17 @@ RSpec.describe Statistics::IndividualUrlDataService, type: :service do
     end
 
     context 'APIエラーの場合' do
+      let(:error_service) { described_class.new(user, short_code) }
+
       before do
-        stub_request(:get, %r{https://test\.example\.com/rest/v3/short-urls/abc123/visits})
-          .to_return(status: 404, body: { error: 'Not found' }.to_json)
+        # Shlink::GetUrlVisitsServiceを直接モックしてエラーを発生させる
+        visits_service = instance_double(Shlink::GetUrlVisitsService)
+        allow(visits_service).to receive(:call).and_raise(Shlink::Error.new("API error"))
+        allow(Shlink::GetUrlVisitsService).to receive(:new).and_return(visits_service)
       end
 
       it 'エラーをハンドリングして空のデータを返すこと' do
-        result = service.call('7d')
+        result = error_service.call('7d')
         expect(result[:total_visits]).to eq(0)
         expect(result[:unique_visitors]).to eq(0)
         expect(result[:daily_visits][:labels]).to be_empty

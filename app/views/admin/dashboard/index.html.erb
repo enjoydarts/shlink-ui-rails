@@ -1,0 +1,20 @@
+<!-- ダッシュボードヘッダー -->
+<div class="mb-8">
+  <h1 class="text-3xl font-bold text-gray-900 mb-2">ダッシュボード</h1>
+  <p class="text-gray-600">システム全体の状況を確認できます</p>
+</div>
+
+<!-- システム統計カード -->
+<%= render 'system_stats' %>
+
+<!-- システム概要 (健康状態 + リソース) -->
+<%= render 'system_overview' %>
+
+<!-- システム詳細情報 -->
+<%= render 'system_details' %>
+
+<!-- URL リスト -->
+<%= render 'url_lists' %>
+
+<!-- バックグラウンドジョブ -->
+<%= render 'background_jobs' %>

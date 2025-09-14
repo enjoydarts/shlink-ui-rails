@@ -140,6 +140,20 @@ A modern web application built with Ruby on Rails 8 that provides a user-friendl
    - Database: MySQL on port 3307
    - Email preview: http://localhost:3000/letter_opener (development)
 
+## 🚀 Production Deployment
+
+For production deployment and initial setup, please refer to our setup guides:
+
+- **[📋 Setup Guide (English)](SETUP_EN.md)** - Complete production setup instructions
+- **[📋 セットアップガイド (日本語)](SETUP_JA.md)** - 本番環境セットアップ手順
+
+These guides cover:
+- Initial admin account setup
+- System configuration via admin panel
+- Email settings (SMTP/MailerSend)
+- CAPTCHA configuration
+- Security and performance settings
+
 ## 📱 Application Features
 
 ### Homepage

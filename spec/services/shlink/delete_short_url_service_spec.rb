@@ -2,13 +2,13 @@ require 'rails_helper'
 
 RSpec.describe Shlink::DeleteShortUrlService, type: :service do
   let(:short_code) { 'abc123' }
-  let(:service) { described_class.new(short_code) }
   let(:base_url) { 'https://test-shlink.example.com' }
   let(:api_key) { 'test_api_key' }
 
-  before do
-    allow(Settings.shlink).to receive(:base_url).and_return(base_url)
-    allow(Settings.shlink).to receive(:api_key).and_return(api_key)
+  let(:service) do
+    allow_any_instance_of(described_class).to receive(:shlink_base_url).and_return(base_url)
+    allow_any_instance_of(described_class).to receive(:shlink_api_key).and_return(api_key)
+    described_class.new(short_code)
   end
 
   describe '#call' do

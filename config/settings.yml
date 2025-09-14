@@ -1,73 +1,180 @@
+# =================================================================
 # Default settings for all environments
+# =================================================================
+# 統一設定システム (ApplicationConfig) で管理されるデフォルト値
+# 優先順位: SystemSetting (DB) > 環境変数 (ENV) > config gem > デフォルト値
+# 
+# このファイルは基本的に編集不要です。
+# カスタマイズは環境変数で行ってください。
 
+# =================================================================
 # Shlink API設定
+# =================================================================
 shlink:
-  # APIのベースURL（環境変数 SHLINK_BASE_URL で上書き可能）
+  # APIのベースURL（環境変数: SHLINK_BASE_URL）
   base_url: <%= ENV.fetch('SHLINK_BASE_URL', 'http://localhost:8080') %>
-  # API認証キー（環境変数 SHLINK_API_KEY で上書き可能）
+  # API認証キー（環境変数: SHLINK_API_KEY）
   api_key: <%= ENV.fetch('SHLINK_API_KEY', '') %>
-  # APIタイムアウト設定（秒）
-  timeout: 30
-  # リトライ回数
-  retry_attempts: 3
+  # APIタイムアウト設定（環境変数: SHLINK_TIMEOUT）
+  timeout: <%= ENV.fetch('SHLINK_TIMEOUT', '30').to_i %>
+  # リトライ回数（環境変数: SHLINK_RETRY_ATTEMPTS）
+  retry_attempts: <%= ENV.fetch('SHLINK_RETRY_ATTEMPTS', '3').to_i %>
 
+# =================================================================
 # OAuth設定（Google認証）
+# =================================================================
 oauth:
   google:
+    # 環境変数で設定（必須）
     client_id: <%= ENV.fetch('GOOGLE_CLIENT_ID', '') %>
     client_secret: <%= ENV.fetch('GOOGLE_CLIENT_SECRET', '') %>
 
-# CAPTCHA設定（Cloudflare Turnstile）
-captcha:
-  turnstile:
-    # サイトキー（環境変数 TURNSTILE_SITE_KEY で上書き可能）
-    site_key: <%= ENV.fetch('TURNSTILE_SITE_KEY', '') %>
-    # シークレットキー（環境変数 TURNSTILE_SECRET_KEY で上書き可能）
-    secret_key: <%= ENV.fetch('TURNSTILE_SECRET_KEY', '') %>
-    # 検証API エンドポイント
-    verify_url: 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
-    # タイムアウト設定（秒）
-    timeout: 10
-
+# =================================================================
 # WebAuthn設定（FIDO2/セキュリティキー認証）
+# =================================================================
 webauthn:
-  # Relying Party名
+  # Relying Party名（環境変数: WEBAUTHN_RP_NAME）
   rp_name: <%= ENV.fetch('WEBAUTHN_RP_NAME', 'Shlink-UI-Rails') %>
-  # Relying Party ID
+  # Relying Party ID（環境変数: WEBAUTHN_RP_ID）
   rp_id: <%= ENV.fetch('WEBAUTHN_RP_ID', 'localhost') %>
-  # Origin URL
+  # Origin URL（環境変数: WEBAUTHN_ORIGIN）
   origin: <%= ENV.fetch('WEBAUTHN_ORIGIN', 'http://localhost:3000') %>
-  # サポートするアルゴリズム
+  # サポートするアルゴリズム（環境変数: WEBAUTHN_ALGORITHMS）
   algorithms:
-    - 'ES256'
-    - 'PS256' 
-    - 'RS256'
-  # エンコーディング設定
-  encoding: 'base64url'
-  # タイムアウト設定（ミリ秒）
-  timeout: 60000
+    <% algorithms = ENV.fetch('WEBAUTHN_ALGORITHMS', 'ES256,PS256,RS256').split(',') %>
+    <% algorithms.each do |algo| %>
+    - '<%= algo.strip %>'
+    <% end %>
+  # エンコーディング設定（環境変数: WEBAUTHN_ENCODING）
+  encoding: <%= ENV.fetch('WEBAUTHN_ENCODING', 'base64url') %>
+  # タイムアウト設定（環境変数: WEBAUTHN_TIMEOUT）
+  timeout: <%= ENV.fetch('WEBAUTHN_TIMEOUT', '60000').to_i %>
 
+# =================================================================
+# Redis設定（キャッシュ・セッション・Rate Limiting用）
+# =================================================================
+redis:
+  # Redis接続URL（環境変数: REDIS_URL）
+  url: <%= ENV.fetch('REDIS_URL', 'redis://redis:6379/0') %>
+  # 接続タイムアウト（環境変数: REDIS_TIMEOUT）
+  timeout: <%= ENV.fetch('REDIS_TIMEOUT', '5').to_i %>
+  # コネクションプール設定（環境変数: REDIS_POOL_SIZE, REDIS_POOL_TIMEOUT）
+  pool_size: <%= ENV.fetch('REDIS_POOL_SIZE', '5').to_i %>
+  pool_timeout: <%= ENV.fetch('REDIS_POOL_TIMEOUT', '5').to_i %>
+
+# =================================================================
 # アプリケーション設定
+# =================================================================
 app:
-  # デフォルトのタイムゾーン
-  time_zone: 'Asia/Tokyo'
+  # デフォルトのタイムゾーン（環境変数: APP_TIMEZONE）
+  time_zone: <%= ENV.fetch('APP_TIMEZONE', 'Tokyo') %>
+  
+# システム設定（SystemSettingで管理される項目のデフォルト値）
+system:
+  # タイムゾーン（SystemSettingで管理）
+  timezone: <%= ENV.fetch('APP_TIMEZONE', 'Tokyo') %>
   # ページネーション設定
   pagination:
-    per_page: 20
-    max_per_page: 100
+    # 1ページあたりのアイテム数（環境変数: APP_PAGINATION_PER_PAGE）
+    per_page: <%= ENV.fetch('APP_PAGINATION_PER_PAGE', '20').to_i %>
+    # 最大表示数（環境変数: APP_PAGINATION_MAX_PER_PAGE）
+    max_per_page: <%= ENV.fetch('APP_PAGINATION_MAX_PER_PAGE', '100').to_i %>
   # URL短縮設定
   short_url:
-    # デフォルトの最大タグ数
-    max_tags: 10
-    # デフォルトのタグ最大文字数
-    max_tag_length: 20
-    # デフォルトのスラッグ最小文字数
-    min_slug_length: 3
+    # 最大タグ数（環境変数: APP_SHORT_URL_MAX_TAGS）
+    max_tags: <%= ENV.fetch('APP_SHORT_URL_MAX_TAGS', '10').to_i %>
+    # タグ最大文字数（環境変数: APP_SHORT_URL_MAX_TAG_LENGTH）
+    max_tag_length: <%= ENV.fetch('APP_SHORT_URL_MAX_TAG_LENGTH', '20').to_i %>
+    # スラッグ最小文字数（環境変数: APP_SHORT_URL_MIN_SLUG_LENGTH）
+    min_slug_length: <%= ENV.fetch('APP_SHORT_URL_MIN_SLUG_LENGTH', '3').to_i %>
 
+# =================================================================
+# ログ設定
+# =================================================================
+# ログレベル（環境変数: LOG_LEVEL）
+log_level: <%= ENV.fetch('LOG_LEVEL', Rails.env.production? ? 'info' : 'debug') %>
+
+# =================================================================
+# パフォーマンス設定
+# =================================================================
+performance:
+  # キャッシュ有効期限（環境変数: PERFORMANCE_CACHE_TTL）
+  cache_ttl: <%= ENV.fetch('PERFORMANCE_CACHE_TTL', Rails.env.production? ? '3600' : '300').to_i %>
+  # データベース接続プール（環境変数: PERFORMANCE_DATABASE_POOL_SIZE）
+  database_pool_size: <%= ENV.fetch('PERFORMANCE_DATABASE_POOL_SIZE', Rails.env.production? ? '10' : '5').to_i %>
+  # バックグラウンドジョブのスレッド数（環境変数: PERFORMANCE_BACKGROUND_JOB_THREADS）
+  background_job_threads: <%= ENV.fetch('PERFORMANCE_BACKGROUND_JOB_THREADS', Rails.env.production? ? '5' : '2').to_i %>
+
+# =================================================================
+# セキュリティ設定
+# =================================================================
+security:
+  # セッションタイムアウト（環境変数: SECURITY_SESSION_TIMEOUT）
+  session_timeout: <%= ENV.fetch('SECURITY_SESSION_TIMEOUT', Rails.env.production? ? '7200' : '3600').to_i %>
+  # HTTPS強制（環境変数: SECURITY_FORCE_SSL）
+  force_ssl: <%= ENV.fetch('SECURITY_FORCE_SSL', Rails.env.production? ? 'true' : 'false') == 'true' %>
+  # セキュリティヘッダー（環境変数: SECURITY_HEADERS_ENABLED）
+  security_headers_enabled: <%= ENV.fetch('SECURITY_HEADERS_ENABLED', Rails.env.production? ? 'true' : 'false') == 'true' %>
+
+# =================================================================
+# 開発環境用設定
+# =================================================================
+<% if Rails.env.development? %>
+# Letter Opener（環境変数: LETTER_OPENER_ENABLED）
+letter_opener:
+  enabled: <%= ENV.fetch('LETTER_OPENER_ENABLED', 'true') == 'true' %>
+
+# デバッグ設定（環境変数: DEBUG_SQL_LOGGING, DEBUG_VERBOSE_LOGGING）
+debug:
+  sql_logging: <%= ENV.fetch('DEBUG_SQL_LOGGING', 'true') == 'true' %>
+  verbose_logging: <%= ENV.fetch('DEBUG_VERBOSE_LOGGING', 'false') == 'true' %>
+<% end %>
+
+# =================================================================
+# テスト環境用設定
+# =================================================================
+<% if Rails.env.test? %>
+# テスト用データベース設定（環境変数: TEST_PARALLEL_WORKERS）
+database:
+  parallel_workers: <%= ENV.fetch('TEST_PARALLEL_WORKERS', '2').to_i %>
+
+# ファクトリー設定（環境変数: TEST_FACTORY_BOT_COUNT）
+factory_bot:
+  create_list_default_count: <%= ENV.fetch('TEST_FACTORY_BOT_COUNT', '3').to_i %>
+<% end %>
+
+# =================================================================
+# モニタリング設定（本番環境のみ）
+# =================================================================
+<% if Rails.env.production? %>
+monitoring:
+  # ヘルスチェック（環境変数: MONITORING_HEALTH_CHECK_ENABLED）
+  health_check_enabled: <%= ENV.fetch('MONITORING_HEALTH_CHECK_ENABLED', 'true') == 'true' %>
+  # メトリクス収集（環境変数: MONITORING_METRICS_ENABLED）
+  metrics_enabled: <%= ENV.fetch('MONITORING_METRICS_ENABLED', 'true') == 'true' %>
+  # エラートラッキング（環境変数: MONITORING_ERROR_TRACKING_ENABLED）
+  error_tracking_enabled: <%= ENV.fetch('MONITORING_ERROR_TRACKING_ENABLED', 'true') == 'true' %>
+<% end %>
+
+# =================================================================
 # ブラウザサポート設定
+# =================================================================
 browser_support:
-  safari: "12+"
-  chrome: "70+"
-  firefox: "70+"
-  edge: "79+"
-  opera: "57+"
+  safari: <%= ENV.fetch('BROWSER_SUPPORT_SAFARI', '12+') %>
+  chrome: <%= ENV.fetch('BROWSER_SUPPORT_CHROME', '70+') %>
+  firefox: <%= ENV.fetch('BROWSER_SUPPORT_FIREFOX', '70+') %>
+  edge: <%= ENV.fetch('BROWSER_SUPPORT_EDGE', '79+') %>
+  opera: <%= ENV.fetch('BROWSER_SUPPORT_OPERA', '57+') %>
+
+# =================================================================
+# SystemSettingで管理される項目
+# =================================================================
+# 以下の設定は通常SystemSettingで管理されます：
+# - CAPTCHA設定（captcha.*）
+# - レート制限設定（rate_limit.*）
+# - メール設定（email.*）
+# - 追加のパフォーマンス設定（performance.*）
+# - 追加のセキュリティ設定（security.*）
+# - システム設定（system.*）
+#
+# これらの設定のデフォルト値は SystemSetting.initialize_defaults! で定義されています

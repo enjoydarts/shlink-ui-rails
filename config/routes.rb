@@ -60,7 +60,47 @@ Rails.application.routes.draw do
     end
   end
 
+  # Admin routes (authentication handled in AdminController)
+  namespace :admin do
+    get "dashboard", to: "dashboard#index"
+    root "dashboard#index"
+
+    # ユーザー管理
+    resources :users, only: [ :index, :show, :update, :destroy ] do
+      member do
+        patch :toggle_role
+        patch :lock_user
+        patch :unlock_user
+      end
+    end
+
+    # システム設定
+    resource :settings, only: [ :show, :update ] do
+      collection do
+        get :category
+        post :reset
+        post :test
+      end
+    end
+
+    # ジョブ管理
+    resources :jobs, only: [ :index, :destroy ] do
+      member do
+        post :retry
+      end
+      collection do
+        post :retry_all
+        delete :clear_all
+      end
+    end
+  end
+
   # Public pages
   get "home", to: "pages#home"
   root "pages#home"
+
+  # Easter egg: RFC 2324 - Hyper Text Coffee Pot Control Protocol
+  get "teapot", to: "pages#teapot"
+  get "coffee", to: "pages#teapot" # Coffee requests also redirect to teapot
+  get "brew", to: "pages#teapot"   # Brew requests also redirect to teapot
 end

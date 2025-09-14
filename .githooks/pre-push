@@ -12,12 +12,20 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     range="$remote_sha..$local_sha"      # 差分レンジ
   fi
 
-  files=$(git diff --name-only "$range" -- '*.rb' 'Gemfile' | tr '\n' ' ')
-  if [[ -n "${files// /}" ]]; then
-    echo "RuboCop: $files"
-    # 既存除外を尊重しつつ該当ファイルだけをLint
-    if ! bundle exec rubocop --force-exclusion $files; then
-      status=1
+  files=$(git diff --name-only "$range" -- '*.rb' 'Gemfile')
+  if [[ -n "$files" ]]; then
+    # 存在するファイルのみをフィルタリング
+    existing_files=""
+    for file in $files; do
+      if [[ -f "$file" ]]; then
+        existing_files="$existing_files $file"
+      fi
+    done
+    
+    if [[ -n "${existing_files// /}" ]]; then
+      echo "RuboCop:$existing_files"
+      # 既存除外を尊重しつつ該当ファイルだけをLint
+      bundle exec rubocop --force-exclusion $existing_files || status=1
     fi
   fi
 done

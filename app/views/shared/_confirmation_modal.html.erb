@@ -1,0 +1,116 @@
+<!-- 確認モーダル -->
+<div id="confirmationModal" class="fixed inset-0 overflow-y-auto h-full w-full hidden z-50" style="background-color: rgba(0, 0, 0, 0.5);">
+  <div class="relative top-20 mx-auto p-6 w-96 card">
+    <div class="mt-3">
+      <!-- アイコン -->
+      <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 13.5c-.77.833.192 2.5 1.732 2.5z"></path>
+        </svg>
+      </div>
+      
+      <!-- タイトル -->
+      <div class="mt-3 text-center">
+        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+          操作の確認
+        </h3>
+        <div class="mt-2 px-7 py-3">
+          <p class="text-sm text-gray-500" id="modal-message">
+            この操作を実行しますか？
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ボタン -->
+    <div class="items-center px-4 py-3 flex justify-end space-x-2">
+      <button id="modal-cancel" type="button" 
+              class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-base font-medium rounded-md shadow-sm transition-colors duration-200">
+        キャンセル
+      </button>
+      <button id="modal-confirm" type="button" 
+              class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-base font-medium rounded-md shadow-sm transition-colors duration-200">
+        削除
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// モーダル管理用のオブジェクト
+window.ConfirmationModal = {
+  modal: null,
+  title: null,
+  message: null,
+  confirmButton: null,
+  cancelButton: null,
+  pendingAction: null,
+
+  init() {
+    this.modal = document.getElementById('confirmationModal');
+    this.title = document.getElementById('modal-title');
+    this.message = document.getElementById('modal-message');
+    this.confirmButton = document.getElementById('modal-confirm');
+    this.cancelButton = document.getElementById('modal-cancel');
+
+    // キャンセルボタンとオーバーレイクリックでモーダルを閉じる
+    this.cancelButton.addEventListener('click', () => this.hide());
+    this.modal.addEventListener('click', (e) => {
+      if (e.target === this.modal) this.hide();
+    });
+
+    // ESCキーでモーダルを閉じる
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !this.modal.classList.contains('hidden')) {
+        this.hide();
+      }
+    });
+  },
+
+  show(options = {}) {
+    this.title.textContent = options.title || '操作の確認';
+    this.message.textContent = options.message || 'この操作を実行しますか？';
+    this.confirmButton.textContent = options.confirmText || '削除';
+    
+    // 確認ボタンの色を変更
+    const confirmClass = options.confirmClass || 'bg-red-600 hover:bg-red-700';
+    this.confirmButton.className = `px-4 py-2 text-white text-base font-medium rounded-md shadow-sm transition-colors duration-200 ${confirmClass}`;
+    
+    this.pendingAction = options.onConfirm;
+    
+    // 確認ボタンのイベントリスナーをクリア
+    const newConfirmButton = this.confirmButton.cloneNode(true);
+    this.confirmButton.parentNode.replaceChild(newConfirmButton, this.confirmButton);
+    this.confirmButton = newConfirmButton;
+    
+    // 新しいイベントリスナーを追加
+    this.confirmButton.addEventListener('click', () => {
+      if (this.pendingAction) {
+        this.pendingAction();
+      }
+      this.hide();
+    });
+    
+    this.modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // スクロール禁止
+  },
+
+  hide() {
+    this.modal.classList.add('hidden');
+    this.pendingAction = null;
+    document.body.style.overflow = ''; // スクロール復活
+  }
+};
+
+// DOMContentLoadedでモーダルを初期化
+document.addEventListener('DOMContentLoaded', () => {
+  window.ConfirmationModal.init();
+});
+
+// Turboの場合も考慮
+document.addEventListener('turbo:load', () => {
+  if (window.ConfirmationModal && !window.ConfirmationModal.modal) {
+    window.ConfirmationModal.init();
+  }
+});
+</script>

@@ -1,0 +1,210 @@
+<div class="mb-6">
+  <div class="flex justify-between items-center">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">ユーザー管理</h1>
+      <p class="text-gray-600">システムのすべてのユーザーを管理できます</p>
+    </div>
+  </div>
+</div>
+
+<!-- 統計カード -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <div class="card p-6">
+    <div class="flex items-center">
+      <div class="p-3 bg-blue-100 rounded-full">
+        <span class="text-xl">👥</span>
+      </div>
+      <div class="ml-4">
+        <h3 class="text-lg font-semibold text-gray-900">総ユーザー数</h3>
+        <p class="text-2xl font-bold text-blue-600"><%= @total_users %></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card p-6">
+    <div class="flex items-center">
+      <div class="p-3 bg-purple-100 rounded-full">
+        <span class="text-xl">🔧</span>
+      </div>
+      <div class="ml-4">
+        <h3 class="text-lg font-semibold text-gray-900">管理者</h3>
+        <p class="text-2xl font-bold text-purple-600"><%= @admin_users %></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card p-6">
+    <div class="flex items-center">
+      <div class="p-3 bg-green-100 rounded-full">
+        <span class="text-xl">👤</span>
+      </div>
+      <div class="ml-4">
+        <h3 class="text-lg font-semibold text-gray-900">一般ユーザー</h3>
+        <p class="text-2xl font-bold text-green-600"><%= @normal_users %></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 検索・フィルター -->
+<div class="card p-6 mb-6">
+  <%= form_with url: admin_users_path, method: :get, local: true, class: "grid grid-cols-1 md:grid-cols-3 gap-4" do |form| %>
+    <div>
+      <%= form.text_field :search, value: params[:search], placeholder: "名前またはメールアドレスで検索...", 
+          class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+    
+    <div>
+      <%= form.select :role, 
+          options_for_select([
+            ['すべての役割', ''],
+            ['管理者', 'admin'],
+            ['一般ユーザー', 'normal_user']
+          ], params[:role]),
+          {},
+          class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+    
+    <div class="flex space-x-2">
+      <%= form.submit "検索", class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors duration-200" %>
+      <%= link_to "リセット", admin_users_path, class: "bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors duration-200" %>
+    </div>
+  <% end %>
+</div>
+
+<!-- ユーザー一覧テーブル -->
+<div class="card overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            ユーザー
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            役割
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            ログイン情報
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            短縮URL
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            登録日
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            アクション
+          </th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <% @users.each do |user| %>
+          <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 h-10 w-10">
+                  <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                    <span class="text-sm font-medium text-gray-700">
+                      <%= user.display_name[0].upcase %>
+                    </span>
+                  </div>
+                </div>
+                <div class="ml-4">
+                  <div class="text-sm font-medium text-gray-900">
+                    <%= user.display_name %>
+                    <% if user.from_omniauth? %>
+                      <span class="ml-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <%= user.provider.capitalize %>
+                      </span>
+                    <% end %>
+                  </div>
+                  <div class="text-sm text-gray-500">
+                    <%= user.email %>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= user.admin? ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800' %>">
+                <%= user.admin? ? '管理者' : '一般' %>
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <div>
+                ログイン回数: <%= user.sign_in_count %>回
+              </div>
+              <div>
+                最終ログイン: 
+                <%= user.last_sign_in_at ? time_ago_in_words(user.last_sign_in_at) + '前' : '未ログイン' %>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <div>
+                <%= user.short_urls_count %>個
+              </div>
+              <div>
+                総アクセス: <%= @user_visit_counts[user.id] || 0 %>回
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <%= user.created_at.strftime('%Y/%m/%d') %>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <div class="flex space-x-2">
+                <%= link_to "詳細", admin_user_path(user), 
+                    class: "text-blue-600 hover:text-blue-900" %>
+                
+                <% if user != current_user %>
+                  <button onclick="confirmUserDeletion(<%= user.id %>, '<%= j(user.display_name) %>')"
+                          class="text-red-600 hover:text-red-900">
+                    削除
+                  </button>
+                <% end %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ページネーション -->
+<% if @users.respond_to?(:current_page) %>
+  <div class="flex justify-center mt-6">
+    <%= paginate @users %>
+  </div>
+<% end %>
+
+<script>
+function confirmUserDeletion(userId, userName) {
+  window.ConfirmationModal.show({
+    title: 'ユーザーの削除',
+    message: `本当にユーザー「${userName}」を削除しますか？この操作は取り消せません。`,
+    confirmText: '削除する',
+    confirmClass: 'bg-red-600 hover:bg-red-700',
+    onConfirm: () => {
+      // フォームを作成してDELETEリクエストを送信
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = `/admin/users/${userId}`;
+      
+      const methodInput = document.createElement('input');
+      methodInput.type = 'hidden';
+      methodInput.name = '_method';
+      methodInput.value = 'DELETE';
+      
+      const tokenInput = document.createElement('input');
+      tokenInput.type = 'hidden';
+      tokenInput.name = 'authenticity_token';
+      tokenInput.value = document.querySelector('meta[name="csrf-token"]').content;
+      
+      form.appendChild(methodInput);
+      form.appendChild(tokenInput);
+      document.body.appendChild(form);
+      form.submit();
+    }
+  });
+}
+</script>

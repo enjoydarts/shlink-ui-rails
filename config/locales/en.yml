@@ -29,3 +29,34 @@
 
 en:
   hello: "Hello world"
+  activerecord:
+    errors:
+      models:
+        system_setting:
+          attributes:
+            value:
+              invalid_email_adapter: "Please select a valid email delivery method (Letter Opener, SMTP, MailerSend)"
+              invalid_email_address: "Please enter a valid email address"
+              invalid_timezone: "is not a valid timezone"
+              invalid_log_level: "is an invalid log level (debug/info/warn/error/fatal)"
+              invalid_url: "Please enter a valid URL format"
+              invalid_https_url: "Please enter a valid URL starting with http:// or https://"
+              invalid_captcha_key: "Please enter a valid Cloudflare Turnstile Key (20+ alphanumeric characters, hyphens, underscores)"
+              range_database_timeout: "must be between 1 and 300 seconds"
+              range_items_per_page: "must be between 1 and 100"
+              range_cache_ttl: "must be between 60 and 86400 seconds"
+              range_password_length: "must be between 6 and 128 characters"
+              range_session_timeout: "must be between 1 and 168 hours"
+              range_login_attempts: "must be between 1 and 20 attempts"
+              range_lockout_time: "must be between 1 and 1440 minutes"
+              range_api_requests: "must be between 1 and 1000 requests per minute"
+              range_web_requests: "must be between 1 and 1000 requests per minute"
+              range_url_creation: "must be between 1 and 10000 requests per hour"
+              range_login_rate: "must be between 1 and 100 attempts per hour"
+              range_captcha_timeout: "must be between 5 and 60 seconds"
+              range_shlink_timeout: "must be between 5 and 300 seconds"
+              range_retry_attempts: "must be between 0 and 10 attempts"
+              range_smtp_port: "must be between 1 and 65535"
+    attributes:
+      system_setting:
+        value: "Value"

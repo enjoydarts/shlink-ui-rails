@@ -1,0 +1,82 @@
+<!-- Rate Limit設定 -->
+<% if @settings_by_category['rate_limit'] %>
+  <div class="card p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold text-gray-900">🚦 Rate Limit設定</h2>
+      <div class="flex space-x-2">
+        <button type="button" onclick="resetCategory('rate_limit')"
+                class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm">
+          リセット
+        </button>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          API Rate Limit（回/分）
+        </label>
+        <% api_limit = @settings_by_category['rate_limit']['rate_limit.api_requests_per_minute'] %>
+        <%= form.number_field "settings[rate_limit.api_requests_per_minute]", 
+            value: api_limit&.value,
+            placeholder: "60",
+            min: "1",
+            max: "1000",
+            class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Web Rate Limit（回/分）
+        </label>
+        <% web_limit = @settings_by_category['rate_limit']['rate_limit.web_requests_per_minute'] %>
+        <%= form.number_field "settings[rate_limit.web_requests_per_minute]", 
+            value: web_limit&.value,
+            placeholder: "120",
+            min: "1",
+            max: "1000",
+            class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          短縮URL作成制限（回/時）
+        </label>
+        <% url_creation_limit = @settings_by_category['rate_limit']['rate_limit.url_creation_per_hour'] %>
+        <%= form.number_field "settings[rate_limit.url_creation_per_hour]", 
+            value: url_creation_limit&.value,
+            placeholder: "100",
+            min: "1",
+            max: "10000",
+            class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          ログイン試行制限（回/時）
+        </label>
+        <% login_attempts = @settings_by_category['rate_limit']['rate_limit.login_attempts_per_hour'] %>
+        <%= form.number_field "settings[rate_limit.login_attempts_per_hour]", 
+            value: login_attempts&.value,
+            placeholder: "10",
+            min: "1",
+            max: "100",
+            class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Rate Limit機能
+        </label>
+        <% enabled = @settings_by_category['rate_limit']['rate_limit.enabled'] %>
+        <%= form.select "settings[rate_limit.enabled]",
+            options_for_select([
+              ['有効', 'true'],
+              ['無効', 'false']
+            ], enabled&.typed_value.to_s),
+            {},
+            { class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" } %>
+      </div>
+    </div>
+  </div>
+<% end %>

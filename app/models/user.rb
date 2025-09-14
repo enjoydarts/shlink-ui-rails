@@ -3,7 +3,7 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
-         :confirmable, :lockable, :trackable, :omniauthable, omniauth_providers: [ :google_oauth2 ]
+         :confirmable, :lockable, :trackable, :timeoutable, :omniauthable, omniauth_providers: [ :google_oauth2 ]
 
   # User roles
   enum :role, {
@@ -13,6 +13,9 @@ class User < ApplicationRecord
 
   validates :name, presence: true, if: :from_omniauth?
   validates :role, inclusion: { in: roles.keys }
+
+  # 強固なパスワード要求
+  validate :password_strength, if: :password_required? && :should_validate_strong_password?
 
   # OAuth methods
   def self.from_omniauth(auth)
@@ -224,5 +227,27 @@ class User < ApplicationRecord
   # @return [Boolean] 認証成功の場合true
   def verify_webauthn_authentication(credential, challenge)
     WebauthnService.verify_authentication(self, credential, challenge)
+  end
+
+  # Devise session compatibility method for newer versions
+  def self.serialize_from_session(key, salt = nil)
+    find_by(id: key)
+  end
+
+  private
+
+  # 強固なパスワード要求が有効かどうか
+  def should_validate_strong_password?
+    SystemSetting.get("security.require_strong_password", true) && !from_omniauth?
+  end
+
+  # パスワード強度バリデーション
+  def password_strength
+    return unless password.present?
+
+    errors.add(:password, "は大文字を含む必要があります") unless password.match(/[A-Z]/)
+    errors.add(:password, "は小文字を含む必要があります") unless password.match(/[a-z]/)
+    errors.add(:password, "は数字を含む必要があります") unless password.match(/[0-9]/)
+    errors.add(:password, "は特殊文字を含む必要があります") unless password.match(/[^A-Za-z0-9]/)
   end
 end

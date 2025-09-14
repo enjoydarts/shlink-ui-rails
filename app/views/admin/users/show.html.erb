@@ -1,0 +1,261 @@
+<div class="mb-6">
+  <div class="flex justify-between items-center">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">
+        <%= @user.display_name %>
+      </h1>
+      <p class="text-gray-600">ユーザー詳細情報</p>
+    </div>
+    <div class="flex space-x-3">
+      <%= link_to "ユーザー一覧に戻る", admin_users_path, 
+          class: "bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors duration-200" %>
+    </div>
+  </div>
+</div>
+
+<!-- 基本情報 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <div class="card p-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">基本情報</h2>
+    
+    <%= form_with model: @user, url: admin_user_path(@user), method: :patch, local: true, class: "space-y-4" do |form| %>
+      <div>
+        <%= form.label :name, "名前", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= form.text_field :name, 
+            class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+      </div>
+
+      <div>
+        <%= form.label :email, "メールアドレス", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= form.email_field :email, 
+            class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+      </div>
+
+      <div>
+        <%= form.label :role, "権限", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= form.select :role, 
+            options_for_select([
+              ['一般ユーザー', 'normal_user'],
+              ['管理者', 'admin']
+            ], @user.role),
+            {},
+            { class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" } %>
+      </div>
+
+      <div class="flex justify-end">
+        <%= form.submit "更新", class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors duration-200" %>
+      </div>
+    <% end %>
+
+    <div class="mt-6 pt-4 border-t border-gray-200">
+      <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <dt class="text-sm font-medium text-gray-500">ユーザーID</dt>
+          <dd class="mt-1 text-sm text-gray-900"><%= @user.id %></dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-gray-500">登録日</dt>
+          <dd class="mt-1 text-sm text-gray-900">
+            <%= @user.created_at.strftime('%Y年%m月%d日 %H:%M') %>
+          </dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-gray-500">認証方法</dt>
+          <dd class="mt-1 text-sm text-gray-900">
+            <% if @user.from_omniauth? %>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                <%= @user.provider.capitalize %>
+              </span>
+            <% else %>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                パスワード
+              </span>
+            <% end %>
+          </dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-gray-500">メール認証</dt>
+          <dd class="mt-1 text-sm text-gray-900">
+            <%= @user.confirmed? ? '認証済み' : '未認証' %>
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  <!-- アクティビティ統計 -->
+  <div class="card p-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">アクティビティ統計</h2>
+    <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div>
+        <dt class="text-sm font-medium text-gray-500">ログイン回数</dt>
+        <dd class="mt-1 text-lg font-semibold text-gray-900">
+          <%= @user_stats[:activity][:sign_in_count] %>回
+        </dd>
+      </div>
+      <div>
+        <dt class="text-sm font-medium text-gray-500">最終ログイン</dt>
+        <dd class="mt-1 text-sm text-gray-900">
+          <%= @user_stats[:activity][:last_sign_in_at] ? 
+              @user_stats[:activity][:last_sign_in_at].strftime('%Y/%m/%d %H:%M') : 
+              '未ログイン' %>
+        </dd>
+      </div>
+      <div>
+        <dt class="text-sm font-medium text-gray-500">最終ログインIP</dt>
+        <dd class="mt-1 text-sm text-gray-900">
+          <%= @user_stats[:activity][:last_sign_in_ip] || 'なし' %>
+        </dd>
+      </div>
+      <div>
+        <dt class="text-sm font-medium text-gray-500">ログイン頻度</dt>
+        <dd class="mt-1">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                       <%= case @user_stats[:activity][:login_frequency]
+                           when '高' then 'bg-green-100 text-green-800'
+                           when '普通' then 'bg-yellow-100 text-yellow-800'
+                           else 'bg-gray-100 text-gray-800'
+                           end %>">
+            <%= @user_stats[:activity][:login_frequency] %>
+          </span>
+        </dd>
+      </div>
+    </dl>
+  </div>
+</div>
+
+<!-- 短縮URL統計 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <div class="card p-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">短縮URL統計</h2>
+    <div class="grid grid-cols-2 gap-4 mb-4">
+      <div class="text-center p-4 bg-blue-50 rounded-lg">
+        <div class="text-2xl font-bold text-blue-600">
+          <%= @user_stats[:short_urls][:total_short_urls] %>
+        </div>
+        <div class="text-sm text-gray-600">総数</div>
+      </div>
+      <div class="text-center p-4 bg-green-50 rounded-lg">
+        <div class="text-2xl font-bold text-green-600">
+          <%= @user_stats[:short_urls][:total_visits] %>
+        </div>
+        <div class="text-sm text-gray-600">総アクセス数</div>
+      </div>
+    </div>
+    
+    <div class="space-y-2">
+      <div class="flex justify-between">
+        <span class="text-sm text-gray-600">今月作成</span>
+        <span class="text-sm font-medium">
+          <%= @user_stats[:short_urls][:created_this_month] %>個
+        </span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-sm text-gray-600">今週作成</span>
+        <span class="text-sm font-medium">
+          <%= @user_stats[:short_urls][:created_this_week] %>個
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- セキュリティ情報 -->
+  <div class="card p-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">セキュリティ情報</h2>
+    <div class="space-y-3">
+      <div class="flex justify-between items-center">
+        <span class="text-sm text-gray-600">2FA認証</span>
+        <span class="<%= @user_stats[:security][:two_factor_enabled] ? 'status-good' : 'text-gray-500' %>">
+          <%= @user_stats[:security][:two_factor_enabled] ? '✅ 有効' : '❌ 無効' %>
+        </span>
+      </div>
+      
+      <% if @user_stats[:security][:two_factor_enabled] %>
+        <div class="ml-4 space-y-1 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-600">- TOTP認証</span>
+            <span class="<%= @user_stats[:security][:totp_enabled] ? 'status-good' : 'text-gray-500' %>">
+              <%= @user_stats[:security][:totp_enabled] ? '有効' : '無効' %>
+            </span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">- WebAuthn認証</span>
+            <span class="<%= @user_stats[:security][:webauthn_enabled] ? 'status-good' : 'text-gray-500' %>">
+              <%= @user_stats[:security][:webauthn_enabled] ? '有効' : '無効' %>
+            </span>
+          </div>
+        </div>
+      <% end %>
+      
+      <div class="flex justify-between items-center">
+        <span class="text-sm text-gray-600">ログイン失敗回数</span>
+        <span class="text-sm font-medium <%= @user_stats[:security][:failed_attempts] > 0 ? 'text-red-600' : 'text-green-600' %>">
+          <%= @user_stats[:security][:failed_attempts] %>回
+        </span>
+      </div>
+      
+      <div class="flex justify-between items-center">
+        <span class="text-sm text-gray-600">OAuth認証</span>
+        <span class="<%= @user_stats[:security][:oauth_user] ? 'status-good' : 'text-gray-500' %>">
+          <%= @user_stats[:security][:oauth_user] ? '✅ 使用中' : '❌ 未使用' %>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 最人気の短縮URL -->
+<% if @user_stats[:short_urls][:most_popular_url] %>
+  <div class="card p-6 mb-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">最も人気の短縮URL</h2>
+    <div class="bg-gray-50 p-4 rounded-lg">
+      <div class="flex justify-between items-start">
+        <div class="flex-1">
+          <div class="font-medium text-blue-600">
+            <%= @user_stats[:short_urls][:most_popular_url][:short_url] %>
+          </div>
+          <div class="text-gray-600 text-sm mt-1">
+            <%= @user_stats[:short_urls][:most_popular_url][:long_url] %>
+          </div>
+          <div class="text-gray-400 text-xs mt-2">
+            作成日: <%= @user_stats[:short_urls][:most_popular_url][:created_at].strftime('%Y/%m/%d') %>
+          </div>
+        </div>
+        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+          <%= @user_stats[:short_urls][:most_popular_url][:visit_count] %> アクセス
+        </span>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- 最近の短縮URL -->
+<div class="card p-6">
+  <h2 class="text-xl font-bold text-gray-900 mb-4">最近の短縮URL</h2>
+  <% if @recent_short_urls.any? %>
+    <div class="space-y-3">
+      <% @recent_short_urls.each do |url| %>
+        <div class="border-b border-gray-200 pb-3">
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <div class="font-medium text-blue-600">
+                <%= url.short_url %>
+              </div>
+              <div class="text-gray-600 text-sm truncate">
+                <%= url.long_url %>
+              </div>
+              <div class="text-gray-400 text-xs mt-1">
+                <%= url.created_at.strftime('%Y/%m/%d %H:%M') %>
+              </div>
+            </div>
+            <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">
+              <%= url.visit_count %> アクセス
+            </span>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="text-gray-500">短縮URLはまだ作成されていません。</p>
+  <% end %>
+</div>

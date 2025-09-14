@@ -20,6 +20,14 @@ RSpec.describe Users::OmniauthCallbacksController, type: :request do
 
     before do
       Rails.application.env_config["omniauth.auth"] = oauth_auth
+      # CSRFエラーを回避するため、テスト環境で適切なセッションを設定
+      OmniAuth.config.test_mode = true
+      OmniAuth.config.mock_auth[:google_oauth2] = OmniAuth::AuthHash.new(oauth_auth)
+    end
+
+    after do
+      OmniAuth.config.test_mode = false
+      OmniAuth.config.mock_auth[:google_oauth2] = nil
     end
 
     context 'ユーザーが正常に作成/取得できる場合' do
@@ -32,7 +40,7 @@ RSpec.describe Users::OmniauthCallbacksController, type: :request do
       it 'ユーザーをサインインしてリダイレクトすること' do
         post "/users/auth/google_oauth2/callback"
 
-        expect(response).to redirect_to(root_path)
+        expect(response).to redirect_to(dashboard_path)
       end
     end
 

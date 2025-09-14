@@ -35,5 +35,8 @@ module App
     config.webauthn_origin = ENV.fetch("WEBAUTHN_ORIGIN", "http://localhost:3000")
     config.webauthn_rp_name = ENV.fetch("WEBAUTHN_RP_NAME", "Shlink-UI-Rails")
     config.webauthn_rp_id = ENV.fetch("WEBAUTHN_RP_ID", "localhost")
+
+    # Rate limiting middleware
+    config.middleware.use Rack::Attack
   end
 end
