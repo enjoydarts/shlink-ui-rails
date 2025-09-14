@@ -54,7 +54,10 @@ class Admin::UsersController < Admin::AdminController
   end
 
   def user_params
-    params.require(:user).permit(:name, :email, :role)
+    # 権限昇格対策：roleパラメータは管理者のみ変更可能
+    permitted_params = [:name, :email]
+    permitted_params << :role if current_user.admin?
+    params.require(:user).permit(*permitted_params)
   end
 
   def filter_users(users)

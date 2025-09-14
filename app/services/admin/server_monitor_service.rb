@@ -1,3 +1,5 @@
+require 'shellwords'
+
 class Admin::ServerMonitorService
   def call
     {
@@ -332,6 +334,8 @@ class Admin::ServerMonitorService
   end
 
   def system_command_available?(command)
-    system("which #{command} > /dev/null 2>&1")
+    # コマンドインジェクション対策：コマンド名を安全にエスケープ
+    safe_command = Shellwords.escape(command)
+    system("which #{safe_command} > /dev/null 2>&1")
   end
 end

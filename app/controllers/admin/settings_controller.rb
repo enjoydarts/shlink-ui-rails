@@ -8,7 +8,9 @@ class Admin::SettingsController < Admin::AdminController
   end
 
   def update
-    settings_params = params.require(:settings).permit!
+    # Mass Assignment対策：データベースに存在するキーのみ許可
+    allowed_keys = SystemSetting.pluck(:key_name)
+    settings_params = params.require(:settings).permit(*allowed_keys)
 
     ActiveRecord::Base.transaction do
       settings_params.each do |key, value|

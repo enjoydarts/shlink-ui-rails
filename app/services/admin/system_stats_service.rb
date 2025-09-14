@@ -149,10 +149,14 @@ class Admin::SystemStatsService
     case ActiveRecord::Base.connection.adapter_name.downcase
     when "mysql2", "mysql"
       db_name = ActiveRecord::Base.connection.current_database
+      # SQL Injection対策：パラメータ化クエリを使用
       result = ActiveRecord::Base.connection.execute(
-        "SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 1) AS size_mb
-         FROM information_schema.tables
-         WHERE table_schema = '#{db_name}'"
+        ActiveRecord::Base.sanitize_sql([
+          "SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 1) AS size_mb
+           FROM information_schema.tables
+           WHERE table_schema = ?",
+          db_name
+        ])
       ).first.first
       "#{result} MB"
     else
