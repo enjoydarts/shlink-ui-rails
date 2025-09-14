@@ -98,7 +98,8 @@ Rails.application.configure do
   # Devise and Mail settings for production
   config.action_mailer.default_url_options = {
     host: Settings.mailer.host,
-    port: Settings.mailer.port
+    port: Settings.mailer.port,
+    protocol: Settings.mailer.protocol
   }
 
   config.action_mailer.delivery_method = :smtp

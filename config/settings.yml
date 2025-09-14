@@ -63,6 +63,17 @@ redis:
   pool_timeout: <%= ENV.fetch('REDIS_POOL_TIMEOUT', '5').to_i %>
 
 # =================================================================
+# メーラー設定（Devise URL生成用）
+# =================================================================
+mailer:
+  # アプリケーションホスト（環境変数: APPLICATION_HOST）
+  host: <%= ENV.fetch('APPLICATION_HOST', 'localhost') %>
+  # ポート（環境変数: APPLICATION_PORT）
+  port: <%= ENV.fetch('APPLICATION_PORT', '80').to_i %>
+  # プロトコル（環境変数: APPLICATION_PROTOCOL）
+  protocol: <%= ENV.fetch('APPLICATION_PROTOCOL', 'http') %>
+
+# =================================================================
 # アプリケーション設定
 # =================================================================
 app:
