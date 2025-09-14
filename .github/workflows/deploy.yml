@@ -1,0 +1,242 @@
+# .github/workflows/deploy.yml
+# 本番環境への自動デプロイワークフロー
+#
+# 動作条件:
+# - mainブランチへのpush/merge時に実行
+# - DockerイメージをGitHub Container Registryにビルド・プッシュ
+# - OCIインスタンスにSSH接続してデプロイ実行
+
+name: Production Deployment
+
+# ワークフロー実行条件
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+# 環境変数設定
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+# ジョブ定義
+jobs:
+  # テスト実行ジョブ
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    # サービスコンテナ設定（テスト用MySQL, Redis）
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: rootpass
+          MYSQL_DATABASE: shlink_ui_rails_test
+          MYSQL_USER: app
+          MYSQL_PASSWORD: apppass
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.4.5
+          bundler-cache: true
+
+      - name: Set up database
+        env:
+          RAILS_ENV: test
+          DATABASE_URL: mysql2://app:apppass@127.0.0.1:3306/shlink_ui_rails_test
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          bin/rails db:create db:migrate
+
+      - name: Run RuboCop
+        run: bundle exec rubocop
+
+      - name: Run RSpec
+        env:
+          RAILS_ENV: test
+          DATABASE_URL: mysql2://app:apppass@127.0.0.1:3306/shlink_ui_rails_test
+          REDIS_URL: redis://localhost:6379/0
+        run: bundle exec rspec
+
+  # Dockerイメージビルド・プッシュジョブ
+  build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+    # mainブランチかつテスト成功時のみ実行
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.production
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # 本番デプロイジョブ
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    # mainブランチかつイメージビルド成功時のみ実行
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    environment:
+      name: production
+      url: https://app.kety.at
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+
+      - name: Add OCI host to known_hosts
+        run: |
+          ssh-keyscan -H ${{ secrets.OCI_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to OCI
+        run: |
+          # 本番サーバーにSSH接続してデプロイスクリプト実行
+          ssh -o StrictHostKeyChecking=no ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_HOST }} << 'EOF'
+            set -e
+
+            # デプロイログ開始
+            echo "$(date): Starting deployment..." >> /opt/shlink-ui-rails/logs/deploy.log
+
+            # アプリケーションディレクトリに移動
+            cd /opt/shlink-ui-rails
+
+            # 最新のコードを取得
+            git fetch origin main
+            git reset --hard origin/main
+
+            # 環境変数ファイルが存在することを確認
+            if [ ! -f .env.production ]; then
+              echo "ERROR: .env.production file not found!" >> logs/deploy.log
+              exit 1
+            fi
+
+            # コンテナレジストリからログイン
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # 最新のDockerイメージをプル
+            docker-compose -f docker-compose.prod.yml pull
+
+            # データベースマイグレーション実行
+            echo "Running database migration..." >> logs/deploy.log
+            docker-compose -f docker-compose.prod.yml run --rm app rails db:migrate
+
+            # サービス再起動
+            echo "Restarting services..." >> logs/deploy.log
+            docker-compose -f docker-compose.prod.yml up -d
+
+            # ヘルスチェック
+            echo "Waiting for services to be healthy..." >> logs/deploy.log
+            sleep 30
+
+            # アプリケーションの動作確認
+            if curl -f http://localhost:3000/health; then
+              echo "$(date): Deployment completed successfully!" >> logs/deploy.log
+            else
+              echo "$(date): Deployment failed - health check failed!" >> logs/deploy.log
+              exit 1
+            fi
+
+            # Docker cleanup
+            docker system prune -f
+
+            echo "$(date): Deployment process finished." >> logs/deploy.log
+          EOF
+
+      - name: Verify Deployment
+        run: |
+          # デプロイ後の確認
+          sleep 10
+          if curl -f https://app.kety.at/health; then
+            echo "✅ Deployment verification successful"
+          else
+            echo "❌ Deployment verification failed"
+            exit 1
+          fi
+
+  # Slack通知ジョブ（オプション）
+  notify:
+    name: Notify Deployment Status
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: always() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Notify Success
+        if: needs.deploy.result == 'success'
+        run: |
+          echo "✅ Production deployment successful!"
+          # Slack通知が必要な場合はここに追加
+
+      - name: Notify Failure
+        if: needs.deploy.result == 'failure'
+        run: |
+          echo "❌ Production deployment failed!"
+          # Slack通知が必要な場合はここに追加

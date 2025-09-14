@@ -142,6 +142,37 @@
    - データベース: port 3307 の MySQL
    - メールプレビュー: http://localhost:3000/letter_opener （開発環境）
 
+## 🚀 本番デプロイ
+
+本番デプロイには複数のオプションをサポートしています：
+
+### 📋 初期セットアップガイド
+- **[Setup Guide (English)](SETUP_EN.md)** - 完全な本番セットアップ手順
+- **[セットアップガイド (日本語)](SETUP_JA.md)** - 本番環境セットアップ手順
+
+これらのガイドでは、初期管理者アカウント設定、システム設定、メール設定、CAPTCHA、セキュリティ設定をカバーしています。
+
+### 🚢 本番デプロイガイド
+- **[Production Deployment Guide (English)](docs/deployment.md)** - OCI/Docker環境での包括的なデプロイ手順
+- **[本番デプロイ手順書 (日本語)](docs/deployment_ja.md)** - OCI/Docker環境での詳細なデプロイ手順
+
+**デプロイアーキテクチャ:**
+- **サーバー:** OCI Ampere A1 インスタンス（ARM64）
+- **Webサーバー:** 自動HTTPS対応のCaddy
+- **アプリケーション:** Docker化されたRailsアプリ
+- **データベース:** 外部マネージドMySQL
+- **キャッシュ:** Upstash Redis
+- **CI/CD:** 自動デプロイ対応のGitHub Actions
+- **ドメイン:** Cloudflare DNS対応のカスタムドメイン
+- **監視:** 包括的なログ記録とヘルスチェック
+
+**主要機能:**
+- マルチプラットフォームDockerビルド（AMD64/ARM64）
+- GitHub Actionsによる自動化されたCI/CD
+- 専用システムユーザーによる安全なデプロイ
+- 包括的なバックアップ・監視セットアップ
+- 本番対応のセキュリティ設定
+
 ## 📱 アプリケーション機能
 
 ### ホームページ

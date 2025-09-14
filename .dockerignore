@@ -1,8 +1,98 @@
-.git
+# .dockerignore
+# Docker build時に除外するファイル・ディレクトリ
+
+# Git関連
+.git/
 .gitignore
-.bundle
-log
-tmp
-node_modules
-vendor/bundle
-storage
+.gitattributes
+
+# Docker関連
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# 開発・テスト環境専用ファイル
+.env.development
+.env.test
+.env.local
+.env.*.local
+
+# ログファイル
+log/
+*.log
+
+# 一時ファイル
+tmp/
+*.tmp
+*.swp
+*.swo
+*~
+
+# バンドル（Docker内で再インストール）
+vendor/bundle/
+.bundle/
+
+# Node.js関連
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# キャッシュ
+.cache/
+*.cache
+
+# テスト関連
+spec/
+test/
+coverage/
+.rspec
+.simplecov
+
+# 開発用ツール設定
+.rubocop*
+.reek*
+.brakeman*
+.solargraph.yml
+
+# エディタ・IDE設定
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS固有ファイル
+.DS_Store
+Thumbs.db
+*.pid
+*.seed
+
+# バックアップファイル
+*.bak
+*.backup
+
+# データベースファイル
+*.sqlite3
+*.db
+
+# 環境固有設定（本番では環境変数で管理）
+config/master.key
+config/credentials/
+
+# ドキュメント（必要に応じて）
+README*.md
+docs/
+
+# CI/CD設定（本番サーバーでは不要）
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+
+# その他開発用ファイル
+Makefile
+bin/dev
+bin/setup
+
+# ストレージ（本番では外部ボリューム使用）
+storage/
