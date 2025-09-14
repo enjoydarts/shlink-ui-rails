@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>418 - I'm a teapot ☕ | Shlink-UI-Rails</title>
+  <meta name="robots" content="noindex, nofollow">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif']
+          }
+        }
+      }
+    }
+    
+    // Steam animation
+    function createSteam() {
+      const steam = document.querySelector('.steam');
+      if (!steam) return;
+      
+      for (let i = 0; i < 15; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'steam-particle';
+        particle.style.cssText = `
+          position: absolute;
+          width: 4px;
+          height: 4px;
+          background: rgba(255, 255, 255, 0.7);
+          border-radius: 50%;
+          animation: steam ${2 + Math.random() * 2}s infinite ease-out;
+          animation-delay: ${Math.random() * 2}s;
+          left: ${20 + Math.random() * 60}%;
+        `;
+        steam.appendChild(particle);
+      }
+    }
+    
+    // Add keyframes for steam animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes steam {
+        0% { 
+          opacity: 0; 
+          transform: translateY(0) scale(0.5); 
+        }
+        10% { 
+          opacity: 1; 
+        }
+        90% { 
+          opacity: 1; 
+        }
+        100% { 
+          opacity: 0; 
+          transform: translateY(-100px) scale(1.5); 
+        }
+      }
+      .teapot-bounce {
+        animation: bounce 2s infinite;
+      }
+      @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-10px); }
+        60% { transform: translateY(-5px); }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    window.addEventListener('load', () => {
+      setTimeout(createSteam, 500);
+    });
+  </script>
+</head>
+<body class="font-sans antialiased overflow-x-hidden">
+  <div class="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 flex items-center justify-center py-8 px-4 relative">
+    <!-- Floating tea cups background -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute top-20 left-10 text-4xl opacity-10 animate-pulse">☕</div>
+      <div class="absolute top-40 right-20 text-6xl opacity-5 animate-bounce">🫖</div>
+      <div class="absolute bottom-40 left-20 text-3xl opacity-10 animate-pulse" style="animation-delay: 1s;">☕</div>
+      <div class="absolute bottom-20 right-10 text-5xl opacity-5 animate-bounce" style="animation-delay: 2s;">🫖</div>
+      <div class="absolute top-60 left-1/2 text-2xl opacity-10 animate-pulse" style="animation-delay: 0.5s;">☕</div>
+    </div>
+
+    <div class="w-full max-w-3xl mx-auto relative z-10">
+      <!-- Header Section -->
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full mb-4 shadow-2xl teapot-bounce relative">
+          <!-- Steam effect -->
+          <div class="steam absolute -top-8 left-1/2 transform -translate-x-1/2 w-16 h-20"></div>
+          <span class="text-3xl">🫖</span>
+        </div>
+        <h1 class="text-6xl font-bold bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">418</h1>
+        <p class="text-2xl text-gray-700 font-semibold">I'm a teapot ☕</p>
+      </div>
+
+      <!-- Main Card -->
+      <div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/30 p-8 md:p-12 hover:shadow-3xl transition-all duration-500 relative overflow-hidden">
+        <!-- Decorative elements -->
+        <div class="absolute top-4 right-4 text-6xl opacity-10 animate-spin" style="animation-duration: 20s;">🫖</div>
+        <div class="absolute bottom-4 left-4 text-4xl opacity-10 animate-pulse">☕</div>
+        
+        <div class="text-center space-y-8 relative z-10">
+          <!-- Teapot ASCII Art -->
+          <div class="font-mono text-xs sm:text-sm text-gray-600 bg-gray-50 p-6 rounded-2xl mx-auto max-w-md overflow-x-auto">
+            <pre class="whitespace-pre text-center">
+       _...._
+     .'      '.
+    /  ^    ^  \
+   |  (o)  (o)  |
+   |     <>     |
+   |   \____/   |
+    \  '____'  /
+     '.______.'
+       |    |
+       |    |
+      /______\
+     </pre>
+          </div>
+
+          <!-- Error Message -->
+          <div class="space-y-6">
+            <h2 class="text-3xl font-bold text-gray-800">私はティーポットです</h2>
+            <div class="space-y-4 text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              <p class="text-lg">
+                申し訳ございませんが、私はティーポットのため、<br>
+                コーヒーを淹れることはできません ☕
+              </p>
+              <p class="text-sm text-gray-500 italic">
+                RFC 2324 Hyper Text Coffee Pot Control Protocol に準拠しています
+              </p>
+            </div>
+          </div>
+
+          <!-- Fun Facts -->
+          <div class="bg-gradient-to-r from-pink-50 to-purple-50 rounded-3xl p-6 max-w-2xl mx-auto border border-pink-100">
+            <h3 class="text-lg font-bold text-gray-700 mb-4 flex items-center justify-center">
+              <span class="mr-2">🫖</span>
+              ティーポット豆知識
+              <span class="ml-2">☕</span>
+            </h3>
+            <div class="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
+              <div class="flex items-start space-x-2">
+                <span class="text-pink-500 mt-1">•</span>
+                <span>1998年エイプリルフール RFC として誕生</span>
+              </div>
+              <div class="flex items-start space-x-2">
+                <span class="text-purple-500 mt-1">•</span>
+                <span>「私はティーポット」の意味</span>
+              </div>
+              <div class="flex items-start space-x-2">
+                <span class="text-pink-500 mt-1">•</span>
+                <span>Google や他の企業も実装</span>
+              </div>
+              <div class="flex items-start space-x-2">
+                <span class="text-purple-500 mt-1">•</span>
+                <span>開発者のユーモアの象徴</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tea Menu (Easter Egg) -->
+          <div class="bg-gradient-to-r from-green-50 to-teal-50 rounded-3xl p-6 max-w-md mx-auto border border-green-100">
+            <h3 class="text-lg font-bold text-gray-700 mb-4">🍵 本日のティーメニュー</h3>
+            <div class="space-y-2 text-sm text-gray-600">
+              <div class="flex justify-between items-center">
+                <span>アールグレイ</span>
+                <span class="text-green-600">♨</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span>ダージリン</span>
+                <span class="text-green-600">♨</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span>緑茶</span>
+                <span class="text-green-600">♨</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span>ジャスミン茶</span>
+                <span class="text-green-600">♨</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-col sm:flex-row gap-6 justify-center pt-6">
+            <a href="/" 
+               class="inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold py-4 px-8 rounded-3xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
+              <span class="text-lg">🏠</span>
+              <span>コーヒーショップに戻る</span>
+            </a>
+            
+            <button onclick="window.location.reload()" 
+                    class="inline-flex items-center justify-center space-x-2 bg-white/90 backdrop-blur-sm hover:bg-white border-2 border-pink-200 hover:border-pink-300 text-gray-700 font-semibold py-4 px-8 rounded-3xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
+              <span class="text-lg">🫖</span>
+              <span>もう一度お茶を淹れる</span>
+            </button>
+          </div>
+          
+          <!-- Hidden Easter Egg -->
+          <div class="mt-8">
+            <button onclick="alert('🫖 ティーポット・シークレット: この機能は実際には何もしません！でも、あなたが見つけてくれて嬉しいです ☕')" 
+                    class="text-xs text-gray-400 hover:text-pink-500 transition-colors duration-300 opacity-50 hover:opacity-100">
+              隠し機能を発見
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Info -->
+      <div class="mt-8 text-center">
+        <p class="text-sm text-gray-500 mb-2">
+          エラーコード: 418 I'm a teapot
+        </p>
+        <p class="text-xs text-gray-400">
+          参考: <a href="https://tools.ietf.org/html/rfc2324" class="hover:text-pink-500 transition-colors">RFC 2324</a> - 
+          Hyper Text Coffee Pot Control Protocol (HTCPCP/1.0)
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

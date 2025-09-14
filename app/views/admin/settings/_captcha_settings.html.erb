@@ -1,0 +1,108 @@
+<!-- CAPTCHA設定 -->
+<% if @settings_by_category['captcha'] %>
+  <div class="card p-6">
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <h2 class="text-xl font-bold text-gray-900">🛡️ CAPTCHA設定</h2>
+        <p class="text-sm text-gray-600 mt-1">スパムや自動化攻撃からサービスを保護します（本番環境推奨）</p>
+      </div>
+      <div class="flex space-x-2">
+        <button type="button" onclick="testSettings('captcha')" 
+                class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+          テスト
+        </button>
+        <button type="button" onclick="resetCategory('captcha')"
+                class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm">
+          リセット
+        </button>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          CAPTCHA機能
+        </label>
+        <% captcha_enabled = @settings_by_category['captcha']['captcha.enabled'] %>
+        <%= form.select "settings[captcha.enabled]",
+            options_for_select([
+              ['有効', 'true'],
+              ['無効', 'false']
+            ], captcha_enabled&.typed_value.to_s),
+            {},
+            { class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" } %>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Turnstile Site Key
+        </label>
+        <% site_key = @settings_by_category['captcha']['captcha.site_key'] %>
+        <%= form.text_field "settings[captcha.site_key]", 
+            value: site_key&.value,
+            placeholder: "0x4AAAAAAB... (公開キー)",
+            class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+        <p class="text-xs text-gray-500 mt-1">
+          <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" class="text-blue-600 hover:text-blue-800">Cloudflare Dashboard</a> 
+          から取得してください（無料）
+        </p>
+      </div>
+
+      <div class="md:col-span-2" data-controller="password-toggle">
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Turnstile Secret Key
+        </label>
+        <div class="relative">
+          <% secret_key = @settings_by_category['captcha']['captcha.secret_key'] %>
+          <%= form.password_field "settings[captcha.secret_key]", 
+              value: secret_key&.value,
+              placeholder: "0x4AAAAAAB... (秘密キー)",
+              data: { password_toggle_target: "input" },
+              class: "w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+          <button type="button" 
+                  data-password-toggle-target="toggleButton"
+                  data-action="click->password-toggle#toggle"
+                  aria-label="秘密キーを表示"
+                  class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600 transition-colors duration-200">
+            <!-- Show icon (eye) -->
+            <svg data-password-toggle-target="showIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+            <!-- Hide icon (eye-off) -->
+            <svg data-password-toggle-target="hideIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L15 15M21 3l-6 6"></path>
+            </svg>
+          </button>
+        </div>
+        <p class="text-xs text-gray-500 mt-1">
+          秘密キーは安全に保管してください
+        </p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          検証タイムアウト（秒）
+        </label>
+        <% timeout = @settings_by_category['captcha']['captcha.timeout'] %>
+        <%= form.number_field "settings[captcha.timeout]", 
+            value: timeout&.value,
+            placeholder: "10",
+            min: "5",
+            max: "60",
+            class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          検証API URL
+        </label>
+        <% verify_url = @settings_by_category['captcha']['captcha.verify_url'] %>
+        <%= form.url_field "settings[captcha.verify_url]", 
+            value: verify_url&.value,
+            placeholder: "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+            class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+      </div>
+    </div>
+  </div>
+<% end %>

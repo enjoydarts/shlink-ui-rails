@@ -42,17 +42,46 @@ module MailAdapter
     # SMTP設定が正しいかチェック
     # @return [Boolean] 設定が正しい場合はtrue
     def configured?
-      # 開発・テスト環境では設定チェックをスキップ
-      return true unless Rails.env.production?
+      # 開発環境では常にtrue（letter_opener_webが使用されるため）
+      if Rails.env.development?
+        return true
+      end
 
-      # 本番環境では必要な設定があるかチェック
-      Settings.mailer.address.present? &&
-        Settings.mailer.domain.present? &&
-        Settings.mailer.user_name.present? &&
-        Settings.mailer.password.present?
+      # Factoryが決定するアダプタタイプをチェック
+      # SMTPアダプタ以外が選択されている場合は、SMTP設定チェックは不要
+      begin
+        adapter_type = determine_factory_adapter_type
+        if adapter_type != "smtp"
+          return true
+        end
+      rescue StandardError => e
+        log_error("アダプタタイプの確認中にエラーが発生", e)
+        # エラー時はSMTP設定をチェックする（デフォルト動作）
+      end
+
+      # SMTPアダプタ使用時は必要な設定があるかチェック
+      SystemSetting.get("email.smtp_address", "").present? &&
+        SystemSetting.get("email.smtp_user_name", "").present? &&
+        SystemSetting.get("email.smtp_password", "").present?
     rescue StandardError => e
       log_error("SMTP設定の確認中にエラーが発生", e)
       false
+    end
+
+    private
+
+    # Factoryが決定するアダプタタイプを取得
+    # @return [String] アダプタタイプ
+    def determine_factory_adapter_type
+      # システム設定から決定（Factoryと同じロジック）
+      default_adapter = Rails.env.development? ? "letter_opener" : "smtp"
+      configured_type = SystemSetting.get("email.adapter", default_adapter)&.to_s&.downcase
+
+      if MailAdapter::Factory::SUPPORTED_ADAPTERS.include?(configured_type)
+        configured_type
+      else
+        default_adapter
+      end
     end
   end
 end

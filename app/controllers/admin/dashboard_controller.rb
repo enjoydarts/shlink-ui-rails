@@ -24,14 +24,28 @@ class Admin::DashboardController < Admin::AdminController
   end
 
   def database_health
-    ActiveRecord::Base.connection.active?
-  rescue StandardError
+    # コネクションプールから接続を取得して実際にクエリを実行
+    ActiveRecord::Base.connection_pool.with_connection do |connection|
+      connection.execute("SELECT 1")
+      true
+    end
+  rescue StandardError => e
+    Rails.logger.error "Database health check failed: #{e.message}"
     false
   end
 
   def redis_health
-    # Redis接続確認（使用している場合）
-    true # TODO: Redis使用時は実装
+    redis_url = ApplicationConfig.string("redis.url", Settings.redis&.url || "redis://redis:6379/0")
+    redis = Redis.new(url: redis_url, connect_timeout: 1, read_timeout: 1, write_timeout: 1)
+    redis.ping == "PONG"
+  rescue Redis::ConnectionError, Redis::TimeoutError, Redis::CannotConnectError => e
+    Rails.logger.error "Redis health check failed: #{e.message}"
+    false
+  rescue StandardError => e
+    Rails.logger.error "Redis health check error: #{e.message}"
+    false
+  ensure
+    redis&.close
   end
 
   def storage_health

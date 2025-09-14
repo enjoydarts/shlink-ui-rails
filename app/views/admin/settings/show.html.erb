@@ -3,185 +3,15 @@
   <p class="text-gray-600">システム全体の設定を管理できます</p>
 </div>
 
-<%= form_with url: admin_settings_path, method: :patch, local: true do |form| %>
+<%= form_with url: admin_settings_path, method: :patch, local: true, id: 'settings-form' do |form| %>
   <div class="space-y-8">
-    
-    <!-- CAPTCHA設定 -->
-    <% if @settings_by_category['captcha'] %>
-      <div class="card p-6">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold text-gray-900">🛡️ CAPTCHA設定</h2>
-          <div class="flex space-x-2">
-            <button type="button" onclick="testSettings('captcha')" 
-                    class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
-              テスト
-            </button>
-            <button type="button" onclick="resetCategory('captcha')"
-                    class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm">
-              リセット
-            </button>
-          </div>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              CAPTCHA機能
-            </label>
-            <% captcha_enabled = @settings_by_category['captcha']['captcha.enabled'] %>
-            <%= form.select "settings[captcha.enabled]",
-                options_for_select([
-                  ['有効', 'true'],
-                  ['無効', 'false']
-                ], captcha_enabled&.typed_value.to_s),
-                {},
-                { class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" } %>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              Turnstile Site Key
-            </label>
-            <% site_key = @settings_by_category['captcha']['captcha.site_key'] %>
-            <%= form.text_field "settings[captcha.site_key]", 
-                value: site_key&.value,
-                placeholder: "Cloudflare Turnstile Site Key",
-                class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
-          </div>
-
-          <div class="md:col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              Turnstile Secret Key
-            </label>
-            <% secret_key = @settings_by_category['captcha']['captcha.secret_key'] %>
-            <%= form.password_field "settings[captcha.secret_key]", 
-                value: secret_key&.value,
-                placeholder: "Cloudflare Turnstile Secret Key",
-                class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
-          </div>
-        </div>
-      </div>
-    <% end %>
-
-    <!-- レート制限設定 -->
-    <% if @settings_by_category['rate_limit'] %>
-      <div class="card p-6">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold text-gray-900">🚦 レート制限設定</h2>
-          <button type="button" onclick="resetCategory('rate_limit')"
-                  class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm">
-            リセット
-          </button>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              レート制限機能
-            </label>
-            <% rate_limit_enabled = @settings_by_category['rate_limit']['rate_limit.enabled'] %>
-            <%= form.select "settings[rate_limit.enabled]",
-                options_for_select([
-                  ['有効', 'true'],
-                  ['無効', 'false']
-                ], rate_limit_enabled&.typed_value.to_s),
-                {},
-                { class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" } %>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              1分間あたりの最大リクエスト数
-            </label>
-            <% requests_per_minute = @settings_by_category['rate_limit']['rate_limit.requests_per_minute'] %>
-            <%= form.number_field "settings[rate_limit.requests_per_minute]", 
-                value: requests_per_minute&.typed_value,
-                min: 1, max: 1000,
-                class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
-          </div>
-        </div>
-      </div>
-    <% end %>
-
-    <!-- メール設定 -->
-    <% if @settings_by_category['email'] %>
-      <div class="card p-6">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold text-gray-900">📧 メール設定</h2>
-          <div class="flex space-x-2">
-            <button type="button" onclick="testSettings('email')" 
-                    class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
-              接続テスト
-            </button>
-            <button type="button" onclick="resetCategory('email')"
-                    class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm">
-              リセット
-            </button>
-          </div>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              メール送信方法
-            </label>
-            <% email_adapter = @settings_by_category['email']['email.adapter'] %>
-            <%= form.select "settings[email.adapter]",
-                options_for_select([
-                  ['SMTP', 'smtp'],
-                  ['MailerSend', 'mailersend']
-                ], email_adapter&.value),
-                {},
-                { class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" } %>
-          </div>
-
-          <div class="md:col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              SMTP設定 (JSON形式)
-            </label>
-            <% smtp_settings = @settings_by_category['email']['email.smtp_settings'] %>
-            <%= form.text_area "settings[email.smtp_settings]", 
-                value: smtp_settings&.value || '{}',
-                rows: 4,
-                placeholder: '{"address": "smtp.example.com", "port": 587, "user_name": "user", "password": "pass"}',
-                class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm" %>
-            <p class="text-xs text-gray-500 mt-1">
-              JSON形式でSMTP設定を入力してください
-            </p>
-          </div>
-        </div>
-      </div>
-    <% end %>
-
-    <!-- パフォーマンス設定 -->
-    <% if @settings_by_category['performance'] %>
-      <div class="card p-6">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold text-gray-900">⚡ パフォーマンス設定</h2>
-          <button type="button" onclick="resetCategory('performance')"
-                  class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm">
-            リセット
-          </button>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              キャッシュ有効期間（秒）
-            </label>
-            <% cache_ttl = @settings_by_category['performance']['performance.cache_ttl'] %>
-            <%= form.number_field "settings[performance.cache_ttl]", 
-                value: cache_ttl&.typed_value,
-                min: 60, max: 86400,
-                class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
-            <p class="text-xs text-gray-500 mt-1">
-              60秒〜24時間（86400秒）の範囲で設定
-            </p>
-          </div>
-        </div>
-      </div>
-    <% end %>
-
+    <%= render 'shlink_settings', form: form %>
+    <%= render 'captcha_settings', form: form %>
+    <%= render 'rate_limit_settings', form: form %>
+    <%= render 'email_settings', form: form %>
+    <%= render 'performance_settings', form: form %>
+    <%= render 'security_settings', form: form %>
+    <%= render 'system_settings', form: form %>
   </div>
 
   <div class="mt-8 flex justify-end space-x-4">
@@ -190,21 +20,240 @@
       キャンセル
     </button>
     <%= form.submit "設定を保存", 
-        class: "bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors duration-200" %>
+        class: "bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors duration-200",
+        onclick: "return validateSettings(event)" %>
   </div>
 <% end %>
 
-<!-- テスト結果表示エリア -->
-<div id="test-result" class="hidden mt-4 p-4 rounded-md"></div>
 
 <script>
+function validateSettings(event) {
+  // Get form data
+  const form = event.target.form;
+  const formData = new FormData(form);
+  const settings = {};
+  
+  // Extract settings from form data
+  for (let [key, value] of formData.entries()) {
+    if (key.startsWith('settings[')) {
+      const settingKey = key.replace('settings[', '').replace(']', '');
+      settings[settingKey] = value;
+    }
+  }
+  
+  // Validate each setting
+  const errors = validateSettingsData(settings);
+  
+  if (errors.length > 0) {
+    event.preventDefault();
+    showValidationModal(errors);
+    return false;
+  }
+  
+  return true;
+}
+
+function validateSettingsData(settings) {
+  const errors = [];
+  
+  // System settings validation
+  if (settings['system.timezone']) {
+    // Timezone validation is handled by Rails, but we can add basic check
+    if (!settings['system.timezone'].trim()) {
+      errors.push('タイムゾーンを選択してください');
+    }
+  }
+  
+  if (settings['system.log_level']) {
+    const validLevels = ['debug', 'info', 'warn', 'error', 'fatal'];
+    if (!validLevels.includes(settings['system.log_level'].toLowerCase())) {
+      errors.push('ログレベルは debug/info/warn/error/fatal のいずれかを選択してください');
+    }
+  }
+  
+  // Performance settings validation
+  if (settings['performance.database_timeout']) {
+    const timeout = parseInt(settings['performance.database_timeout']);
+    if (isNaN(timeout) || timeout < 1 || timeout > 300) {
+      errors.push('データベースタイムアウトは1〜300秒の範囲で入力してください');
+    }
+  }
+  
+  if (settings['performance.items_per_page']) {
+    const items = parseInt(settings['performance.items_per_page']);
+    if (isNaN(items) || items < 1 || items > 100) {
+      errors.push('一覧表示件数は1〜100の範囲で入力してください');
+    }
+  }
+  
+  if (settings['performance.cache_ttl']) {
+    const ttl = parseInt(settings['performance.cache_ttl']);
+    if (isNaN(ttl) || ttl < 60 || ttl > 86400) {
+      errors.push('キャッシュ有効期間は60〜86400秒の範囲で入力してください');
+    }
+  }
+  
+  // Security settings validation
+  if (settings['security.password_min_length']) {
+    const length = parseInt(settings['security.password_min_length']);
+    if (isNaN(length) || length < 6 || length > 128) {
+      errors.push('パスワード最小長は6〜128文字の範囲で入力してください');
+    }
+  }
+  
+  if (settings['security.session_timeout_hours']) {
+    const hours = parseInt(settings['security.session_timeout_hours']);
+    if (isNaN(hours) || hours < 1 || hours > 168) {
+      errors.push('セッション有効期限は1〜168時間の範囲で入力してください');
+    }
+  }
+  
+  if (settings['security.max_login_attempts']) {
+    const attempts = parseInt(settings['security.max_login_attempts']);
+    if (isNaN(attempts) || attempts < 1 || attempts > 20) {
+      errors.push('ログイン失敗回数制限は1〜20回の範囲で入力してください');
+    }
+  }
+  
+  if (settings['security.account_lockout_time']) {
+    const minutes = parseInt(settings['security.account_lockout_time']);
+    if (isNaN(minutes) || minutes < 1 || minutes > 1440) {
+      errors.push('アカウントロック時間は1〜1440分の範囲で入力してください');
+    }
+  }
+  
+  // Rate limit settings validation
+  if (settings['rate_limit.api_requests_per_minute']) {
+    const rate = parseInt(settings['rate_limit.api_requests_per_minute']);
+    if (isNaN(rate) || rate < 1 || rate > 1000) {
+      errors.push('API リクエスト制限は1〜1000回/分の範囲で入力してください');
+    }
+  }
+  
+  if (settings['rate_limit.web_requests_per_minute']) {
+    const rate = parseInt(settings['rate_limit.web_requests_per_minute']);
+    if (isNaN(rate) || rate < 1 || rate > 1000) {
+      errors.push('Web リクエスト制限は1〜1000回/分の範囲で入力してください');
+    }
+  }
+  
+  if (settings['rate_limit.url_creation_per_hour']) {
+    const rate = parseInt(settings['rate_limit.url_creation_per_hour']);
+    if (isNaN(rate) || rate < 1 || rate > 10000) {
+      errors.push('短縮URL作成制限は1〜10000回/時の範囲で入力してください');
+    }
+  }
+  
+  if (settings['rate_limit.login_attempts_per_hour']) {
+    const rate = parseInt(settings['rate_limit.login_attempts_per_hour']);
+    if (isNaN(rate) || rate < 1 || rate > 100) {
+      errors.push('ログイン試行制限は1〜100回/時の範囲で入力してください');
+    }
+  }
+  
+  // CAPTCHA settings validation
+  if (settings['captcha.timeout']) {
+    const timeout = parseInt(settings['captcha.timeout']);
+    if (isNaN(timeout) || timeout < 5 || timeout > 60) {
+      errors.push('CAPTCHA検証タイムアウト時間は5〜60秒の範囲で入力してください');
+    }
+  }
+  
+  if (settings['captcha.site_key'] && settings['captcha.site_key'].trim()) {
+    const siteKey = settings['captcha.site_key'];
+    if (siteKey.length < 20 || !siteKey.match(/^[0-9A-Za-z_-]+$/)) {
+      errors.push('CAPTCHA Site Keyは正しいCloudflare Turnstile Site Keyを入力してください（20文字以上の英数字・ハイフン・アンダースコア）');
+    }
+  }
+  
+  if (settings['captcha.secret_key'] && settings['captcha.secret_key'].trim()) {
+    const secretKey = settings['captcha.secret_key'];
+    if (secretKey.length < 20 || !secretKey.match(/^[0-9A-Za-z_-]+$/)) {
+      errors.push('CAPTCHA Secret Keyは正しいCloudflare Turnstile Secret Keyを入力してください（20文字以上の英数字・ハイフン・アンダースコア）');
+    }
+  }
+  
+  // Email settings validation
+  if (settings['email.from_address'] && settings['email.from_address'].trim()) {
+    const email = settings['email.from_address'];
+    if (!email.match(/^[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+$/i)) {
+      errors.push('メール送信者アドレスは有効なメールアドレスを入力してください');
+    }
+  }
+  
+  if (settings['email.smtp_port']) {
+    const port = parseInt(settings['email.smtp_port']);
+    if (isNaN(port) || port < 1 || port > 65535) {
+      errors.push('SMTPポートは1〜65535の範囲で入力してください');
+    }
+  }
+  
+  return errors;
+}
+
+function showValidationModal(errors) {
+  const modal = document.getElementById('validation-modal');
+  const message = document.getElementById('validation-message');
+  
+  message.innerHTML = '<ul class="list-disc list-inside space-y-1">' + 
+    errors.map(error => '<li>' + error + '</li>').join('') + 
+    '</ul>';
+  
+  modal.classList.remove('hidden');
+  
+  // アニメーション
+  setTimeout(() => {
+    document.getElementById('validation-modal-backdrop').style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    document.getElementById('validation-modal-content').style.transform = 'scale(1)';
+    document.getElementById('validation-modal-content').style.opacity = '1';
+  }, 10);
+}
+
+function closeValidationModal() {
+  const modal = document.getElementById('validation-modal');
+  const backdrop = document.getElementById('validation-modal-backdrop');
+  const content = document.getElementById('validation-modal-content');
+  
+  backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+  content.style.transform = 'scale(0.95)';
+  content.style.opacity = '0';
+  
+  setTimeout(() => {
+    modal.classList.add('hidden');
+  }, 300);
+}
+
+function togglePasswordVisibility(inputId, eyeId) {
+  const input = document.getElementById(inputId);
+  const eyeIcon = document.getElementById(eyeId);
+  
+  if (input.type === 'password') {
+    input.type = 'text';
+    // Eye Open Icon
+    eyeIcon.innerHTML = `
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+      </svg>
+    `;
+  } else {
+    input.type = 'password';
+    // Eye Closed Icon (with slash)
+    eyeIcon.innerHTML = `
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L8.464 8.464m1.414 1.414l4.242 4.242m-4.242-4.242L12 12m-3-3l2.121 2.121m0 0l4.243 4.243M12 12l2.121 2.121m0 0L15.536 15.536M12 12l3 3m-6-6l3 3"></path>
+      </svg>
+    `;
+  }
+}
+
 function testSettings(type) {
   const button = event.target;
   const originalText = button.textContent;
   button.textContent = 'テスト中...';
   button.disabled = true;
 
-  fetch(`<%= admin_settings_test_path %>`, {
+  fetch(`<%= test_admin_settings_path %>`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -214,22 +263,10 @@ function testSettings(type) {
   })
   .then(response => response.json())
   .then(data => {
-    const resultDiv = document.getElementById('test-result');
-    resultDiv.className = data.success 
-      ? 'mt-4 p-4 rounded-md bg-green-100 border border-green-400 text-green-700'
-      : 'mt-4 p-4 rounded-md bg-red-100 border border-red-400 text-red-700';
-    resultDiv.textContent = data.message;
-    resultDiv.classList.remove('hidden');
-    
-    setTimeout(() => {
-      resultDiv.classList.add('hidden');
-    }, 5000);
+    showTestResultModal(data.success, data.message, type);
   })
   .catch(error => {
-    const resultDiv = document.getElementById('test-result');
-    resultDiv.className = 'mt-4 p-4 rounded-md bg-red-100 border border-red-400 text-red-700';
-    resultDiv.textContent = 'テスト実行中にエラーが発生しました';
-    resultDiv.classList.remove('hidden');
+    showTestResultModal(false, 'テスト実行中にエラーが発生しました: ' + error.message, type);
   })
   .finally(() => {
     button.textContent = originalText;
@@ -237,26 +274,502 @@ function testSettings(type) {
   });
 }
 
+function showTestResultModal(success, message, testType) {
+  const modal = document.getElementById('test-result-modal');
+  const backdrop = document.getElementById('test-result-modal-backdrop');
+  const content = document.getElementById('test-result-modal-content');
+  
+  // アイコンと色を設定
+  const iconElement = document.getElementById('test-result-icon');
+  const iconContainer = document.getElementById('test-result-icon-container');
+  const titleElement = document.getElementById('test-result-title');
+  const messageElement = document.getElementById('test-result-message');
+  
+  if (success) {
+    iconContainer.className = 'w-10 h-10 bg-green-100 rounded-full flex items-center justify-center';
+    iconElement.className = 'w-6 h-6 text-green-600';
+    iconElement.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>';
+    titleElement.textContent = 'テスト成功';
+    titleElement.className = 'text-lg font-semibold text-green-900';
+  } else {
+    iconContainer.className = 'w-10 h-10 bg-red-100 rounded-full flex items-center justify-center';
+    iconElement.className = 'w-6 h-6 text-red-600';
+    iconElement.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
+    titleElement.textContent = 'テスト失敗';
+    titleElement.className = 'text-lg font-semibold text-red-900';
+  }
+  
+  const testTypeNames = {
+    'email': 'メール設定',
+    'captcha': 'CAPTCHA設定'
+  };
+  
+  document.getElementById('test-type-name').textContent = testTypeNames[testType] || testType + '設定';
+  messageElement.textContent = message;
+  
+  modal.classList.remove('hidden');
+  
+  setTimeout(() => {
+    backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    content.style.transform = 'scale(1)';
+    content.style.opacity = '1';
+  }, 10);
+}
+
+function closeTestResultModal() {
+  const modal = document.getElementById('test-result-modal');
+  const backdrop = document.getElementById('test-result-modal-backdrop');
+  const content = document.getElementById('test-result-modal-content');
+  
+  backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+  content.style.transform = 'scale(0.95)';
+  content.style.opacity = '0';
+  
+  setTimeout(() => {
+    modal.classList.add('hidden');
+  }, 300);
+}
+
+let currentResetCategory = '';
+
 function resetCategory(category) {
-  if (confirm(`${category}設定をデフォルト値にリセットしますか？`)) {
-    fetch(`<%= admin_settings_reset_path %>`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
-      },
-      body: JSON.stringify({ category: category })
-    })
-    .then(response => {
-      if (response.ok) {
-        window.location.reload();
-      } else {
-        alert('リセット中にエラーが発生しました');
-      }
-    })
-    .catch(error => {
-      alert('リセット中にエラーが発生しました');
-    });
+  currentResetCategory = category;
+  document.getElementById('reset-category-name').textContent = getCategoryDisplayName(category) + '設定';
+  showResetModal();
+}
+
+function getCategoryDisplayName(category) {
+  const names = {
+    'shlink': 'Shlink API',
+    'captcha': 'CAPTCHA',
+    'rate_limit': 'レート制限',
+    'email': 'メール',
+    'performance': 'パフォーマンス',
+    'security': 'セキュリティ',
+    'system': 'システム'
+  };
+  return names[category] || category;
+}
+
+function showResetModal() {
+  const modal = document.getElementById('reset-confirmation-modal');
+  const backdrop = document.getElementById('reset-modal-backdrop');
+  const content = document.getElementById('reset-modal-content');
+  
+  // ボタンの状態を初期化
+  resetButtonState();
+  
+  modal.classList.remove('hidden');
+  
+  setTimeout(() => {
+    backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    content.style.transform = 'scale(1)';
+    content.style.opacity = '1';
+  }, 10);
+}
+
+function resetButtonState() {
+  const button = document.getElementById('confirm-reset-btn');
+  const buttonText = document.getElementById('reset-btn-text');
+  const spinner = document.getElementById('reset-btn-spinner');
+  
+  if (button && buttonText && spinner) {
+    button.disabled = false;
+    buttonText.textContent = 'リセット実行';
+    spinner.style.display = 'none';
+    spinner.classList.remove('animate-spin');
   }
 }
+
+function closeResetModal() {
+  const modal = document.getElementById('reset-confirmation-modal');
+  const backdrop = document.getElementById('reset-modal-backdrop');
+  const content = document.getElementById('reset-modal-content');
+  
+  backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+  content.style.transform = 'scale(0.95)';
+  content.style.opacity = '0';
+  
+  setTimeout(() => {
+    modal.classList.add('hidden');
+    currentResetCategory = '';
+  }, 300);
+}
+
+function confirmReset() {
+  if (!currentResetCategory) {
+    console.error('currentResetCategory is empty');
+    return;
+  }
+  
+  console.log('Resetting category:', currentResetCategory);
+  
+  const button = document.getElementById('confirm-reset-btn');
+  const buttonText = document.getElementById('reset-btn-text');
+  const spinner = document.getElementById('reset-btn-spinner');
+  
+  // ボタンを無効化してスピナー表示
+  button.disabled = true;
+  buttonText.textContent = 'リセット中...';
+  spinner.style.display = 'inline';
+  spinner.classList.add('animate-spin');
+  
+  // FormData を使用してパラメータを送信
+  const formData = new FormData();
+  formData.append('category', currentResetCategory);
+  
+  fetch(`<%= reset_admin_settings_path %>`, {
+    method: 'POST',
+    headers: {
+      'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+    },
+    body: formData
+  })
+  .then(response => {
+    console.log('Reset response status:', response.status);
+    if (response.ok) {
+      console.log('Reset successful, showing success message');
+      // 成功時は成功モーダルを表示
+      showResetSuccessModal();
+    } else {
+      response.text().then(text => {
+        console.error('Reset failed with response:', text);
+        alert('リセットに失敗しました。');
+      });
+    }
+  })
+  .catch(error => {
+    console.error('Reset error:', error);
+    alert('リセット中にエラーが発生しました。');
+  })
+  .finally(() => {
+    // ボタンを元に戻す（成功時はページリロードするのでこの処理は失敗時のみ実行される）
+    resetButtonState();
+  });
+}
+
+function showResetSuccessModal() {
+  // リセット確認モーダルを閉じる
+  closeResetModal();
+  
+  const categoryName = getCategoryDisplayName(currentResetCategory);
+  document.getElementById('success-category-name').textContent = categoryName + '設定';
+  
+  const modal = document.getElementById('reset-success-modal');
+  const backdrop = document.getElementById('success-modal-backdrop');
+  const content = document.getElementById('success-modal-content');
+  
+  modal.classList.remove('hidden');
+  
+  setTimeout(() => {
+    backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    content.style.transform = 'scale(1)';
+    content.style.opacity = '1';
+  }, 10);
+  
+  // 3秒後に自動的にページリロード
+  setTimeout(() => {
+    location.reload();
+  }, 3000);
+}
+
+function closeSuccessModal() {
+  const modal = document.getElementById('reset-success-modal');
+  modal.classList.add('hidden');
+  location.reload();
+}
 </script>
+
+<!-- Reset Confirmation Modal -->
+<div id="reset-confirmation-modal" class="fixed inset-0 z-50 hidden">
+  <!-- Backdrop -->
+  <div id="reset-modal-backdrop" 
+       class="fixed inset-0 bg-black transition-opacity duration-300" 
+       style="background-color: rgba(0, 0, 0, 0); transition: background-color 0.3s ease;"
+       onclick="closeResetModal()"></div>
+  
+  <!-- Modal Content -->
+  <div class="fixed inset-0 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300" 
+         id="reset-modal-content"
+         style="transform: scale(0.95); opacity: 0;">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-100">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+            <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900">設定のリセット</h3>
+        </div>
+        <button onclick="closeResetModal()" 
+                class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Body -->
+      <div class="p-6">
+        <div class="mb-4">
+          <p class="text-gray-600 mb-2">以下のカテゴリの設定をデフォルト値にリセットしようとしています：</p>
+          <div class="bg-gray-50 rounded-lg p-3 border">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                </svg>
+              </div>
+              <div>
+                <p id="reset-category-name" class="font-semibold text-gray-900"></p>
+                <p class="text-sm text-gray-500">すべての設定が初期値に戻されます</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
+          <div class="flex items-start space-x-3">
+            <svg class="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+            </svg>
+            <div>
+              <h4 class="text-sm font-medium text-orange-800 mb-1">注意事項</h4>
+              <p class="text-sm text-orange-700">この操作により、現在の設定値はすべて失われ、デフォルト値に置き換えられます。</p>
+            </div>
+          </div>
+        </div>
+        
+        <p class="text-gray-600">本当にリセットしてもよろしいですか？</p>
+      </div>
+      
+      <!-- Footer -->
+      <div class="flex items-center justify-end space-x-3 px-6 py-4 bg-gray-50 rounded-b-2xl">
+        <button onclick="closeResetModal()" 
+                class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium">
+          キャンセル
+        </button>
+        <button id="confirm-reset-btn" 
+                onclick="confirmReset()" 
+                class="px-6 py-2 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
+          <span id="reset-btn-text">リセット実行</span>
+          <svg id="reset-btn-spinner" class="w-4 h-4 ml-2" style="display: none;" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Test Result Modal -->
+<div id="test-result-modal" class="fixed inset-0 z-50 hidden">
+  <!-- Backdrop -->
+  <div id="test-result-modal-backdrop" 
+       class="fixed inset-0 bg-black transition-opacity duration-300" 
+       style="background-color: rgba(0, 0, 0, 0); transition: background-color 0.3s ease;"
+       onclick="closeTestResultModal()"></div>
+  
+  <!-- Modal Content -->
+  <div class="fixed inset-0 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300" 
+         id="test-result-modal-content"
+         style="transform: scale(0.95); opacity: 0;">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-100">
+        <div class="flex items-center space-x-3">
+          <div id="test-result-icon-container" class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+            <svg id="test-result-icon" class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+          <h3 id="test-result-title" class="text-lg font-semibold text-gray-900">テスト結果</h3>
+        </div>
+        <button onclick="closeTestResultModal()" 
+                class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Body -->
+      <div class="p-6">
+        <div class="mb-4">
+          <p class="text-gray-600 mb-2">テスト対象：</p>
+          <div class="bg-gray-50 rounded-lg p-3 border">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div>
+                <p id="test-type-name" class="font-semibold text-gray-900"></p>
+                <p class="text-sm text-gray-500">接続テスト結果</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-gray-50 border rounded-lg p-4 mb-4">
+          <h4 class="text-sm font-medium text-gray-800 mb-2">テスト結果詳細</h4>
+          <p id="test-result-message" class="text-sm text-gray-700 leading-relaxed"></p>
+        </div>
+      </div>
+      
+      <!-- Footer -->
+      <div class="flex items-center justify-end space-x-3 px-6 py-4 bg-gray-50 rounded-b-2xl">
+        <button onclick="closeTestResultModal()" 
+                class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200">
+          閉じる
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Validation Error Modal -->
+<div id="validation-modal" class="fixed inset-0 z-50 hidden">
+  <!-- Backdrop -->
+  <div id="validation-modal-backdrop" 
+       class="fixed inset-0 bg-black transition-opacity duration-300" 
+       style="background-color: rgba(0, 0, 0, 0); transition: background-color 0.3s ease;"
+       onclick="closeValidationModal()"></div>
+  
+  <!-- Modal Content -->
+  <div class="fixed inset-0 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300" 
+         id="validation-modal-content"
+         style="transform: scale(0.95); opacity: 0;">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-100">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-red-900">設定値エラー</h3>
+        </div>
+        <button onclick="closeValidationModal()" 
+                class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Body -->
+      <div class="p-6">
+        <div class="mb-4">
+          <p class="text-gray-600 mb-3">以下の設定値に問題があります：</p>
+          <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div id="validation-message" class="text-sm text-red-700 leading-relaxed"></div>
+          </div>
+        </div>
+        
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+          <div class="flex items-start space-x-3">
+            <svg class="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+            </svg>
+            <div>
+              <h4 class="text-sm font-medium text-yellow-800 mb-1">設定は保存されませんでした</h4>
+              <p class="text-sm text-yellow-700">上記のエラーを修正してから再度保存してください。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Footer -->
+      <div class="flex items-center justify-end space-x-3 px-6 py-4 bg-gray-50 rounded-b-2xl">
+        <button onclick="closeValidationModal()" 
+                class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors duration-200">
+          修正する
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reset Success Modal -->
+<div id="reset-success-modal" class="fixed inset-0 z-50 hidden">
+  <!-- Backdrop -->
+  <div id="success-modal-backdrop" 
+       class="fixed inset-0 bg-black transition-opacity duration-300" 
+       style="background-color: rgba(0, 0, 0, 0); transition: background-color 0.3s ease;"
+       onclick="closeSuccessModal()"></div>
+  
+  <!-- Modal Content -->
+  <div class="fixed inset-0 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300" 
+         id="success-modal-content"
+         style="transform: scale(0.95); opacity: 0;">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-100">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-green-900">リセット完了</h3>
+        </div>
+        <button onclick="closeSuccessModal()" 
+                class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Body -->
+      <div class="p-6">
+        <div class="mb-4">
+          <p class="text-gray-600 mb-3">以下の設定をデフォルト値にリセットしました：</p>
+          <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              <div>
+                <p id="success-category-name" class="font-semibold text-green-900"></p>
+                <p class="text-sm text-green-700">すべての設定が初期値に戻されました</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <div class="flex items-start space-x-3">
+            <svg class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+            </svg>
+            <div>
+              <h4 class="text-sm font-medium text-blue-800 mb-1">ページを再読み込みします</h4>
+              <p class="text-sm text-blue-700">3秒後に自動的にページが再読み込みされ、リセットした設定が反映されます。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Footer -->
+      <div class="flex items-center justify-end space-x-3 px-6 py-4 bg-gray-50 rounded-b-2xl">
+        <button onclick="closeSuccessModal()" 
+                class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors duration-200">
+          今すぐ再読み込み
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

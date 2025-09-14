@@ -12,8 +12,8 @@ RSpec.describe Users::RegistrationsController, type: :request do
         user: {
           name: 'Test User',
           email: 'newuser@example.com',
-          password: 'password123',
-          password_confirmation: 'password123'
+          password: 'Password123!',
+          password_confirmation: 'Password123!'
         }
       }
     end
@@ -96,7 +96,7 @@ RSpec.describe Users::RegistrationsController, type: :request do
           put user_registration_path, params: {
             user: {
               name: 'Updated Name',
-              current_password: 'password123'
+              current_password: 'Password123!'
             }
           }
 
@@ -110,9 +110,9 @@ RSpec.describe Users::RegistrationsController, type: :request do
         it 'パスワードを更新すること' do
           put user_registration_path, params: {
             user: {
-              password: 'newpassword123',
-              password_confirmation: 'newpassword123',
-              current_password: 'password123'
+              password: 'NewPassword123!',
+              password_confirmation: 'NewPassword123!',
+              current_password: 'Password123!'
             }
           }
 
@@ -172,8 +172,8 @@ RSpec.describe Users::RegistrationsController, type: :request do
         it 'パスワードを設定できること' do
           put user_registration_path, params: {
             user: {
-              password: 'newpassword123',
-              password_confirmation: 'newpassword123'
+              password: 'NewPassword123!',
+              password_confirmation: 'NewPassword123!'
             }
           }
 
@@ -193,7 +193,7 @@ RSpec.describe Users::RegistrationsController, type: :request do
         expect {
           delete user_registration_path, params: {
             user: {
-              current_password: 'password123'
+              current_password: 'Password123!'
             }
           }
         }.to change(User, :count).by(-1)

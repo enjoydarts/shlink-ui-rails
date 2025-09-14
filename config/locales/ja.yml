@@ -59,6 +59,31 @@ ja:
             password_confirmation:
               blank: "を入力してください"
               confirmation: "が一致しません"
+        system_setting:
+          attributes:
+            value:
+              invalid_email_adapter: "有効なメール送信方法を選択してください（Letter Opener、SMTP、MailerSend）"
+              invalid_email_address: "有効なメールアドレスを入力してください"
+              invalid_timezone: "有効なタイムゾーンではありません"
+              invalid_log_level: "無効なログレベルです（debug/info/warn/error/fatal）"
+              invalid_url: "有効なURL形式で入力してください"
+              invalid_https_url: "http://またはhttps://で始まる有効なURLを入力してください"
+              invalid_captcha_key: "正しいCloudflare Turnstile Keyを入力してください（20文字以上の英数字・ハイフン・アンダースコア）"
+              range_database_timeout: "1〜300秒の範囲で入力してください"
+              range_items_per_page: "1〜100の範囲で入力してください"
+              range_cache_ttl: "60〜86400秒の範囲で入力してください"
+              range_password_length: "6〜128文字の範囲で入力してください"
+              range_session_timeout: "1〜168時間の範囲で入力してください"
+              range_login_attempts: "1〜20回の範囲で入力してください"
+              range_lockout_time: "1〜1440分の範囲で入力してください"
+              range_api_requests: "1〜1000回/分の範囲で入力してください"
+              range_web_requests: "1〜1000回/分の範囲で入力してください"
+              range_url_creation: "1〜10000回/時の範囲で入力してください"
+              range_login_rate: "1〜100回/時の範囲で入力してください"
+              range_captcha_timeout: "5〜60秒の範囲で入力してください"
+              range_shlink_timeout: "5〜300秒の範囲で入力してください"
+              range_retry_attempts: "0〜10回の範囲で入力してください"
+              range_smtp_port: "1〜65535の範囲で入力してください"
     attributes:
       user:
         email: "メールアドレス"
@@ -68,6 +93,8 @@ ja:
         name: "お名前"
         role: "権限"
         remember_me: "ログイン状態を記憶する"
+      system_setting:
+        value: "設定値"
   errors:
     format: "%{attribute}%{message}"
     attributes:

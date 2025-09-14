@@ -17,10 +17,24 @@ services:
       timeout: 3s
       retries: 30
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
   web:
     build: .
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     ports:
       - "3000:3000"
@@ -29,6 +43,8 @@ services:
       - bundle:/usr/local/bundle
     tty: true
     stdin_open: true
+    environment:
+      - REDIS_URL=redis://redis:6379/0
 
   css:
     build: .
@@ -43,14 +59,19 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: bundle exec rake solid_queue:start
+    command: bundle exec solid_queue
     volumes:
       - ./:/app
       - bundle:/usr/local/bundle
     tty: true
     environment:
       - RAILS_ENV=development
+      - REDIS_URL=redis://redis:6379/0
+      - RAILS_LOG_LEVEL=debug
+      - SOLID_QUEUE_LOG_LEVEL=debug
+      - VERBOSE=true
 
 volumes:
   dbdata:
   bundle:
+  redis_data:

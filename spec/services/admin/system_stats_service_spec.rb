@@ -4,6 +4,12 @@ RSpec.describe Admin::SystemStatsService, type: :service do
   let(:service) { described_class.new }
 
   describe '#call' do
+    before do
+      # データベースをクリーンアップしてから必要なデータのみ作成
+      User.destroy_all
+      ShortUrl.destroy_all
+    end
+
     let!(:admin_user) { create(:user, role: 'admin') }
     let!(:normal_user) { create(:user, role: 'normal_user') }
     let!(:short_url) { create(:short_url, user: normal_user, visit_count: 10) }
@@ -45,6 +51,11 @@ RSpec.describe Admin::SystemStatsService, type: :service do
   end
 
   describe '#user_statistics' do
+    before do
+      # データベースをクリーンアップしてから必要なデータのみ作成
+      User.destroy_all
+    end
+
     let!(:users) { create_list(:user, 5, role: 'normal_user') }
     let!(:admin) { create(:user, role: 'admin') }
 
@@ -57,6 +68,12 @@ RSpec.describe Admin::SystemStatsService, type: :service do
   end
 
   describe '#short_url_statistics' do
+    before do
+      # データベースをクリーンアップしてから必要なデータのみ作成
+      User.destroy_all
+      ShortUrl.destroy_all
+    end
+
     let(:user) { create(:user) }
     let!(:short_urls) { create_list(:short_url, 3, user: user, visit_count: 5) }
 
@@ -116,6 +133,12 @@ RSpec.describe Admin::SystemStatsService, type: :service do
   end
 
   describe '#recent_short_urls' do
+    before do
+      # データベースをクリーンアップしてから必要なデータのみ作成
+      User.destroy_all
+      ShortUrl.destroy_all
+    end
+
     let(:user) { create(:user, name: 'Test User') }
 
     before do

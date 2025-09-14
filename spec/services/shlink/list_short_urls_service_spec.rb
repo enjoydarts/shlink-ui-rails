@@ -1,13 +1,13 @@
 require 'rails_helper'
 
 RSpec.describe Shlink::ListShortUrlsService do
-  let(:service) { described_class.new }
+  let(:service) { described_class.new(base_url: base_url, api_key: api_key) }
   let(:base_url) { "https://s.test" }
   let(:api_key) { "test_api_key" }
 
   before do
-    allow(Settings.shlink).to receive(:base_url).and_return(base_url)
-    allow(Settings.shlink).to receive(:api_key).and_return(api_key)
+    # performance.items_per_pageの設定も追加
+    allow(SystemSetting).to receive(:get).with("performance.items_per_page", 20).and_return(20)
   end
 
   describe "#call" do

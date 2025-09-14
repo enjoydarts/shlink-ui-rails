@@ -10,8 +10,19 @@ RSpec.describe MailAdapter::MailersendAdapter do
     # Mailersendクラスとモジュールをスタブ
     stub_const('::Mailersend', Module.new)
     stub_const('::Mailersend::Error', Class.new(StandardError))
+    mailersend_client_class = Class.new do
+      def initialize(api_key)
+        @api_key = api_key
+      end
+    end
+    stub_const('::Mailersend::Client', mailersend_client_class)
     mailersend_email_class = Class.new do
       attr_accessor :api_token
+
+      def initialize(client)
+        @client = client
+      end
+
       def send_email(payload)
         # テスト用のデフォルト実装
       end
@@ -19,6 +30,16 @@ RSpec.describe MailAdapter::MailersendAdapter do
     stub_const('::Mailersend::Email', mailersend_email_class)
     allow(::Mailersend::Email).to receive(:new).and_return(mailersend_client)
     allow(mailersend_client).to receive(:api_token=)
+
+    # MailerSend v3 API対応のメソッドをモック
+    allow(mailersend_client).to receive(:add_from)
+    allow(mailersend_client).to receive(:add_recipients)
+    allow(mailersend_client).to receive(:add_subject)
+    allow(mailersend_client).to receive(:add_html)
+    allow(mailersend_client).to receive(:add_text)
+    allow(mailersend_client).to receive(:add_cc)
+    allow(mailersend_client).to receive(:add_bcc)
+    allow(mailersend_client).to receive(:send)
   end
 
   let(:adapter) { described_class.new }
@@ -41,7 +62,7 @@ RSpec.describe MailAdapter::MailersendAdapter do
   end
 
   describe '#deliver_mail' do
-    let(:successful_response) { instance_double('Response', success?: true) }
+    let(:successful_response) { instance_double('Response') }
 
     before do
       allow(mail_object).to receive(:message).and_return(mail_message)
@@ -52,6 +73,8 @@ RSpec.describe MailAdapter::MailersendAdapter do
       allow(mail_message).to receive(:multipart?).and_return(false)
       allow(mail_message).to receive(:content_type).and_return('text/html')
       allow(mail_message).to receive(:body).and_return(instance_double('Mail::Body', decoded: '<p>テストメッセージ</p>'))
+      allow(mail_message).to receive(:html_part).and_return(nil)
+      allow(mail_message).to receive(:text_part).and_return(nil)
 
       allow(::Mailersend::Email).to receive(:new).and_return(mailersend_client)
       allow(mailersend_client).to receive(:api_token=)
@@ -73,7 +96,22 @@ RSpec.describe MailAdapter::MailersendAdapter do
 
     context 'メール送信が成功する場合' do
       before do
-        allow(mailersend_client).to receive(:send_email).and_return(successful_response)
+        allow(mailersend_client).to receive(:send).and_return(successful_response)
+
+        # メールオブジェクトのモック設定
+        mail_message = instance_double('Mail::Message')
+        allow(mail_message).to receive(:subject).and_return('Test Subject')
+        allow(mail_message).to receive(:to).and_return([ 'test@example.com' ])
+        allow(mail_message).to receive(:cc).and_return(nil)
+        allow(mail_message).to receive(:bcc).and_return(nil)
+        allow(mail_message).to receive(:html_part).and_return(nil)
+        allow(mail_message).to receive(:text_part).and_return(nil)
+        allow(mail_message).to receive(:multipart?).and_return(false)
+
+        body_double = double('body')
+        allow(body_double).to receive(:decoded).and_return('Test message body')
+        allow(mail_message).to receive(:body).and_return(body_double)
+        allow(mail_object).to receive(:message).and_return(mail_message)
       end
 
       it 'trueを返すこと' do
@@ -91,28 +129,21 @@ RSpec.describe MailAdapter::MailersendAdapter do
         adapter.deliver_mail(mail_object)
       end
 
-      it '正しいペイロードでAPIを呼び出すこと' do
-        expected_payload = {
-          'from' => {
-            'email' => 'test@example.com',
-            'name' => 'Test App'
-          },
-          'to' => [ { 'email' => 'recipient@example.com' } ],
-          'subject' => 'テストメール',
-          'html' => '<p>テストメッセージ</p>',
-          'text' => 'テストメッセージ'
-        }
-
-        expect(mailersend_client).to receive(:send_email).with(expected_payload)
+      it '正しいメソッドでAPIを呼び出すこと' do
+        expect(mailersend_client).to receive(:add_from).with("email" => "test@example.com", "name" => "Test App")
+        expect(mailersend_client).to receive(:add_recipients).with("email" => "test@example.com")
+        expect(mailersend_client).to receive(:add_subject).with("Test Subject")
+        expect(mailersend_client).to receive(:add_text).with("Test message body")
+        expect(mailersend_client).to receive(:send)
         adapter.deliver_mail(mail_object)
       end
     end
 
     context 'MailerSend APIが失敗する場合' do
-      let(:failed_response) { instance_double('Response', success?: false, message: 'API Error') }
+      let(:failed_response) { instance_double('Response', message: 'API Error') }
 
       before do
-        allow(mailersend_client).to receive(:send_email).and_return(failed_response)
+        allow(mailersend_client).to receive(:send).and_return(failed_response)
         allow(Rails.logger).to receive(:error)
       end
 
@@ -128,7 +159,7 @@ RSpec.describe MailAdapter::MailersendAdapter do
       let(:mailersend_error) { ::Mailersend::Error.new('API connection failed') }
 
       before do
-        allow(mailersend_client).to receive(:send_email).and_raise(mailersend_error)
+        allow(mailersend_client).to receive(:send).and_raise(mailersend_error)
         allow(Rails.logger).to receive(:error)
       end
 
@@ -144,7 +175,7 @@ RSpec.describe MailAdapter::MailersendAdapter do
       let(:unexpected_error) { StandardError.new('Unexpected error') }
 
       before do
-        allow(mailersend_client).to receive(:send_email).and_raise(unexpected_error)
+        allow(mailersend_client).to receive(:send).and_raise(unexpected_error)
         allow(Rails.logger).to receive(:error)
       end
 
@@ -163,16 +194,13 @@ RSpec.describe MailAdapter::MailersendAdapter do
       before do
         allow(mail_message).to receive(:multipart?).and_return(true)
         allow(mail_message).to receive(:parts).and_return([ html_part, text_part ])
-        allow(mailersend_client).to receive(:send_email).and_return(successful_response)
+        allow(mailersend_client).to receive(:send).and_return(successful_response)
       end
 
       it 'HTMLとテキストの両方のコンテンツを含むこと' do
-        expected_payload = hash_including(
-          'html' => '<p>HTML content</p>',
-          'text' => 'Text content'
-        )
-
-        expect(mailersend_client).to receive(:send_email).with(expected_payload)
+        expect(mailersend_client).to receive(:add_html).with('<p>HTML content</p>')
+        expect(mailersend_client).to receive(:add_text).with('Text content')
+        expect(mailersend_client).to receive(:send)
         adapter.deliver_mail(mail_object)
       end
     end
@@ -181,16 +209,13 @@ RSpec.describe MailAdapter::MailersendAdapter do
       before do
         allow(mail_message).to receive(:cc).and_return([ 'cc@example.com' ])
         allow(mail_message).to receive(:bcc).and_return([ 'bcc@example.com' ])
-        allow(mailersend_client).to receive(:send_email).and_return(successful_response)
+        allow(mailersend_client).to receive(:send).and_return(successful_response)
       end
 
       it 'CC/BCCを含むペイロードを送信すること' do
-        expected_payload = hash_including(
-          'cc' => [ { 'email' => 'cc@example.com' } ],
-          'bcc' => [ { 'email' => 'bcc@example.com' } ]
-        )
-
-        expect(mailersend_client).to receive(:send_email).with(expected_payload)
+        expect(mailersend_client).to receive(:add_cc).with("email" => "cc@example.com")
+        expect(mailersend_client).to receive(:add_bcc).with("email" => "bcc@example.com")
+        expect(mailersend_client).to receive(:send)
         adapter.deliver_mail(mail_object)
       end
     end
@@ -234,13 +259,10 @@ RSpec.describe MailAdapter::MailersendAdapter do
 
     context '送信者メールアドレスが空の場合' do
       before do
-        allow(Settings).to receive(:mailersend).and_return(
-          OpenStruct.new(
-            api_key: 'test-api-key',
-            from_email: '',
-            from_name: 'Test App'
-          )
-        )
+        allow(SystemSetting).to receive(:get).with("email.adapter", "smtp").and_return('mailersend')
+        allow(SystemSetting).to receive(:get).with("email.mailersend_api_key", "").and_return('test-api-key')
+        allow(SystemSetting).to receive(:get).with("email.from_address", "noreply@example.com").and_return('')
+        allow(SystemSetting).to receive(:get).with("system.site_name", "Shlink-UI-Rails").and_return('Test App')
       end
 
       it 'falseを返すこと' do
@@ -251,7 +273,7 @@ RSpec.describe MailAdapter::MailersendAdapter do
 
     context '設定の取得でエラーが発生した場合' do
       before do
-        allow(Settings).to receive(:mailersend).and_raise(StandardError.new('設定エラー'))
+        allow(SystemSetting).to receive(:get).with("email.mailersend_api_key", "").and_raise(StandardError.new('設定エラー'))
         allow(Rails.logger).to receive(:error)
       end
 

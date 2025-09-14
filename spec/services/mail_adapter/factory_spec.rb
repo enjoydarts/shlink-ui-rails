@@ -6,16 +6,27 @@ RSpec.describe MailAdapter::Factory do
     stub_const('::Mailersend', Module.new)
     stub_const('::Mailersend::Error', Class.new(StandardError))
     mailersend_email_class = Class.new do
-      attr_accessor :api_token
+      def initialize(api_key = nil)
+        @api_key = api_key
+      end
+
+      attr_accessor :api_key
+
       def send_email(payload)
         # テスト用のデフォルト実装
+        OpenStruct.new(success?: true, message: 'Test success')
       end
     end
     stub_const('::Mailersend::Email', mailersend_email_class)
   end
   describe '.create_adapter' do
     context '開発環境の場合' do
-      before { allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('development')) }
+      before do
+        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('development'))
+        # 開発環境でもSMTPアダプターを明示的に指定（テスト用）
+        allow(SystemSetting).to receive(:get).with("email.adapter", "letter_opener").and_return('smtp')
+        mock_smtp_settings
+      end
 
       it 'SMTPアダプタを返すこと' do
         adapter = described_class.create_adapter
@@ -24,7 +35,12 @@ RSpec.describe MailAdapter::Factory do
     end
 
     context 'テスト環境の場合' do
-      before { allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('test')) }
+      before do
+        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('test'))
+        # テスト環境でもSMTPアダプターを明示的に指定
+        allow(SystemSetting).to receive(:get).with("email.adapter", "smtp").and_return('smtp')
+        mock_smtp_settings
+      end
 
       it 'SMTPアダプタを返すこと' do
         adapter = described_class.create_adapter
@@ -93,6 +109,7 @@ RSpec.describe MailAdapter::Factory do
     context 'アダプタが利用できない場合' do
       before do
         allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('test'))
+        allow(SystemSetting).to receive(:get).with("email.adapter", "smtp").and_return('smtp')
         adapter_mock = instance_double(MailAdapter::SmtpAdapter)
         allow(MailAdapter::SmtpAdapter).to receive(:new).and_return(adapter_mock)
         allow(adapter_mock).to receive(:available?).and_return(false)
@@ -109,6 +126,7 @@ RSpec.describe MailAdapter::Factory do
     context 'アダプタの設定が不完全な場合' do
       before do
         allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('test'))
+        allow(SystemSetting).to receive(:get).with("email.adapter", "smtp").and_return('smtp')
         adapter_mock = instance_double(MailAdapter::SmtpAdapter)
         allow(MailAdapter::SmtpAdapter).to receive(:new).and_return(adapter_mock)
         allow(adapter_mock).to receive(:available?).and_return(true)
@@ -126,8 +144,9 @@ RSpec.describe MailAdapter::Factory do
     context '未対応のアダプタタイプの場合' do
       before do
         allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('production'))
-        stub_const('MailAdapter::Factory::SUPPORTED_ADAPTERS', [ 'smtp' ])
-        allow(Settings).to receive(:mail_delivery_method).and_return('mailersend')
+        # 無効なアダプタタイプを設定し、SMTPにフォールバックすることをテスト
+        allow(SystemSetting).to receive(:get).with("email.adapter", "smtp").and_return('unknown_adapter')
+        mock_smtp_settings  # フォールバック先SMTPの設定をモック
       end
 
       it 'SMTPアダプタにフォールバックすること' do

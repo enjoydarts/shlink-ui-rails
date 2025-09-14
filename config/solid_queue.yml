@@ -9,6 +9,14 @@ default: &default
 
 development:
   <<: *default
+  dispatchers:
+    - polling_interval: 2
+      batch_size: 50
+  workers:
+    - queues: "*"
+      threads: 2
+      processes: 2
+      polling_interval: 2
 
 test:
   <<: *default

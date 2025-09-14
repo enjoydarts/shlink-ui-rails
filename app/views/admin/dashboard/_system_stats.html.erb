@@ -1,0 +1,65 @@
+<!-- システム統計 -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+  <%= link_to admin_users_path, class: "card p-6 hover:shadow-lg transition-shadow cursor-pointer" do %>
+    <div class="flex items-center">
+      <div class="p-2 bg-blue-100 rounded-lg">
+        <span class="text-2xl">👤</span>
+      </div>
+      <div class="ml-4">
+        <h3 class="text-lg font-semibold text-gray-900">総ユーザー数</h3>
+        <p class="text-2xl font-bold text-blue-600"><%= @system_stats[:users][:total] %></p>
+        <p class="text-sm text-gray-500">
+          管理者: <%= @system_stats[:users][:admin] %> | 
+          一般: <%= @system_stats[:users][:normal] %>
+        </p>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="card p-6">
+    <div class="flex items-center">
+      <div class="p-2 bg-green-100 rounded-lg">
+        <span class="text-2xl">🔗</span>
+      </div>
+      <div class="ml-4">
+        <h3 class="text-lg font-semibold text-gray-900">短縮URL数</h3>
+        <p class="text-2xl font-bold text-green-600"><%= @system_stats[:short_urls][:total] %></p>
+        <p class="text-sm text-gray-500">
+          今週: +<%= @system_stats[:short_urls][:created_this_week] %>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card p-6">
+    <div class="flex items-center">
+      <div class="p-2 bg-purple-100 rounded-lg">
+        <span class="text-2xl">👁️</span>
+      </div>
+      <div class="ml-4">
+        <h3 class="text-lg font-semibold text-gray-900">総アクセス数</h3>
+        <p class="text-2xl font-bold text-purple-600"><%= @system_stats[:short_urls][:total_visits] %></p>
+        <p class="text-sm text-gray-500">
+          今週: +<%= @system_stats[:short_urls][:visits_this_week] %>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <%= link_to admin_settings_path, class: "card p-6 hover:shadow-lg transition-shadow cursor-pointer" do %>
+    <div class="flex items-center">
+      <div class="p-2 bg-yellow-100 rounded-lg">
+        <span class="text-2xl">🚀</span>
+      </div>
+      <div class="ml-4">
+        <h3 class="text-lg font-semibold text-gray-900">システム稼働</h3>
+        <p class="text-lg font-bold text-yellow-600">
+          <%= @system_stats[:system][:uptime][:formatted] %>
+        </p>
+        <p class="text-sm text-gray-500">
+          <%= @system_stats[:system][:version][:environment].upcase %>環境
+        </p>
+      </div>
+    </div>
+  <% end %>
+</div>

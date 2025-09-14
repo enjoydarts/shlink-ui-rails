@@ -60,14 +60,8 @@ Rails.application.routes.draw do
     end
   end
 
-  # Admin routes
+  # Admin routes (authentication handled in AdminController)
   namespace :admin do
-    # 管理者ログイン（通常のログインとは別ページ）
-    get "login", to: "sessions#new"
-    post "login", to: "sessions#create"
-    delete "logout", to: "sessions#destroy"
-
-    # 管理者認証が必要なルート（AdminControllerで認証チェック）
     get "dashboard", to: "dashboard#index"
     root "dashboard#index"
 
@@ -88,9 +82,25 @@ Rails.application.routes.draw do
         post :test
       end
     end
+
+    # ジョブ管理
+    resources :jobs, only: [ :index, :destroy ] do
+      member do
+        post :retry
+      end
+      collection do
+        post :retry_all
+        delete :clear_all
+      end
+    end
   end
 
   # Public pages
   get "home", to: "pages#home"
   root "pages#home"
+
+  # Easter egg: RFC 2324 - Hyper Text Coffee Pot Control Protocol
+  get "teapot", to: "pages#teapot"
+  get "coffee", to: "pages#teapot" # Coffee requests also redirect to teapot
+  get "brew", to: "pages#teapot"   # Brew requests also redirect to teapot
 end

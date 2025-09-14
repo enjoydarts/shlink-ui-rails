@@ -29,6 +29,7 @@ class Admin::ServerMonitorService
   def health_checks
     {
       database: database_health,
+      redis: redis_health,
       external_apis: external_api_health,
       background_jobs: background_job_health
     }
@@ -161,16 +162,23 @@ class Admin::ServerMonitorService
   end
 
   def database_connected?
-    ActiveRecord::Base.connection.active?
-  rescue StandardError
+    ActiveRecord::Base.connection_pool.with_connection do |connection|
+      connection.execute("SELECT 1")
+      true
+    end
+  rescue StandardError => e
+    Rails.logger.error "Database connection check failed: #{e.message}"
     false
   end
 
   def database_response_time
     start_time = Time.current
-    ActiveRecord::Base.connection.execute("SELECT 1")
+    ActiveRecord::Base.connection_pool.with_connection do |connection|
+      connection.execute("SELECT 1")
+    end
     ((Time.current - start_time) * 1000).round(2)
-  rescue StandardError
+  rescue StandardError => e
+    Rails.logger.error "Database response time check failed: #{e.message}"
     nil
   end
 
@@ -184,12 +192,89 @@ class Admin::ServerMonitorService
     nil
   end
 
-  def shlink_api_health
-    # TODO: Shlink API の健康状態をチェック
+  def redis_health
+    redis_url = ApplicationConfig.string("redis.url", Settings.redis&.url || "redis://redis:6379/0")
+    redis = Redis.new(url: redis_url, connect_timeout: 1, read_timeout: 1, write_timeout: 1)
+
+    start_time = Time.current
+    pong_response = redis.ping
+    response_time = ((Time.current - start_time) * 1000).round(2)
+
     {
-      status: "healthy",
+      connected: pong_response == "PONG",
+      response_time: response_time,
+      memory_usage: redis_memory_usage(redis),
+      status: pong_response == "PONG" ? "healthy" : "error"
+    }
+  rescue Redis::ConnectionError, Redis::TimeoutError, Redis::CannotConnectError => e
+    Rails.logger.error "Redis health check failed: #{e.message}"
+    { connected: false, status: "error", error: e.message }
+  rescue StandardError => e
+    Rails.logger.error "Redis health check error: #{e.message}"
+    { connected: false, status: "error", error: e.message }
+  ensure
+    redis&.close
+  end
+
+  def redis_memory_usage(redis)
+    info = redis.info("memory")
+    {
+      used: format_bytes(info["used_memory"].to_i),
+      peak: format_bytes(info["used_memory_peak"].to_i),
+      fragmentation_ratio: info["mem_fragmentation_ratio"].to_f.round(2)
+    }
+  rescue StandardError => e
+    Rails.logger.error "Redis memory info error: #{e.message}"
+    { error: "メモリ情報取得不可: #{e.message}" }
+  end
+
+  def shlink_api_health
+    return { status: "error", error: "Shlink設定が不完全です", last_check: Time.current } unless shlink_configured?
+
+    start_time = Time.current
+
+    # Shlink API health endpointをチェック
+    response = Faraday.get("#{Settings.shlink.base_url}/rest/health") do |req|
+      req.headers["X-Api-Key"] = Settings.shlink.api_key
+      req.options.timeout = 5
+    end
+
+    response_time = ((Time.current - start_time) * 1000).round(2)
+
+    if response.success?
+      body = JSON.parse(response.body) rescue {}
+      {
+        status: body["status"] == "pass" ? "healthy" : "warning",
+        response_time: response_time,
+        version: body.dig("version"),
+        last_check: Time.current
+      }
+    else
+      {
+        status: "error",
+        error: "HTTP #{response.status}",
+        response_time: response_time,
+        last_check: Time.current
+      }
+    end
+  rescue Faraday::ConnectionFailed, Faraday::TimeoutError => e
+    Rails.logger.error "Shlink API connection failed: #{e.message}"
+    {
+      status: "error",
+      error: "接続失敗: #{e.message}",
       last_check: Time.current
     }
+  rescue StandardError => e
+    Rails.logger.error "Shlink API health check error: #{e.message}"
+    {
+      status: "error",
+      error: "チェック失敗: #{e.message}",
+      last_check: Time.current
+    }
+  end
+
+  def shlink_configured?
+    Settings.shlink.base_url.present? && Settings.shlink.api_key.present?
   end
 
   def cpu_core_count

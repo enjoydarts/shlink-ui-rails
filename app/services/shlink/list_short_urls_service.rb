@@ -1,12 +1,14 @@
 module Shlink
   class ListShortUrlsService < BaseService
-    def call(page: 1, items_per_page: 100, search_term: nil, tags: nil, order_by: nil, start_date: nil, end_date: nil)
+    def call(page: 1, items_per_page: nil, search_term: nil, tags: nil, order_by: nil, start_date: nil, end_date: nil)
+      items_per_page ||= SystemSetting.get("performance.items_per_page", 20)
       params = build_params(page, items_per_page, search_term, tags, order_by, start_date, end_date)
       response = conn.get("/rest/v3/short-urls", params, api_headers)
       handle_response(response)
     end
 
-    def call!(page: 1, items_per_page: 100, search_term: nil, tags: nil, order_by: nil, start_date: nil, end_date: nil)
+    def call!(page: 1, items_per_page: nil, search_term: nil, tags: nil, order_by: nil, start_date: nil, end_date: nil)
+      items_per_page ||= SystemSetting.get("performance.items_per_page", 20)
       call(page: page, items_per_page: items_per_page, search_term: search_term, tags: tags, order_by: order_by, start_date: start_date, end_date: end_date)
     rescue => e
       raise e

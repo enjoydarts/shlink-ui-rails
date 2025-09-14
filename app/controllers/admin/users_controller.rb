@@ -2,13 +2,18 @@ class Admin::UsersController < Admin::AdminController
   before_action :set_user, only: [ :show, :update, :destroy ]
 
   def index
-    @users = User.includes(:short_urls)
-                 .order(:created_at)
+    @users = User.order(:created_at)
                  .page(params[:page])
                  .per(20)
 
     # 検索・フィルタリング
     @users = filter_users(@users) if params[:search].present? || params[:role].present?
+
+    # 総アクセス数を事前計算
+    user_ids = @users.map(&:id)
+    @user_visit_counts = ShortUrl.where(user_id: user_ids)
+                                 .group(:user_id)
+                                 .sum(:visit_count)
 
     @total_users = User.count
     @admin_users = User.where(role: "admin").count
@@ -53,7 +58,7 @@ class Admin::UsersController < Admin::AdminController
   end
 
   def filter_users(users)
-    users = users.where("name ILIKE ? OR email ILIKE ?", "%#{params[:search]}%", "%#{params[:search]}%") if params[:search].present?
+    users = users.where("name LIKE ? OR email LIKE ?", "%#{params[:search]}%", "%#{params[:search]}%") if params[:search].present?
     users = users.where(role: params[:role]) if params[:role].present?
     users
   end

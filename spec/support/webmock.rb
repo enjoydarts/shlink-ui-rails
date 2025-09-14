@@ -20,5 +20,80 @@ RSpec.configure do |config|
         name: "Test User",
         picture: "https://example.com/avatar.jpg"
       }.to_json, headers: { 'Content-Type' => 'application/json' })
+
+    # Shlink API health check (used in admin dashboard)
+    WebMock.stub_request(:get, "#{Settings.shlink.base_url}/rest/health")
+      .with(headers: { "X-Api-Key" => Settings.shlink.api_key })
+      .to_return(
+        status: 200,
+        body: { status: "pass", version: "3.0.0" }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    # CAPTCHA verification requests
+    WebMock.stub_request(:post, "https://challenges.cloudflare.com/turnstile/v0/siteverify")
+      .to_return(
+        status: 200,
+        body: { success: true }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    # Shlink API short URLs listing
+    WebMock.stub_request(:get, /#{Regexp.escape(Settings.shlink.base_url)}\/rest\/v\d+\/short-urls/)
+      .with(headers: { "X-Api-Key" => Settings.shlink.api_key })
+      .to_return(
+        status: 200,
+        body: {
+          shortUrls: {
+            data: [],
+            pagination: {
+              currentPage: 1,
+              pagesCount: 1,
+              itemsPerPage: 10,
+              itemsInCurrentPage: 0,
+              totalItems: 0
+            }
+          }
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    # Shlink API short URL creation
+    WebMock.stub_request(:post, "#{Settings.shlink.base_url}/rest/v3/short-urls")
+      .with(headers: { "X-Api-Key" => Settings.shlink.api_key })
+      .to_return(
+        status: 200,
+        body: {
+          shortCode: "abc123",
+          shortUrl: "https://s.test/abc123",
+          longUrl: "https://example.com"
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    # Shlink API short URL deletion
+    WebMock.stub_request(:delete, /#{Regexp.escape(Settings.shlink.base_url)}\/rest\/v\d+\/short-urls\//)
+      .with(headers: { "X-Api-Key" => Settings.shlink.api_key })
+      .to_return(status: 204)
+
+    # Shlink API individual short URL stats
+    WebMock.stub_request(:get, /#{Regexp.escape(Settings.shlink.base_url)}\/rest\/v\d+\/short-urls\/[^\/]+\/visits/)
+      .with(headers: { "X-Api-Key" => Settings.shlink.api_key })
+      .to_return(
+        status: 200,
+        body: {
+          visits: {
+            data: [],
+            pagination: {
+              currentPage: 1,
+              pagesCount: 1,
+              itemsPerPage: 50,
+              itemsInCurrentPage: 0,
+              totalItems: 0
+            }
+          }
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
   end
 end

@@ -9,9 +9,9 @@ RSpec.describe Admin::AdminController, type: :controller do
 
   describe '管理者認証' do
     context 'ログインしていない場合' do
-      it '管理者ログインページにリダイレクトすること' do
+      it 'ユーザーログインページにリダイレクトすること' do
         get :index
-        expect(response).to redirect_to(admin_login_path)
+        expect(response).to redirect_to(new_user_session_path)
       end
     end
 
@@ -19,12 +19,17 @@ RSpec.describe Admin::AdminController, type: :controller do
       let(:user) { create(:user, role: 'normal_user') }
 
       before do
-        sign_in user
+        sign_in user, scope: :user
       end
 
-      it '管理者ログインページにリダイレクトすること' do
+      it 'ルートページにリダイレクトすること' do
         get :index
-        expect(response).to redirect_to(admin_login_path)
+        expect(response).to redirect_to(root_path)
+      end
+
+      it '管理者権限エラーメッセージが表示されること' do
+        get :index
+        expect(flash[:alert]).to eq('管理者権限が必要です。')
       end
     end
 
@@ -32,7 +37,7 @@ RSpec.describe Admin::AdminController, type: :controller do
       let(:admin) { create(:user, role: 'admin') }
 
       before do
-        sign_in admin
+        sign_in admin, scope: :user
       end
 
       it 'アクセスが許可されること' do

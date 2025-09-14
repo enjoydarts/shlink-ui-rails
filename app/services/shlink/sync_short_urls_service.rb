@@ -66,7 +66,7 @@ module Shlink
       page = 1
 
       loop do
-        response = list_service.call(page: page, items_per_page: 100)
+        response = list_service.call(page: page, items_per_page: SystemSetting.get("performance.items_per_page", 20))
         short_urls_data = response["shortUrls"]["data"]
 
         break if short_urls_data.empty?
@@ -99,7 +99,7 @@ module Shlink
       found_url_data = nil
 
       loop do
-        response = list_service.call(page: page, items_per_page: 100)
+        response = list_service.call(page: page, items_per_page: SystemSetting.get("performance.items_per_page", 20))
         short_urls_data = response["shortUrls"]["data"]
 
         break if short_urls_data.empty?

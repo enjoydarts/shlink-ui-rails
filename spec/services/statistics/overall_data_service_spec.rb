@@ -4,6 +4,32 @@ RSpec.describe Statistics::OverallDataService, type: :service do
   let(:user) { create(:user) }
   let(:service) { described_class.new(user) }
 
+  before do
+    # SystemSetting基本モック設定
+    allow(SystemSetting).to receive(:get).and_call_original
+    allow(SystemSetting).to receive(:get).with("shlink.base_url", nil).and_return("https://test.example.com")
+    allow(SystemSetting).to receive(:get).with("shlink.api_key", nil).and_return("test-api-key")
+    allow(SystemSetting).to receive(:get).with("performance.items_per_page", 20).and_return(20)
+    allow(SystemSetting).to receive(:get).with('system.maintenance_mode', false).and_return(false)
+
+    # ApplicationConfig基本モック設定
+    allow(ApplicationConfig).to receive(:string).and_call_original
+    allow(ApplicationConfig).to receive(:string).with('shlink.base_url', anything).and_return("https://test.example.com")
+    allow(ApplicationConfig).to receive(:string).with('shlink.api_key', anything).and_return("test-api-key")
+    allow(ApplicationConfig).to receive(:string).with('redis.url', anything).and_return("redis://redis:6379/0")
+    allow(ApplicationConfig).to receive(:number).and_call_original
+    allow(ApplicationConfig).to receive(:number).with('shlink.timeout', anything).and_return(30)
+    allow(ApplicationConfig).to receive(:number).with('redis.timeout', anything).and_return(5)
+
+    # WebMockスタブを追加
+    stub_request(:get, %r{https://test\.example\.com/rest/v3/short-urls/.+/visits})
+      .to_return(
+        status: 200,
+        body: { visits: { data: [] } }.to_json,
+        headers: { 'Content-Type' => 'application/json' }
+      )
+  end
+
   describe '#call' do
     let(:period) { '30d' }
 

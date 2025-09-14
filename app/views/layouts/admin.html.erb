@@ -60,10 +60,19 @@
             <span class="text-white text-sm">
               <%= current_user.display_name %>さん (管理者)
             </span>
-            <%= link_to "サイトに戻る", root_path, class: "text-white hover:text-gray-200 text-sm" %>
-            <%= link_to "ログアウト", admin_logout_path, method: :delete, 
-                class: "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm",
-                data: { confirm: "ログアウトしますか？" } %>
+            <%= link_to root_path, 
+                class: "bg-white/10 hover:bg-white/20 backdrop-blur text-white px-4 py-2 rounded-lg text-sm font-medium border border-white/20 hover:border-white/30 transition-all duration-200 flex items-center space-x-2 shadow-sm hover:shadow-md" do %>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+              <span>サイトに戻る</span>
+            <% end %>
+            <%= link_to "ログアウト", destroy_user_session_path,
+                class: "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200",
+                data: { 
+                  confirm: "ログアウトしますか？",
+                  turbo_method: :delete
+                } %>
           </div>
         </div>
       </div>
@@ -89,6 +98,12 @@
             <%= link_to admin_settings_path, 
                 class: "flex items-center px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 #{'bg-blue-100 text-blue-700' if current_page?(admin_settings_path)}" do %>
               ⚙️ システム設定
+            <% end %>
+          </li>
+          <li>
+            <%= link_to admin_jobs_path, 
+                class: "flex items-center px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 #{'bg-blue-100 text-blue-700' if current_page?(admin_jobs_path) || controller_name == 'jobs'}" do %>
+              🔄 ジョブ管理
             <% end %>
           </li>
         </ul>
@@ -121,5 +136,8 @@
         © <%= Date.current.year %> Shlink UI Rails - 管理者パネル
       </div>
     </footer>
+
+    <!-- 確認モーダル -->
+    <%= render 'shared/confirmation_modal' %>
   </body>
 </html>

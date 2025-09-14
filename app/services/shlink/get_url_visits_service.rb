@@ -1,12 +1,14 @@
 module Shlink
   class GetUrlVisitsService < BaseService
-    def call(short_code, start_date: nil, end_date: nil, page: 1, items_per_page: 5000)
+    def call(short_code, start_date: nil, end_date: nil, page: 1, items_per_page: nil)
+      items_per_page ||= SystemSetting.get("performance.items_per_page", 20) * 10
       params = build_params(start_date, end_date, page, items_per_page)
       response = conn.get("/rest/v3/short-urls/#{short_code}/visits", params, api_headers)
       handle_response(response)
     end
 
-    def call!(short_code, start_date: nil, end_date: nil, page: 1, items_per_page: 5000)
+    def call!(short_code, start_date: nil, end_date: nil, page: 1, items_per_page: nil)
+      items_per_page ||= SystemSetting.get("performance.items_per_page", 20) * 10
       call(short_code, start_date: start_date, end_date: end_date, page: page, items_per_page: items_per_page)
     rescue => e
       raise e

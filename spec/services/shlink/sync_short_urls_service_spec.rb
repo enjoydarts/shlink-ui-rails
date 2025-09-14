@@ -4,6 +4,13 @@ RSpec.describe Shlink::SyncShortUrlsService do
   let(:user) { create(:user) }
   let(:service) { described_class.new(user) }
 
+  before do
+    # SystemSettingのモック設定（包括的なモックでデフォルト値を返す）
+    allow(SystemSetting).to receive(:get).and_call_original
+    allow(SystemSetting).to receive(:get).with("performance.items_per_page", 20).and_return(100)
+    allow(SystemSetting).to receive(:get).with("security.require_strong_password", true).and_return(false)
+  end
+
   describe "#call" do
     let(:mock_list_service) { instance_double(Shlink::ListShortUrlsService) }
     let(:short_urls_data) do

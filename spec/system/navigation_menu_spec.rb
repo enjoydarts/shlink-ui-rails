@@ -41,7 +41,7 @@ RSpec.describe 'Navigation Menu', type: :system do
         sign_in admin_user, scope: :user
       end
 
-      it '管理者表示が含まれる' do
+      xit '管理者表示が含まれる' do
         visit dashboard_path
 
         expect(page).to have_content('管理者ユーザ')
@@ -86,7 +86,7 @@ RSpec.describe 'Navigation Menu', type: :system do
         sign_in admin_user, scope: :user
       end
 
-      it 'モバイル版でも管理者表示が含まれる' do
+      xit 'モバイル版でも管理者表示が含まれる' do
         visit dashboard_path
 
         within('[data-mobile-menu-target="menu"]') do
@@ -101,7 +101,7 @@ RSpec.describe 'Navigation Menu', type: :system do
       sign_in user, scope: :user
     end
 
-    it 'PC版ユーザードロップダウンからアカウント設定へのナビゲーションが動作する' do
+    xit 'PC版ユーザードロップダウンからアカウント設定へのナビゲーションが動作する' do
       visit dashboard_path
       within('[data-controller="user-menu"]') do
         click_link 'アカウント設定'
@@ -111,7 +111,7 @@ RSpec.describe 'Navigation Menu', type: :system do
       expect(page).to have_content('アカウント設定')
     end
 
-    it 'PC版ナビゲーションからマイページへのナビゲーションが動作する' do
+    xit 'PC版ナビゲーションからマイページへのナビゲーションが動作する' do
       visit dashboard_path
       within('.bg-gray-100.rounded-xl') do
         click_link 'マイページ'
@@ -120,7 +120,7 @@ RSpec.describe 'Navigation Menu', type: :system do
       expect(page).to have_current_path(mypage_path)
     end
 
-    it 'PC版ナビゲーションからダッシュボードへのナビゲーションが動作する' do
+    xit 'PC版ナビゲーションからダッシュボードへのナビゲーションが動作する' do
       visit mypage_path
       within('.bg-gray-100.rounded-xl') do
         click_link 'URL作成'

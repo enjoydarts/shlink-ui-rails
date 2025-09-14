@@ -141,10 +141,10 @@
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
               <div>
-                <%= user.short_urls.count %>個
+                <%= user.short_urls_count %>個
               </div>
               <div>
-                総アクセス: <%= user.short_urls.sum(:visit_count) %>回
+                総アクセス: <%= @user_visit_counts[user.id] || 0 %>回
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -156,12 +156,10 @@
                     class: "text-blue-600 hover:text-blue-900" %>
                 
                 <% if user != current_user %>
-                  <%= link_to "削除", admin_user_path(user), method: :delete,
-                      class: "text-red-600 hover:text-red-900",
-                      data: { 
-                        confirm: "本当にユーザー「#{user.display_name}」を削除しますか？この操作は取り消せません。",
-                        turbo_method: :delete
-                      } %>
+                  <button onclick="confirmUserDeletion(<%= user.id %>, '<%= j(user.display_name) %>')"
+                          class="text-red-600 hover:text-red-900">
+                    削除
+                  </button>
                 <% end %>
               </div>
             </td>
@@ -178,3 +176,35 @@
     <%= paginate @users %>
   </div>
 <% end %>
+
+<script>
+function confirmUserDeletion(userId, userName) {
+  window.ConfirmationModal.show({
+    title: 'ユーザーの削除',
+    message: `本当にユーザー「${userName}」を削除しますか？この操作は取り消せません。`,
+    confirmText: '削除する',
+    confirmClass: 'bg-red-600 hover:bg-red-700',
+    onConfirm: () => {
+      // フォームを作成してDELETEリクエストを送信
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = `/admin/users/${userId}`;
+      
+      const methodInput = document.createElement('input');
+      methodInput.type = 'hidden';
+      methodInput.name = '_method';
+      methodInput.value = 'DELETE';
+      
+      const tokenInput = document.createElement('input');
+      tokenInput.type = 'hidden';
+      tokenInput.name = 'authenticity_token';
+      tokenInput.value = document.querySelector('meta[name="csrf-token"]').content;
+      
+      form.appendChild(methodInput);
+      form.appendChild(tokenInput);
+      document.body.appendChild(form);
+      form.submit();
+    }
+  });
+}
+</script>

@@ -28,8 +28,15 @@ Rails.application.configure do
   # Enable asset serving in development for error pages and letter_opener
   config.public_file_server.enabled = true
 
-  # Change to :null_store to avoid any caching.
-  config.cache_store = :memory_store
+  # Use Redis for caching in development (for rate limiting)
+  config.cache_store = :redis_cache_store, {
+    url: Settings.redis.url,
+    timeout: Settings.redis.timeout,
+    pool: {
+      size: Settings.redis.pool_size,
+      timeout: Settings.redis.pool_timeout
+    }
+  }
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
@@ -78,7 +85,7 @@ Rails.application.configure do
 
   # Devise and Mail settings for development
   config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
-  config.action_mailer.delivery_method = :letter_opener_web
+  # メール配信方法はシステム設定で動的に決定される（system_settings.rbで設定）
   config.action_mailer.perform_deliveries = true
 
   # Bullet configuration for N+1 query detection

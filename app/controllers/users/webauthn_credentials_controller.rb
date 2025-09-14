@@ -9,7 +9,7 @@ class Users::WebauthnCredentialsController < ApplicationController
     options = WebauthnService.registration_options(@user)
 
     # セッションにチャレンジを保存
-    session[:webauthn_registration_challenge] = options[:challenge]
+    session[:webauthn_registration_challenge] = options[:challenge] || options["challenge"]
 
     render json: options
   rescue StandardError => e

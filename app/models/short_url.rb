@@ -1,5 +1,5 @@
 class ShortUrl < ApplicationRecord
-  belongs_to :user
+  belongs_to :user, counter_cache: true
 
   validates :short_code, presence: true, uniqueness: { case_sensitive: false }
   validates :short_url, presence: true

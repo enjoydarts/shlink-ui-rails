@@ -1,5 +1,6 @@
 class Users::RegistrationsController < Devise::RegistrationsController
   before_action :authenticate_user!, except: [ :new, :create, :cancel ]
+  before_action :check_registration_enabled, only: [ :new, :create ]
   before_action :disable_turbo_cache, only: [ :new, :create ]
   before_action :configure_sign_up_params, only: [ :create ]
   before_action :configure_account_update_params, only: [ :update ]
@@ -86,6 +87,13 @@ class Users::RegistrationsController < Devise::RegistrationsController
   end
 
   private
+
+  # ユーザー登録が許可されているかチェック
+  def check_registration_enabled
+    unless SystemSetting.get("system.allow_user_registration", true)
+      redirect_to new_user_session_path, alert: "ユーザー登録は現在無効になっています。"
+    end
+  end
 
   def set_flash_message_for_update(resource, prev_unconfirmed_email)
     return unless is_flashing_format?

@@ -1,0 +1,54 @@
+<!-- バックグラウンドジョブ状況 -->
+<div class="card p-6">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-xl font-bold text-gray-900">⚙️ バックグラウンドジョブ</h2>
+    <div class="text-sm text-gray-500">
+      ジョブキューの現在の状況
+    </div>
+  </div>
+  
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="text-center p-4 bg-yellow-50 rounded-lg">
+      <div class="text-3xl font-bold text-yellow-600 mb-1">
+        <%= @system_stats[:system][:background_jobs][:pending] %>
+      </div>
+      <div class="text-sm font-medium text-yellow-800">待機中</div>
+      <div class="text-xs text-yellow-600 mt-1">Pending</div>
+    </div>
+    
+    <div class="text-center p-4 bg-blue-50 rounded-lg">
+      <div class="text-3xl font-bold text-blue-600 mb-1">
+        <%= @system_stats[:system][:background_jobs][:scheduled] %>
+      </div>
+      <div class="text-sm font-medium text-blue-800">予約済み</div>
+      <div class="text-xs text-blue-600 mt-1">Scheduled</div>
+    </div>
+    
+    <div class="text-center p-4 bg-green-50 rounded-lg">
+      <div class="text-3xl font-bold text-green-600 mb-1">
+        <%= @system_stats[:system][:background_jobs][:completed] %>
+      </div>
+      <div class="text-sm font-medium text-green-800">完了</div>
+      <div class="text-xs text-green-600 mt-1">Completed</div>
+    </div>
+    
+    <div class="text-center p-4 bg-red-50 rounded-lg">
+      <div class="text-3xl font-bold text-red-600 mb-1">
+        <%= @system_stats[:system][:background_jobs][:failed] %>
+      </div>
+      <div class="text-sm font-medium text-red-800">失敗</div>
+      <div class="text-xs text-red-600 mt-1">Failed</div>
+    </div>
+  </div>
+  
+  <% if @server_monitor[:health][:background_jobs][:failed_jobs] && @server_monitor[:health][:background_jobs][:failed_jobs] > 0 %>
+    <div class="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+      <div class="flex items-center">
+        <span class="text-orange-600 text-sm">⚠️</span>
+        <span class="text-sm text-orange-800 ml-2">
+          失敗したジョブが<strong><%= @server_monitor[:health][:background_jobs][:failed_jobs] %>件</strong>あります
+        </span>
+      </div>
+    </div>
+  <% end %>
+</div>

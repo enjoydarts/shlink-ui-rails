@@ -47,6 +47,9 @@ create_table "users", force: :cascade do |t|
   # WebAuthn (FIDO2) Authentication
   t.binary "webauthn_user_id"                          # WebAuthn用ユーザーID
 
+  # Counter cache for short_urls association
+  t.integer "short_urls_count", default: 0, null: false
+
   t.timestamps null: false
 end
 
