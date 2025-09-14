@@ -55,7 +55,11 @@ class Admin::UsersController < Admin::AdminController
 
   def user_params
     # 権限昇格対策：roleパラメータは明示的にスーパー管理者のみ変更可能
-    permitted_params = { name: params[:user][:name], email: params[:user][:email] }
+    permitted_params = {}
+
+    # 基本パラメータの安全な抽出（空値も含める）
+    permitted_params[:name] = params[:user][:name] if params[:user].key?(:name)
+    permitted_params[:email] = params[:user][:email] if params[:user].key?(:email)
 
     # 管理者のみroleパラメータを追加で許可
     if current_user&.admin? && params[:user][:role].present?
