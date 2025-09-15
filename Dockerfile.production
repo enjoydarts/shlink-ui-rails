@@ -73,20 +73,13 @@ ENV RAILS_ENV="production" \
 # Bootsnap使用のためのtmpディレクトリ作成
 RUN mkdir -p tmp/cache
 
-# ビルド時の環境変数を受け取る
-ARG DATABASE_HOST=localhost
-ARG DATABASE_PORT=3306
-ARG DATABASE_NAME=dummy
-ARG DATABASE_USER=dummy
-ARG DATABASE_PASSWORD=dummy
-
-# アセットをプリコンパイル（DATABASE_URL不要でプリコンパイル可能にする）
+# アセットをプリコンパイル（固定のダミー値でデータベース接続を回避）
 RUN SECRET_KEY_BASE_DUMMY=1 \
-    DATABASE_HOST=${DATABASE_HOST:-localhost} \
-    DATABASE_PORT=${DATABASE_PORT:-3306} \
-    DATABASE_NAME=${DATABASE_NAME:-dummy} \
-    DATABASE_USER=${DATABASE_USER:-dummy} \
-    DATABASE_PASSWORD=${DATABASE_PASSWORD:-dummy} \
+    DATABASE_HOST=localhost \
+    DATABASE_PORT=3306 \
+    DATABASE_NAME=dummy_build \
+    DATABASE_USER=dummy_user \
+    DATABASE_PASSWORD=dummy_pass \
     EMAIL_FROM_ADDRESS=dummy@example.com \
     EMAIL_SMTP_ADDRESS=smtp.example.com \
     EMAIL_SMTP_PORT=587 \
