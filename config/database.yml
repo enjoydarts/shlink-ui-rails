@@ -70,12 +70,9 @@ test:
 # for a full overview on how database connection configuration can be specified.
 #
 production:
-  primary: &primary_production
-    <<: *default
-    database: <%= ENV["DATABASE_NAME"] || "shlink_ui_rails_production" %>
-    username: <%= ENV["DATABASE_USER"] || "app" %>
-    password: <%= ENV["DATABASE_PASSWORD"] %>
-    host: <%= ENV["DATABASE_HOST"] || "localhost" %>
-    port: <%= ENV["DATABASE_PORT"] || 3306 %>
-  cable:
-    <<: *primary_production
+  <<: *default
+  database: <%= ENV["DATABASE_NAME"] || "shlink_ui_rails_production" %>
+  username: <%= ENV["DATABASE_USER"] || "app" %>
+  password: <%= ENV["DATABASE_PASSWORD"] %>
+  host: <%= ENV["DATABASE_HOST"] || "localhost" %>
+  port: <%= ENV["DATABASE_PORT"] || 3306 %>
