@@ -73,12 +73,14 @@ ENV RAILS_ENV="production" \
 # Bootsnap使用のためのtmpディレクトリ作成
 RUN mkdir -p tmp/cache
 
-# アセットをプリコンパイル（データベース接続を無効化）
-RUN SECRET_KEY_BASE_DUMMY=1 \
+# 環境変数ファイルをコピー
+COPY .env.production .
+
+# アセットをプリコンパイル（.env.productionから環境変数を読み込み）
+RUN export $(cat .env.production | xargs) && \
+    SECRET_KEY_BASE_DUMMY=1 \
     RAILS_ENV=production \
-    DATABASE_URL=nulldb://localhost/dummy \
-    REDIS_URL=redis://localhost:6379/0 \
-    bundle exec rake assets:precompile RAILS_GROUPS=assets
+    bundle exec rake assets:precompile
 
 # Bootsnap cache precompile
 RUN bundle exec bootsnap precompile app/ lib/
