@@ -84,3 +84,11 @@ queue:
   password: <%= ENV["DATABASE_PASSWORD"] %>
   host: <%= ENV["DATABASE_HOST"] || "localhost" %>
   port: <%= ENV["DATABASE_PORT"] || 3306 %>
+
+cache:
+  <<: *default
+  database: <%= ENV["DATABASE_NAME"] || "shlink_ui_rails_production" %>
+  username: <%= ENV["DATABASE_USER"] || "app" %>
+  password: <%= ENV["DATABASE_PASSWORD"] %>
+  host: <%= ENV["DATABASE_HOST"] || "localhost" %>
+  port: <%= ENV["DATABASE_PORT"] || 3306 %>
