@@ -61,7 +61,7 @@ Rails.application.configure do
   # Replace the default in-process and non-durable queuing backend for Active Job (skip during assets precompile)
   unless ENV["RAILS_GROUPS"] == "assets"
     config.active_job.queue_adapter = :solid_queue
-    config.solid_queue.connects_to = { database: { writing: :queue } }
+    config.solid_queue.connects_to = { database: { writing: :production } }
   end
 
   # Ignore bad email addresses and do not raise email delivery errors.
