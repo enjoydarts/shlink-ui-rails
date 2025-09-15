@@ -103,8 +103,8 @@ ENV RAILS_ENV="production" \
     RAILS_LOG_TO_STDOUT="true"
 
 # 必要なディレクトリの権限設定
-RUN mkdir -p /app/tmp /app/log && \
-    chown -R rails:rails /app/tmp /app/log
+RUN mkdir -p /app/tmp/cache /app/tmp/pids /app/log /app/storage && \
+    chown -R rails:rails /app/tmp /app/log /app/storage
 
 # ヘルスチェック用エンドポイント設定
 HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
