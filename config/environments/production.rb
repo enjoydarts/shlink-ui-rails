@@ -96,7 +96,7 @@ Rails.application.configure do
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
   # Devise and Mail settings for production
-  site_url = ApplicationConfig.get("system.site_url", "https://localhost")
+  site_url = ENV.fetch("SYSTEM_SITE_URL", "https://localhost")
   uri = URI.parse(site_url)
 
   config.action_mailer.default_url_options = {
