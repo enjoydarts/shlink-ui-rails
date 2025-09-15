@@ -46,19 +46,23 @@ Rails.application.configure do
   # Don't log any deprecations.
   config.active_support.report_deprecations = false
 
-  # Use Redis for caching and rate limiting in production
-  config.cache_store = :redis_cache_store, {
-    url: ENV.fetch("REDIS_URL", "redis://localhost:6379/0"),
-    timeout: ENV.fetch("REDIS_TIMEOUT", "5").to_i,
-    pool: {
-      size: ENV.fetch("REDIS_POOL_SIZE", "5").to_i,
-      timeout: ENV.fetch("REDIS_POOL_TIMEOUT", "5").to_i
+  # Use Redis for caching and rate limiting in production (skip during assets precompile)
+  unless ENV['RAILS_GROUPS'] == 'assets'
+    config.cache_store = :redis_cache_store, {
+      url: ENV.fetch("REDIS_URL", "redis://localhost:6379/0"),
+      timeout: ENV.fetch("REDIS_TIMEOUT", "5").to_i,
+      pool: {
+        size: ENV.fetch("REDIS_POOL_SIZE", "5").to_i,
+        timeout: ENV.fetch("REDIS_POOL_TIMEOUT", "5").to_i
+      }
     }
-  }
+  end
 
-  # Replace the default in-process and non-durable queuing backend for Active Job.
-  config.active_job.queue_adapter = :solid_queue
-  config.solid_queue.connects_to = { database: { writing: :queue } }
+  # Replace the default in-process and non-durable queuing backend for Active Job (skip during assets precompile)
+  unless ENV['RAILS_GROUPS'] == 'assets'
+    config.active_job.queue_adapter = :solid_queue
+    config.solid_queue.connects_to = { database: { writing: :queue } }
+  end
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
@@ -95,25 +99,27 @@ Rails.application.configure do
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
-  # Devise and Mail settings for production
-  site_url = ENV.fetch("SYSTEM_SITE_URL", "https://localhost")
-  uri = URI.parse(site_url)
+  # Devise and Mail settings for production (skip during assets precompile)
+  unless ENV['RAILS_GROUPS'] == 'assets'
+    site_url = ENV.fetch("SYSTEM_SITE_URL", "https://localhost")
+    uri = URI.parse(site_url)
 
-  config.action_mailer.default_url_options = {
-    host: uri.host,
-    port: uri.port,
-    protocol: uri.scheme
-  }
+    config.action_mailer.default_url_options = {
+      host: uri.host,
+      port: uri.port,
+      protocol: uri.scheme
+    }
 
-  config.action_mailer.delivery_method = :smtp
-  config.action_mailer.perform_deliveries = true
-  config.action_mailer.smtp_settings = {
-    address: ENV.fetch("EMAIL_SMTP_ADDRESS", "smtp.gmail.com"),
-    port: ENV.fetch("EMAIL_SMTP_PORT", "587").to_i,
-    domain: ENV.fetch("EMAIL_SMTP_DOMAIN", "localhost"),
-    user_name: ENV.fetch("EMAIL_SMTP_USER_NAME", ""),
-    password: ENV.fetch("EMAIL_SMTP_PASSWORD", ""),
-    authentication: ENV.fetch("EMAIL_SMTP_AUTHENTICATION", "plain").to_sym,
-    enable_starttls_auto: ENV.fetch("EMAIL_SMTP_ENABLE_STARTTLS_AUTO", "true") == "true"
-  }
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.perform_deliveries = true
+    config.action_mailer.smtp_settings = {
+      address: ENV.fetch("EMAIL_SMTP_ADDRESS", "smtp.gmail.com"),
+      port: ENV.fetch("EMAIL_SMTP_PORT", "587").to_i,
+      domain: ENV.fetch("EMAIL_SMTP_DOMAIN", "localhost"),
+      user_name: ENV.fetch("EMAIL_SMTP_USER_NAME", ""),
+      password: ENV.fetch("EMAIL_SMTP_PASSWORD", ""),
+      authentication: ENV.fetch("EMAIL_SMTP_AUTHENTICATION", "plain").to_sym,
+      enable_starttls_auto: ENV.fetch("EMAIL_SMTP_ENABLE_STARTTLS_AUTO", "true") == "true"
+    }
+  end
 end

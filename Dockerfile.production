@@ -73,25 +73,11 @@ ENV RAILS_ENV="production" \
 # Bootsnap使用のためのtmpディレクトリ作成
 RUN mkdir -p tmp/cache
 
-# アセットをプリコンパイル（固定のダミー値でデータベース接続を回避）
+# アセットをプリコンパイル（データベース接続を無効化）
 RUN SECRET_KEY_BASE_DUMMY=1 \
-    DATABASE_HOST=localhost \
-    DATABASE_PORT=3306 \
-    DATABASE_NAME=dummy_build \
-    DATABASE_USER=dummy_user \
-    DATABASE_PASSWORD=dummy_pass \
-    EMAIL_FROM_ADDRESS=dummy@example.com \
-    EMAIL_SMTP_ADDRESS=smtp.example.com \
-    EMAIL_SMTP_PORT=587 \
-    EMAIL_SMTP_DOMAIN=localhost \
-    EMAIL_SMTP_USER_NAME=dummy@example.com \
-    EMAIL_SMTP_PASSWORD=dummy \
-    EMAIL_SMTP_AUTHENTICATION=plain \
-    EMAIL_SMTP_ENABLE_STARTTLS_AUTO=true \
-    SHLINK_BASE_URL=https://example.com \
-    SHLINK_API_KEY=dummy \
-    REDIS_URL=redis://localhost:6379/0 \
-    SYSTEM_SITE_URL=https://localhost \
+    RAILS_GROUPS=assets \
+    DATABASE_URL="" \
+    REDIS_URL="" \
     ./bin/rails assets:precompile
 
 # Bootsnap cache precompile
