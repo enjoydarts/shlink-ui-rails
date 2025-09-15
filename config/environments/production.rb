@@ -48,11 +48,11 @@ Rails.application.configure do
 
   # Use Redis for caching and rate limiting in production
   config.cache_store = :redis_cache_store, {
-    url: Settings.redis.url,
-    timeout: Settings.redis.timeout,
+    url: ENV.fetch("REDIS_URL", "redis://localhost:6379/0"),
+    timeout: ENV.fetch("REDIS_TIMEOUT", "5").to_i,
     pool: {
-      size: Settings.redis.pool_size,
-      timeout: Settings.redis.pool_timeout
+      size: ENV.fetch("REDIS_POOL_SIZE", "5").to_i,
+      timeout: ENV.fetch("REDIS_POOL_TIMEOUT", "5").to_i
     }
   }
 
