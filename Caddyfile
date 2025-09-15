@@ -57,37 +57,6 @@ app.kety.at {
 		-X-Powered-By
 	}
 
-	# レート制限設定
-	rate_limit {
-		zone general {
-			key {remote_host}
-			events 100
-			window 1m
-		}
-
-		zone login {
-			key {remote_host}
-			events 5
-			window 1m
-		}
-
-		zone api {
-			key {remote_host}
-			events 60
-			window 1m
-		}
-	}
-
-	# パス別の設定
-
-	# ログインページのレート制限強化
-	@login path /users/sign_in /users/sign_up /users/password
-	rate_limit @login login
-
-	# API エンドポイントのレート制限
-	@api path /api/*
-	rate_limit @api api
-
 	# 静的アセットのキャッシュ設定
 	@assets path /assets/* /packs/* /images/* /stylesheets/* /javascripts/*
 	header @assets {
