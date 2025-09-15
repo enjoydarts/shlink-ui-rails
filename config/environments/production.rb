@@ -47,7 +47,7 @@ Rails.application.configure do
   config.active_support.report_deprecations = false
 
   # Use Redis for caching and rate limiting in production (skip during assets precompile)
-  unless ENV['RAILS_GROUPS'] == 'assets'
+  unless ENV["RAILS_GROUPS"] == "assets"
     config.cache_store = :redis_cache_store, {
       url: ENV.fetch("REDIS_URL", "redis://localhost:6379/0"),
       timeout: ENV.fetch("REDIS_TIMEOUT", "5").to_i,
@@ -59,7 +59,7 @@ Rails.application.configure do
   end
 
   # Replace the default in-process and non-durable queuing backend for Active Job (skip during assets precompile)
-  unless ENV['RAILS_GROUPS'] == 'assets'
+  unless ENV["RAILS_GROUPS"] == "assets"
     config.active_job.queue_adapter = :solid_queue
     config.solid_queue.connects_to = { database: { writing: :queue } }
   end
@@ -100,7 +100,7 @@ Rails.application.configure do
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
   # Devise and Mail settings for production (skip during assets precompile)
-  unless ENV['RAILS_GROUPS'] == 'assets'
+  unless ENV["RAILS_GROUPS"] == "assets"
     site_url = ENV.fetch("SYSTEM_SITE_URL", "https://localhost")
     uri = URI.parse(site_url)
 
