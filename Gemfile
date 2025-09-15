@@ -20,7 +20,7 @@ gem "tzinfo-data", platforms: %i[ mingw mswin x64_mingw jruby ]
 # Use the database-backed adapters for Rails.cache, Active Job, and Action Cable
 gem "solid_cache"
 gem "solid_queue"
-gem "solid_cable"
+# gem "solid_cable"  # WebSocket未使用のためコメントアウト
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
