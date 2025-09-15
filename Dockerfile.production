@@ -84,6 +84,7 @@ RUN SECRET_KEY_BASE_DUMMY=1 \
     SHLINK_BASE_URL=https://example.com \
     SHLINK_API_KEY=dummy \
     REDIS_URL=redis://localhost:6379/0 \
+    SYSTEM_SITE_URL=https://localhost \
     ./bin/rails assets:precompile
 
 # Bootsnap cache precompile
