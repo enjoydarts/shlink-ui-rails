@@ -14,6 +14,13 @@ services:
       platforms:
         - linux/amd64
         - linux/arm64
+      # ビルド時の環境変数
+      args:
+        - DATABASE_HOST=${DATABASE_HOST}
+        - DATABASE_PORT=${DATABASE_PORT}
+        - DATABASE_NAME=${DATABASE_NAME}
+        - DATABASE_USER=${DATABASE_USER}
+        - DATABASE_PASSWORD=${DATABASE_PASSWORD}
 
     # コンテナ名設定
     container_name: shlink-ui-rails-app
