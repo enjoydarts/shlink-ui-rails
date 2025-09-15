@@ -108,12 +108,12 @@ Rails.application.configure do
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.perform_deliveries = true
   config.action_mailer.smtp_settings = {
-    address: Settings.mailer.address,
-    port: Settings.mailer.port,
-    domain: Settings.mailer.domain,
-    user_name: Settings.mailer.user_name,
-    password: Settings.mailer.password,
-    authentication: Settings.mailer.authentication.to_sym,
-    enable_starttls_auto: Settings.mailer.enable_starttls_auto
+    address: ENV.fetch("EMAIL_SMTP_ADDRESS", "smtp.gmail.com"),
+    port: ENV.fetch("EMAIL_SMTP_PORT", "587").to_i,
+    domain: ENV.fetch("EMAIL_SMTP_DOMAIN", "localhost"),
+    user_name: ENV.fetch("EMAIL_SMTP_USER_NAME", ""),
+    password: ENV.fetch("EMAIL_SMTP_PASSWORD", ""),
+    authentication: ENV.fetch("EMAIL_SMTP_AUTHENTICATION", "plain").to_sym,
+    enable_starttls_auto: ENV.fetch("EMAIL_SMTP_ENABLE_STARTTLS_AUTO", "true") == "true"
   }
 end
