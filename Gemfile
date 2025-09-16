@@ -61,6 +61,9 @@ gem "redis"
 # MailerSend API for email delivery (production)
 gem "mailersend-ruby"
 
+# Ruby 3.4 compatibility for SMTP
+gem "net-smtp", require: false
+
 # Two-Factor Authentication
 gem "rotp"        # TOTP generation and verification
 gem "rqrcode"     # QR code generation
