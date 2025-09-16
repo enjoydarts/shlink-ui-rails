@@ -267,6 +267,10 @@ jobs:
           log "⚙️  Initializing system settings..."
           docker-compose -f docker-compose.prod.yml run --rm app bundle exec rails runner "SystemSetting.initialize_defaults!"
 
+          # コミットハッシュを環境変数として設定
+          export GIT_COMMIT="${{ github.sha }}"
+          echo "GIT_COMMIT=$GIT_COMMIT" >> .env.production
+
           # サービス再起動
           log "🔄 Restarting services with zero-downtime strategy..."
           docker-compose -f docker-compose.prod.yml up -d --force-recreate
