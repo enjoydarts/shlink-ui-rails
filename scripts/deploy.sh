@@ -286,13 +286,12 @@ main() {
     # アプリケーションディレクトリに移動
     cd "$APP_DIR"
 
-    # 最新コードを取得
-    log "INFO" "Pulling latest code..."
-    if [[ -d "app" ]]; then
-        cd app && git fetch origin main && git reset --hard origin/main && cd ..
-    else
-        git clone "$(git remote get-url origin)" app
-    fi
+    # サーバーローカルのソースコードを最新に更新
+    log "INFO" "Updating local source code..."
+    git fetch origin
+    git reset --hard origin/main
+
+    log "SUCCESS" "Local source code updated to latest commit"
 
     # 現在の状態をバックアップ
     create_backup
