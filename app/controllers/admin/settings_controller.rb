@@ -1,4 +1,4 @@
-require 'net/smtp'
+require "net/smtp"
 
 class Admin::SettingsController < Admin::AdminController
   def show
