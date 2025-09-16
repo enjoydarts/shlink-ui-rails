@@ -78,7 +78,7 @@ services:
     restart: unless-stopped
 
     # ジョブ処理コマンド実行
-    command: bundle exec solid_queue
+    command: ./bin/jobs
 
     # 環境変数ファイル読み込み
     env_file:
