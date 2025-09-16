@@ -10,10 +10,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.production
-      # マルチプラットフォームビルド対応
-      platforms:
-        - linux/amd64
-        - linux/arm64
 
     # コンテナ名設定
     container_name: shlink-ui-rails-app
@@ -35,11 +31,14 @@ services:
       - RAILS_SERVE_STATIC_FILES=true
       - RAILS_LOG_TO_STDOUT=true
 
-    # ボリューム設定（ログとtmpディレクトリを永続化）
+    # ボリューム設定（ホストパス指定で管理しやすく）
     volumes:
-      - app_logs:/app/log
-      - app_tmp:/app/tmp
-      - app_storage:/app/storage
+      - ./logs:/app/log
+      - app_tmp:/app/tmp  # tmpのみ名前付きボリューム（パーミッション対応）
+      - ./storage:/app/storage
+
+    # ユーザー設定（ボリュームマウント時のパーミッション対応）
+    user: "1000:1000"
 
     # ヘルスチェック設定
     healthcheck:
@@ -71,10 +70,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.production
-      # マルチプラットフォームビルド対応
-      platforms:
-        - linux/amd64
-        - linux/arm64
 
     # コンテナ名設定
     container_name: shlink-ui-rails-jobs
@@ -96,9 +91,12 @@ services:
 
     # ボリューム設定（appサービスと共有）
     volumes:
-      - app_logs:/app/log
-      - app_tmp:/app/tmp
-      - app_storage:/app/storage
+      - ./logs:/app/log
+      - app_tmp:/app/tmp  # tmpのみ名前付きボリューム（パーミッション対応）
+      - ./storage:/app/storage
+
+    # ユーザー設定（ボリュームマウント時のパーミッション対応）
+    user: "1000:1000"
 
     # アプリケーションサービスの起動を待機
     depends_on:
@@ -124,29 +122,10 @@ services:
 
 # 永続化ボリューム設定
 volumes:
-  # アプリケーションログ（ローテーション対象）
-  app_logs:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /opt/shlink-ui-rails/logs
-
-  # 一時ファイル（キャッシュ、セッション等）
+  # 一時ファイル（キャッシュ、セッション等）のみ名前付きボリューム
+  # パーミッション問題回避のため
   app_tmp:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /opt/shlink-ui-rails/tmp
-
-  # アプリケーションストレージ（ファイルアップロード等）
-  app_storage:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /opt/shlink-ui-rails/storage
 
 # ネットワーク設定
 networks:
