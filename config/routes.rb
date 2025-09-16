@@ -38,6 +38,9 @@ Rails.application.routes.draw do
   # Health check endpoint for Docker/Caddy (alias for /up)
   get "health" => "rails/health#show", as: :health_check
 
+  # Version info endpoint for deployment verification
+  get "version", to: "pages#version"
+
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
