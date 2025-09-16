@@ -151,33 +151,25 @@ create_backup() {
     return 0
 }
 
-# データベースマイグレーション
+# データベーススキーマ適用（Ridgepole）
 run_migrations() {
-    log "INFO" "Checking for database migrations..."
+    log "INFO" "Applying database schema with Ridgepole..."
 
-    # まずマイグレーションステータスをチェック
-    if docker-compose -f "$APP_DIR/docker-compose.prod.yml" run --rm app rails db:migrate:status | grep -q "down"; then
-        log "INFO" "Running database migrations..."
-
-        # バックアップ前にマイグレーションを実行
-        if ! docker-compose -f "$APP_DIR/docker-compose.prod.yml" run --rm app rails db:migrate; then
-            log "ERROR" "Database migration failed"
-            return 1
-        fi
-
-        log "SUCCESS" "Database migrations completed"
+    # Ridgepoleでスキーマを適用
+    if docker-compose -f "$APP_DIR/docker-compose.prod.yml" run --rm app bundle exec ridgepole --config config/database.yml --env production --file db/schemas/Schemafile --apply; then
+        log "SUCCESS" "Database schema applied successfully"
+        return 0
     else
-        log "INFO" "No new migrations to run"
+        log "ERROR" "Database schema application failed"
+        return 1
     fi
-
-    return 0
 }
 
 # システム設定初期化
 initialize_system_settings() {
     log "INFO" "Initializing system settings..."
 
-    if docker-compose -f "$APP_DIR/docker-compose.prod.yml" run --rm app rails runner "SystemSetting.initialize_defaults!"; then
+    if docker-compose -f "$APP_DIR/docker-compose.prod.yml" run --rm app bin/rails runner "SystemSetting.initialize_defaults!"; then
         log "SUCCESS" "System settings initialized"
         return 0
     else
