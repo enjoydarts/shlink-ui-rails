@@ -234,14 +234,6 @@ jobs:
           # アプリケーションディレクトリに移動
           cd /opt/shlink-ui-rails
 
-          # 最新のコードを取得
-          log "📥 Pulling latest code..."
-          if [[ -d "app" ]]; then
-            cd app && git fetch origin main && git reset --hard origin/main && cd ..
-          else
-            git clone https://github.com/${{ github.repository }}.git app
-          fi
-
           # 環境変数ファイルが存在することを確認
           if [ ! -f .env.production ]; then
             log "❌ ERROR: .env.production file not found!"
@@ -262,9 +254,10 @@ jobs:
             fi
           fi
 
-          # 最新のDockerイメージをプル
+          # 最新のDockerイメージを強制プル
           log "🐳 Pulling new Docker image: ${{ needs.build-and-push.outputs.image }}"
-          docker-compose -f docker-compose.prod.yml pull
+          docker pull ${{ needs.build-and-push.outputs.image }}
+          docker tag ${{ needs.build-and-push.outputs.image }} ghcr.io/${{ github.repository }}:latest
 
           # データベーススキーマの適用（Ridgepole）
           log "🗄️  Applying database schema with Ridgepole..."
