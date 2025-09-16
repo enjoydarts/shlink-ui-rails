@@ -266,14 +266,9 @@ jobs:
           log "🐳 Pulling new Docker image: ${{ needs.build-and-push.outputs.image }}"
           docker-compose -f docker-compose.prod.yml pull
 
-          # データベースマイグレーション（ドライランでチェック）
-          log "🗄️  Checking database migrations..."
-          if docker-compose -f docker-compose.prod.yml run --rm app bundle exec rails db:migrate:status | grep -q "down"; then
-            log "📊 Running database migrations..."
-            docker-compose -f docker-compose.prod.yml run --rm app bundle exec rails db:migrate
-          else
-            log "✅ No new migrations to run"
-          fi
+          # データベーススキーマの適用（Ridgepole）
+          log "🗄️  Applying database schema with Ridgepole..."
+          docker-compose -f docker-compose.prod.yml run --rm app bundle exec ridgepole --config config/database.yml --env production --file db/schemas/Schemafile --apply
 
           # システム設定の初期化
           log "⚙️  Initializing system settings..."
