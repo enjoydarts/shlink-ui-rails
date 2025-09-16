@@ -248,6 +248,13 @@ jobs:
           log "⏳ Waiting for image distribution..."
           sleep 10
 
+          # デバッグ情報
+          log "🔍 Debug information:"
+          log "  Expected image: ${{ needs.build-and-push.outputs.image }}"
+          log "  Image digest: ${{ needs.build-and-push.outputs.digest }}"
+          log "  Available images in registry:"
+          docker search ghcr.io/enjoydarts/shlink-ui-rails --limit 5 || echo "Search failed"
+
           # 現在のコンテナをバックアップ
           log "💾 Creating backup of current containers..."
           BACKUP_TAG="backup-$(date +%Y%m%d-%H%M%S)"
@@ -263,18 +270,26 @@ jobs:
           docker rmi ghcr.io/${{ github.repository }}:latest || true
           docker rmi ${{ needs.build-and-push.outputs.image }} || true
 
-          # 最新のDockerイメージを強制プル
-          log "🐳 Pulling new Docker image: ${{ needs.build-and-push.outputs.image }}"
-          if docker pull ${{ needs.build-and-push.outputs.image }}; then
-            docker tag ${{ needs.build-and-push.outputs.image }} ghcr.io/${{ github.repository }}:latest
+          # 最新のDockerイメージをダイジェストで強制プル
+          IMAGE_WITH_DIGEST="ghcr.io/${{ github.repository }}@${{ needs.build-and-push.outputs.digest }}"
+          log "🐳 Pulling Docker image by digest: $IMAGE_WITH_DIGEST"
+
+          if docker pull "$IMAGE_WITH_DIGEST"; then
+            docker tag "$IMAGE_WITH_DIGEST" "ghcr.io/${{ github.repository }}:latest"
             log "✅ Successfully pulled and tagged new image"
 
             # イメージ詳細を表示
             log "📋 Image details:"
             docker images | grep "${{ github.repository }}" | head -3
           else
-            log "❌ Failed to pull new image, deployment will fail"
-            exit 1
+            log "❌ Failed to pull image by digest, trying with tag..."
+            if docker pull "${{ needs.build-and-push.outputs.image }}"; then
+              docker tag "${{ needs.build-and-push.outputs.image }}" "ghcr.io/${{ github.repository }}:latest"
+              log "✅ Successfully pulled image with tag as fallback"
+            else
+              log "❌ Failed to pull new image completely, deployment will fail"
+              exit 1
+            fi
           fi
 
           # データベーススキーマの適用（Ridgepole）
