@@ -18,10 +18,12 @@ class SolidQueueDashboardService
       finished_jobs: finished_jobs_count,
       failed_jobs: failed_jobs_count,
       active_workers: active_workers_count,
-      total_workers: total_workers_count
+      total_workers: total_workers_count,
+      database_error: false
     }
-  rescue ActiveRecord::StatementInvalid
-    empty_stats
+  rescue ActiveRecord::StatementInvalid, NameError => e
+    Rails.logger.error "SolidQueue stats error: #{e.message}"
+    empty_stats.merge(database_error: true)
   end
 
   def recent_jobs(limit = 20)

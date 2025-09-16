@@ -5,8 +5,11 @@ class Admin::SolidQueueController < Admin::AdminController
     @recent_jobs = service.recent_jobs
     @active_processes = service.active_processes
 
-    if @stats[:total_workers].zero?
+    # エラー判定
+    if @stats[:database_error]
       flash.now[:alert] = "Solid Queueテーブルにアクセスできません。データベースマイグレーションが必要な可能性があります。"
+    elsif @stats[:active_workers].zero?
+      flash.now[:warning] = "Solid Queueワーカーが起動していません。docker-compose.prod.ymlでの起動を確認してください。"
     end
   end
 
