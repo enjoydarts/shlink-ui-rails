@@ -49,9 +49,20 @@ export NOTIFICATION_EMAIL="admin@example.com"
 **エラー:** Deployment failed at line 123 (exit code: 1)
 ```
 
-## サーバー上での設定
+## 設定方法
 
-### .env.production に追加
+### GitHub Secretsに追加（推奨）
+1. GitHub リポジトリ → Settings → Secrets and variables → Actions
+2. 以下のシークレットを追加:
+   - `SLACK_WEBHOOK_URL`
+   - `DISCORD_WEBHOOK_URL`
+   - `NOTIFICATION_EMAIL`
+
+この方法で設定すると、デプロイ時にGitHub ActionsからSSH経由でサーバー側に環境変数が自動的に渡されます。
+
+### サーバー上での直接設定（オプション）
+手動デプロイ時やサーバー側で直接設定したい場合は `.env.production` に追加:
+
 ```bash
 # デプロイ通知設定
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK
@@ -59,12 +70,7 @@ DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/YOUR/DISCORD/WEBHOOK
 NOTIFICATION_EMAIL=admin@example.com
 ```
 
-### GitHub Secretsに追加（CI/CD用）
-1. GitHub リポジトリ → Settings → Secrets and variables → Actions
-2. 以下のシークレットを追加:
-   - `SLACK_WEBHOOK_URL`
-   - `DISCORD_WEBHOOK_URL`
-   - `NOTIFICATION_EMAIL`
+**注意**: GitHub Secretsと .env.production の両方に設定がある場合、GitHub Secretsが優先されます。
 
 ## Webhook URL の取得方法
 
