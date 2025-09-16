@@ -300,7 +300,7 @@ main() {
     log "INFO" "Starting rollback process..."
     if perform_rollback "$backup_tag"; then
         log "SUCCESS" "Rollback completed successfully!"
-        log "INFO" "Application should be accessible at: https://app.kety.at"
+        log "INFO" "Application should be accessible at: https://app.kty.at"
         log "INFO" "Please verify the application is working correctly"
     else
         log "ERROR" "Rollback failed!"

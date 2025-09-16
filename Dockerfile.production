@@ -73,12 +73,8 @@ ENV RAILS_ENV="production" \
 # Bootsnap使用のためのtmpディレクトリ作成
 RUN mkdir -p tmp/cache
 
-# 環境変数ファイルをコピー
-COPY .env.production .
-
-# アセットをプリコンパイル（.env.productionから環境変数を読み込み）
-RUN export $(cat .env.production | grep -v '^#' | grep -v '^$' | xargs) && \
-    SECRET_KEY_BASE_DUMMY=1 \
+# アセットをプリコンパイル
+RUN SECRET_KEY_BASE_DUMMY=1 \
     RAILS_ENV=production \
     bundle exec rake assets:precompile
 

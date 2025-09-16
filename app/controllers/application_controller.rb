@@ -15,7 +15,7 @@ class ApplicationController < ActionController::Base
                 :captcha_enabled?, :rate_limit_enabled?, :page_size,
                 :password_min_length, :require_2fa_for_admin?,
                 :max_short_urls_per_user, :default_short_code_length,
-                :allowed_domains
+                :allowed_domains, :current_version
 
   before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :check_maintenance_mode, unless: :devise_controller?
@@ -32,6 +32,19 @@ class ApplicationController < ActionController::Base
 
   def after_sign_out_path_for(resource_or_scope)
     root_path
+  end
+
+  # 現在のコミットハッシュを取得
+  def current_version
+    @current_version ||= begin
+      if Rails.env.production?
+        # 本番環境：環境変数から取得、なければgitコマンドで取得
+        ENV["GIT_COMMIT"] || `git rev-parse --short HEAD 2>/dev/null`.strip.presence || "unknown"
+      else
+        # 開発環境：gitコマンドで取得
+        `git rev-parse --short HEAD 2>/dev/null`.strip.presence || "unknown"
+      end
+    end
   end
 
   private

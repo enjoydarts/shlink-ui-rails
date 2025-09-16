@@ -238,5 +238,20 @@
     <%= render_flash_messages %>
 
     <%= yield %>
+
+    <!-- Footer with Version Info -->
+    <footer class="bg-gray-50 border-t border-gray-200 mt-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex justify-between items-center text-sm text-gray-500">
+          <div>
+            © 2025 Shlink-UI-Rails
+          </div>
+          <div class="flex items-center space-x-4">
+            <span>Version: <%= current_version %></span>
+            <span>Updated: <%= Time.current.strftime("%Y-%m-%d %H:%M") %> JST</span>
+          </div>
+        </div>
+      </div>
+    </footer>
   </body>
 </html>

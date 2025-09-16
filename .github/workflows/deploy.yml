@@ -108,10 +108,18 @@ jobs:
       - name: Set up database
         env:
           RAILS_ENV: test
+          DATABASE_HOST: 127.0.0.1
+          DATABASE_NAME: shlink_ui_rails_test
+          DATABASE_USER: app
+          DATABASE_PASSWORD: apppass
           DATABASE_URL: mysql2://app:apppass@127.0.0.1:3306/shlink_ui_rails_test
           REDIS_URL: redis://localhost:6379/0
         run: |
-          bin/rails db:create db:migrate
+          bin/rails db:create
+          bundle exec ridgepole --config config/database.yml --env test --file db/schemas/Schemafile --apply
+
+      - name: Precompile assets
+        run: bundle exec rails assets:precompile
 
       - name: Run RuboCop
         run: bundle exec rubocop
@@ -188,7 +196,7 @@ jobs:
 
     environment:
       name: production
-      url: https://app.kety.at
+      url: https://app.kty.at
 
     steps:
       - name: Checkout code
@@ -226,14 +234,6 @@ jobs:
           # アプリケーションディレクトリに移動
           cd /opt/shlink-ui-rails
 
-          # 最新のコードを取得
-          log "📥 Pulling latest code..."
-          if [[ -d "app" ]]; then
-            cd app && git fetch origin main && git reset --hard origin/main && cd ..
-          else
-            git clone https://github.com/${{ github.repository }}.git app
-          fi
-
           # 環境変数ファイルが存在することを確認
           if [ ! -f .env.production ]; then
             log "❌ ERROR: .env.production file not found!"
@@ -243,6 +243,17 @@ jobs:
           # GitHub Container Registryにログイン
           log "🔑 Logging into container registry..."
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+          # イメージ配布完了を少し待機
+          log "⏳ Waiting for image distribution..."
+          sleep 10
+
+          # デバッグ情報
+          log "🔍 Debug information:"
+          log "  Expected image: ${{ needs.build-and-push.outputs.image }}"
+          log "  Image digest: ${{ needs.build-and-push.outputs.digest }}"
+          log "  Available images in registry:"
+          docker search ghcr.io/enjoydarts/shlink-ui-rails --limit 5 || echo "Search failed"
 
           # 現在のコンテナをバックアップ
           log "💾 Creating backup of current containers..."
@@ -254,22 +265,51 @@ jobs:
             fi
           fi
 
-          # 最新のDockerイメージをプル
-          log "🐳 Pulling new Docker image: ${{ needs.build-and-push.outputs.image }}"
-          docker-compose -f docker-compose.prod.yml pull
+          # 既存イメージを削除して強制更新
+          log "🗑️  Removing existing images to force update..."
+          docker rmi ghcr.io/${{ github.repository }}:latest || true
+          docker rmi ${{ needs.build-and-push.outputs.image }} || true
 
-          # データベースマイグレーション（ドライランでチェック）
-          log "🗄️  Checking database migrations..."
-          if docker-compose -f docker-compose.prod.yml run --rm app rails db:migrate:status | grep -q "down"; then
-            log "📊 Running database migrations..."
-            docker-compose -f docker-compose.prod.yml run --rm app rails db:migrate
+          # 最新のDockerイメージをダイジェストで強制プル
+          IMAGE_WITH_DIGEST="ghcr.io/${{ github.repository }}@${{ needs.build-and-push.outputs.digest }}"
+          log "🐳 Pulling Docker image by digest: $IMAGE_WITH_DIGEST"
+
+          if docker pull "$IMAGE_WITH_DIGEST"; then
+            docker tag "$IMAGE_WITH_DIGEST" "ghcr.io/${{ github.repository }}:latest"
+            log "✅ Successfully pulled and tagged new image"
+
+            # イメージ詳細を表示
+            log "📋 Image details:"
+            docker images | grep "${{ github.repository }}" | head -3
           else
-            log "✅ No new migrations to run"
+            log "❌ Failed to pull image by digest, trying with tag..."
+            if docker pull "${{ needs.build-and-push.outputs.image }}"; then
+              docker tag "${{ needs.build-and-push.outputs.image }}" "ghcr.io/${{ github.repository }}:latest"
+              log "✅ Successfully pulled image with tag as fallback"
+            else
+              log "❌ Failed to pull new image completely, deployment will fail"
+              exit 1
+            fi
           fi
+
+          # データベーススキーマの適用（Ridgepole）
+          log "🗄️  Applying database schema with Ridgepole..."
+          docker-compose -f docker-compose.prod.yml run --rm app bundle exec ridgepole --config config/database.yml --env production --file db/schemas/Schemafile --apply
 
           # システム設定の初期化
           log "⚙️  Initializing system settings..."
-          docker-compose -f docker-compose.prod.yml run --rm app rails runner "SystemSetting.initialize_defaults!"
+          docker-compose -f docker-compose.prod.yml run --rm app bundle exec rails runner "SystemSetting.initialize_defaults!"
+
+          # コミットハッシュを環境変数として設定
+          GIT_COMMIT="${{ github.sha }}"
+          log "📝 Setting GIT_COMMIT: $GIT_COMMIT"
+
+          # .env.productionからGIT_COMMITを削除（重複回避）
+          sed -i '/^GIT_COMMIT=/d' .env.production || true
+          echo "GIT_COMMIT=$GIT_COMMIT" >> .env.production
+
+          log "📄 .env.production contents:"
+          tail -5 .env.production
 
           # サービス再起動
           log "🔄 Restarting services with zero-downtime strategy..."
@@ -330,9 +370,9 @@ jobs:
 
       - name: Verify External Access
         run: |
-          log "🔍 Verifying external access..."
+          echo "🔍 Verifying external access..."
           timeout 300 bash -c '
-            while ! curl -sf https://app.kety.at/health >/dev/null 2>&1; do
+            while ! curl -sf https://app.kty.at/health >/dev/null 2>&1; do
               echo "⏳ Waiting for external access... ($(date))"
               sleep 15
             done
@@ -344,21 +384,21 @@ jobs:
           echo "🔍 Running post-deployment checks..."
 
           # 基本ヘルスチェック
-          HEALTH_RESPONSE=$(curl -s https://app.kety.at/health)
-          if [[ "$HEALTH_RESPONSE" == *"ok"* ]]; then
-            echo "✅ Health check passed"
+          HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://app.kty.at/health)
+          if [[ "$HEALTH_STATUS" == "200" ]]; then
+            echo "✅ Health check passed (HTTP $HEALTH_STATUS)"
           else
-            echo "❌ Health check failed: $HEALTH_RESPONSE"
+            echo "❌ Health check failed: HTTP $HEALTH_STATUS"
             exit 1
           fi
 
           # SSL証明書チェック
-          SSL_EXPIRE=$(echo | openssl s_client -connect app.kety.at:443 -servername app.kety.at 2>/dev/null | openssl x509 -noout -dates | grep notAfter | cut -d= -f2)
+          SSL_EXPIRE=$(echo | openssl s_client -connect app.kty.at:443 -servername app.kty.at 2>/dev/null | openssl x509 -noout -dates | grep notAfter | cut -d= -f2)
           echo "🔐 SSL certificate expires: $SSL_EXPIRE"
 
           # セキュリティヘッダーチェック
-          SECURITY_HEADERS=$(curl -sI https://app.kety.at/ | grep -E "(Strict-Transport-Security|X-Content-Type-Options|X-Frame-Options)")
           echo "🛡️  Security headers:"
+          SECURITY_HEADERS=$(curl -sI https://app.kty.at/ | grep -E "(Strict-Transport-Security|X-Content-Type-Options|X-Frame-Options)" || echo "No security headers found")
           echo "$SECURITY_HEADERS"
 
           echo "🎊 All post-deployment checks passed!"
@@ -375,7 +415,7 @@ jobs:
         if: needs.deploy.result == 'success'
         run: |
           echo "🎉 Production deployment successful!"
-          echo "🌐 Application URL: https://app.kety.at"
+          echo "🌐 Application URL: https://app.kty.at"
           echo "📊 Deployment time: $(date)"
           echo "🔗 Commit: ${{ github.sha }}"
           # Slack/Discord通知が必要な場合はここに追加
@@ -389,7 +429,7 @@ jobs:
           echo "  - Build: ${{ needs.build-and-push.result }}"
           echo "  - Deploy: ${{ needs.deploy.result }}"
           echo "📋 Check the workflow logs for details"
-          echo "🏥 Health check URL: https://app.kety.at/health"
+          echo "🏥 Health check URL: https://app.kty.at/health"
           # 緊急アラートが必要な場合はここに追加
 
       - name: Summary
@@ -400,5 +440,5 @@ jobs:
           echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Result:** ${{ needs.deploy.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **URL:** https://app.kety.at" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL:** https://app.kty.at" >> $GITHUB_STEP_SUMMARY
           echo "- **Time:** $(date)" >> $GITHUB_STEP_SUMMARY
