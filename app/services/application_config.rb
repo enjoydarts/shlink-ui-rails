@@ -2,6 +2,29 @@
 # 優先順位: SystemSetting (DB) > 環境変数 > config gem > デフォルト値
 class ApplicationConfig
   class << self
+    # 全設定を動的にリロード（SystemSetting変更時に呼び出される）
+    def reload_all_settings!
+      return unless Rails.application.initialized?
+
+      begin
+        reload_action_mailer_settings!
+        reload_rack_attack_settings!
+        reload_devise_settings!
+        reload_database_settings!
+        reload_rails_core_settings!
+        reload_shlink_settings!
+        reload_captcha_settings!
+        reload_application_features!
+
+        # 最後に一括でキャッシュクリア
+        clear_cache!
+        Rails.logger.info "All application settings reloaded successfully"
+      rescue => e
+        Rails.logger.error "Failed to reload settings: #{e.message}"
+        Rails.logger.error e.backtrace.join("\n")
+      end
+    end
+
     # メイン設定取得メソッド
     def get(key, default_value = nil)
       # 1. SystemSetting (データベース) - 最高優先度
@@ -126,8 +149,6 @@ class ApplicationConfig
 
     # 設定変更通知（アプリケーション設定を再読み込み）
     def reload!
-      clear_cache!
-
       # タイムゾーン設定
       Time.zone = get("system.timezone", "Tokyo")
 
@@ -142,6 +163,8 @@ class ApplicationConfig
       else Logger::INFO
       end
 
+      # キャッシュクリア
+      clear_cache!
       Rails.logger.info "ApplicationConfig reloaded: timezone=#{Time.zone}, log_level=#{Rails.logger.level}"
       true
     rescue => e
@@ -150,6 +173,126 @@ class ApplicationConfig
     end
 
     private
+
+    # ActionMailer設定のリロード
+    def reload_action_mailer_settings!
+      # サイトURL設定
+      site_url = get("system.site_url", "http://localhost:3000")
+      uri = URI.parse(site_url)
+
+      Rails.application.config.action_mailer.default_url_options = {
+        host: uri.host,
+        port: uri.port,
+        protocol: uri.scheme
+      }
+
+      # 送信者設定
+      Rails.application.config.action_mailer.default_options = {
+        from: get("email.from_address", "noreply@example.com")
+      }
+
+      # SMTP設定
+      email_adapter = get("email.adapter", Rails.env.development? ? "letter_opener" : "smtp")
+
+      case email_adapter
+      when "letter_opener"
+        Rails.application.config.action_mailer.delivery_method = :letter_opener_web
+        Rails.application.config.action_mailer.perform_deliveries = true
+      when "smtp"
+        Rails.application.config.action_mailer.delivery_method = :smtp
+        Rails.application.config.action_mailer.smtp_settings = {
+          address: get("email.smtp_address", "smtp.gmail.com"),
+          port: get("email.smtp_port", 587),
+          user_name: get("email.smtp_user_name", ""),
+          password: get("email.smtp_password", ""),
+          authentication: get("email.smtp_authentication", "plain").to_sym,
+          enable_starttls_auto: get("email.smtp_enable_starttls_auto", true)
+        }.compact
+      when "mailersend"
+        # MailerSendは独自のAPIを使用するため、delivery_methodは設定しない
+        # 実際の送信はMailAdapter::MailersendAdapterが処理
+        Rails.application.config.action_mailer.perform_deliveries = true
+      end
+    end
+
+    # Rack::Attack設定のリロード
+    def reload_rack_attack_settings!
+      return unless defined?(Rack::Attack)
+
+      # Rack::Attackの設定をクリア
+      Rack::Attack.reset!
+
+      # 設定ファイルを再読み込み
+      load Rails.root.join("config/initializers/rack_attack.rb")
+    end
+
+    # Devise設定のリロード
+    def reload_devise_settings!
+      return unless defined?(Devise)
+
+      # Devise設定の更新
+      Devise.setup do |config|
+        config.maximum_attempts = get("security.max_login_attempts", 5)
+        config.unlock_in = get("security.account_lockout_time", 30).minutes
+        config.password_length = get("security.password_min_length", 8)..128
+        config.timeout_in = get("security.session_timeout_hours", 24).hours
+      end
+    end
+
+    # データベース設定のリロード
+    def reload_database_settings!
+      timeout_seconds = get("performance.database_timeout", 30)
+
+      # データベース接続プールの設定を更新
+      ActiveRecord::Base.connection_pool.disconnect!
+      Rails.application.config.database_configuration[Rails.env]["timeout"] = timeout_seconds * 1000
+      ActiveRecord::Base.establish_connection
+    end
+
+    # Rails核心設定のリロード
+    def reload_rails_core_settings!
+      # タイムゾーン設定
+      timezone = get("system.timezone", "Tokyo")
+      Time.zone = timezone if ActiveSupport::TimeZone[timezone]
+
+      # ログレベル設定
+      log_level = get("system.log_level", "info").downcase
+      if %w[debug info warn error fatal].include?(log_level)
+        Rails.logger.level = log_level.to_sym
+      end
+    end
+
+    # Shlink設定のリロード
+    def reload_shlink_settings!
+      # Shlink設定はサービスクラスで動的に取得されるため、ログ出力のみ
+      Rails.logger.info "Shlink settings marked for reload"
+    end
+
+    # CAPTCHA設定のリロード
+    def reload_captcha_settings!
+      # CAPTCHA設定もサービスクラスで動的に取得されるため、ログ出力のみ
+      Rails.logger.info "CAPTCHA settings marked for reload"
+    end
+
+    # アプリケーション機能設定のリロード
+    def reload_application_features!
+      # メンテナンスモード設定
+      maintenance_mode = enabled?("system.maintenance_mode", false)
+      if maintenance_mode
+        # メンテナンスモードの実装（必要に応じて）
+        Rails.logger.info "Maintenance mode enabled"
+      else
+        Rails.logger.info "Maintenance mode disabled"
+      end
+
+      # ユーザー登録許可設定
+      allow_registration = enabled?("system.allow_user_registration", true)
+      Rails.logger.info "User registration: #{allow_registration ? 'enabled' : 'disabled'}"
+
+      # パフォーマンス設定
+      Rails.logger.info "Items per page: #{number('performance.items_per_page', 20)}"
+      Rails.logger.info "Cache TTL: #{number('performance.cache_ttl', 3600)} seconds"
+    end
 
     # 設定キャッシュ（開発環境では無効、本番環境では有効）
     def cache_key(key)
