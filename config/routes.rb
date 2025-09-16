@@ -96,6 +96,18 @@ Rails.application.routes.draw do
         delete :clear_all
       end
     end
+
+    # Solid Queue 詳細ダッシュボード
+    resources :solid_queue, only: [ :index ] do
+      collection do
+        get :workers
+        get :processes
+        get :failed_jobs
+        post :pause_all
+        post :resume_all
+        delete :clear_finished
+      end
+    end
   end
 
   # Public pages

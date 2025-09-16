@@ -467,6 +467,66 @@ docker-compose exec web bin/rails importmap:outdated
 - Use browser dev tools to identify unused CSS classes
 - Leverage Hotwire caching for better user experience
 
+## 🚀 Production Deployment
+
+### Using Docker Compose (Recommended)
+
+This application includes a comprehensive production setup with Solid Queue background job processing.
+
+**Prerequisites:**
+- Docker and Docker Compose installed
+- `.env.production` file configured with production settings
+
+**Quick Deployment:**
+```bash
+# Run the automated deployment script
+./scripts/deploy-production.sh
+```
+
+**Manual Deployment:**
+```bash
+# 1. Stop any existing containers
+docker-compose -f docker-compose.prod.yml down --remove-orphans
+
+# 2. Build production images
+docker-compose -f docker-compose.prod.yml build --no-cache
+
+# 3. Start all services (app + background jobs)
+docker-compose -f docker-compose.prod.yml up -d
+
+# 4. Verify services are running
+docker-compose -f docker-compose.prod.yml ps
+```
+
+**Service Architecture:**
+- **app**: Main Rails application server (port 3000)
+- **jobs**: Solid Queue background job worker
+- **Shared volumes**: logs, tmp, storage directories
+
+**Background Jobs:**
+The application uses Solid Queue for reliable background job processing:
+- Email delivery (password resets, notifications)
+- URL synchronization with Shlink API
+- Maintenance tasks
+
+**Monitoring:**
+- Access Solid Queue dashboard at `/admin/solid_queue`
+- Monitor container logs: `docker logs shlink-ui-rails-app`
+- Check job worker: `docker logs shlink-ui-rails-jobs`
+
+**Environment Variables:**
+Essential production environment variables in `.env.production`:
+```bash
+RAILS_ENV=production
+DATABASE_URL=mysql2://user:password@host:3306/database
+SHLINK_BASE_URL=https://your-shlink-instance.com
+SHLINK_API_KEY=your-api-key
+EMAIL_SMTP_ADDRESS=smtp.your-provider.com
+EMAIL_SMTP_USER_NAME=your-email@domain.com
+EMAIL_SMTP_PASSWORD=your-app-password
+SECRET_KEY_BASE=your-secret-key
+```
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
