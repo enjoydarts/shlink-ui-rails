@@ -169,7 +169,7 @@ class Admin::SettingsController < Admin::AdminController
         "詳細メッセージ" => error_details[:details]
       }
     }
-  rescue Net::SMTPConnectError => e
+  rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH, Errno::ENOTFOUND, IOError, EOFError => e
     error_details = {
       error_type: "接続エラー",
       server: "#{smtp_settings[:address]}:#{smtp_settings[:port]}",
