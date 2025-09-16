@@ -31,11 +31,11 @@ services:
       - RAILS_SERVE_STATIC_FILES=true
       - RAILS_LOG_TO_STDOUT=true
 
-    # tmpディレクトリのパーミッション問題を回避（名前付きボリューム使用）
+    # ボリューム設定（ホストパス指定で管理しやすく）
     volumes:
-      - app_logs:/app/log
-      - app_tmp:/app/tmp
-      - app_storage:/app/storage
+      - ./logs:/app/log
+      - app_tmp:/app/tmp  # tmpのみ名前付きボリューム（パーミッション対応）
+      - ./storage:/app/storage
 
     # ユーザー設定（ボリュームマウント時のパーミッション対応）
     user: "1000:1000"
@@ -91,9 +91,9 @@ services:
 
     # ボリューム設定（appサービスと共有）
     volumes:
-      - app_logs:/app/log
-      - app_tmp:/app/tmp
-      - app_storage:/app/storage
+      - ./logs:/app/log
+      - app_tmp:/app/tmp  # tmpのみ名前付きボリューム（パーミッション対応）
+      - ./storage:/app/storage
 
     # ユーザー設定（ボリュームマウント時のパーミッション対応）
     user: "1000:1000"
@@ -120,18 +120,11 @@ services:
         max-size: "10m"
         max-file: "3"
 
-# 永続化ボリューム設定（名前付きボリュームでパーミッション問題を回避）
+# 永続化ボリューム設定
 volumes:
-  # アプリケーションログ
-  app_logs:
-    driver: local
-
-  # 一時ファイル（キャッシュ、セッション等）
+  # 一時ファイル（キャッシュ、セッション等）のみ名前付きボリューム
+  # パーミッション問題回避のため
   app_tmp:
-    driver: local
-
-  # アプリケーションストレージ（ファイルアップロード等）
-  app_storage:
     driver: local
 
 # ネットワーク設定
