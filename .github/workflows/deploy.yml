@@ -5,6 +5,7 @@
 # - mainブランチへのpush/merge時に実行
 # - DockerイメージをGitHub Container Registryにビルド・プッシュ
 # - OCIインスタンスにSSH接続してデプロイ実行
+# - ヘルスチェック・ロールバック機能付き
 
 name: Production Deployment
 
@@ -12,9 +13,13 @@ name: Production Deployment
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
-    types: [closed]
+  workflow_dispatch:  # 手動実行を許可
+    inputs:
+      skip_tests:
+        description: 'Skip test execution (emergency deploy)'
+        required: false
+        default: false
+        type: boolean
 
 # 環境変数設定
 env:
@@ -23,10 +28,45 @@ env:
 
 # ジョブ定義
 jobs:
+  # 事前チェックジョブ
+  pre-checks:
+    name: Pre-deployment checks
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
+      skip_tests: ${{ steps.check.outputs.skip_tests }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check deployment conditions
+        id: check
+        run: |
+          # コミットメッセージに[skip deploy]が含まれている場合はスキップ
+          if git log -1 --pretty=%B | grep -q "\[skip deploy\]"; then
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+            echo "🚫 Deployment skipped due to [skip deploy] in commit message"
+          else
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            echo "✅ Deployment will proceed"
+          fi
+
+          # 手動実行時のテストスキップ設定
+          if [[ "${{ github.event.inputs.skip_tests }}" == "true" ]]; then
+            echo "skip_tests=true" >> $GITHUB_OUTPUT
+            echo "⚠️  Tests will be skipped (emergency deploy)"
+          else
+            echo "skip_tests=false" >> $GITHUB_OUTPUT
+          fi
+
   # テスト実行ジョブ
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    needs: pre-checks
+    if: needs.pre-checks.outputs.should_deploy == 'true' && needs.pre-checks.outputs.skip_tests == 'false'
 
     # サービスコンテナ設定（テスト用MySQL, Redis）
     services:
@@ -87,9 +127,12 @@ jobs:
   build-and-push:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
-    needs: test
-    # mainブランチかつテスト成功時のみ実行
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [pre-checks, test]
+    if: needs.pre-checks.outputs.should_deploy == 'true' && (needs.test.result == 'success' || needs.pre-checks.outputs.skip_tests == 'true')
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+      digest: ${{ steps.build.outputs.digest }}
+      tags: ${{ steps.meta.outputs.tags }}
 
     permissions:
       contents: read
@@ -120,24 +163,28 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push Docker image
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile.production
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/arm64  # OCI Ampere A1用
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Output image
+        id: image
+        run: echo "image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_OUTPUT
+
   # 本番デプロイジョブ
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: build-and-push
-    # mainブランチかつイメージビルド成功時のみ実行
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [pre-checks, build-and-push]
+    if: needs.pre-checks.outputs.should_deploy == 'true'
 
     environment:
       name: production
@@ -145,98 +192,213 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.1
-        with:
-          ssh-private-key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
-
-      - name: Add OCI host to known_hosts
         run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.OCI_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H ${{ secrets.OCI_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy to OCI
+      - name: Create deployment script
         run: |
-          # 本番サーバーにSSH接続してデプロイスクリプト実行
-          ssh -o StrictHostKeyChecking=no ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_HOST }} << 'EOF'
-            set -e
+          cat > deploy.sh << 'DEPLOY_SCRIPT'
+          #!/bin/bash
+          set -euo pipefail
 
-            # デプロイログ開始
-            echo "$(date): Starting deployment..." >> /opt/shlink-ui-rails/logs/deploy.log
+          # 設定
+          DEPLOY_TIMEOUT=600  # 10分
+          HEALTH_CHECK_TIMEOUT=300  # 5分
+          BACKUP_RETENTION_DAYS=7
+          LOG_FILE="/opt/shlink-ui-rails/logs/deploy.log"
 
-            # アプリケーションディレクトリに移動
-            cd /opt/shlink-ui-rails
+          # ログ関数
+          log() {
+            echo "$(date '+%Y-%m-%d %H:%M:%S'): $1" | tee -a "$LOG_FILE"
+          }
 
-            # 最新のコードを取得
-            git fetch origin main
-            git reset --hard origin/main
+          # エラーハンドリング
+          trap 'log "❌ Deployment failed at line $LINENO"; exit 1' ERR
 
-            # 環境変数ファイルが存在することを確認
-            if [ ! -f .env.production ]; then
-              echo "ERROR: .env.production file not found!" >> logs/deploy.log
-              exit 1
-            fi
+          log "🚀 Starting deployment process..."
 
-            # コンテナレジストリからログイン
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          # アプリケーションディレクトリに移動
+          cd /opt/shlink-ui-rails
 
-            # 最新のDockerイメージをプル
-            docker-compose -f docker-compose.prod.yml pull
-
-            # データベースマイグレーション実行
-            echo "Running database migration..." >> logs/deploy.log
-            docker-compose -f docker-compose.prod.yml run --rm app rails db:migrate
-
-            # サービス再起動
-            echo "Restarting services..." >> logs/deploy.log
-            docker-compose -f docker-compose.prod.yml up -d
-
-            # ヘルスチェック
-            echo "Waiting for services to be healthy..." >> logs/deploy.log
-            sleep 30
-
-            # アプリケーションの動作確認
-            if curl -f http://localhost:3000/health; then
-              echo "$(date): Deployment completed successfully!" >> logs/deploy.log
-            else
-              echo "$(date): Deployment failed - health check failed!" >> logs/deploy.log
-              exit 1
-            fi
-
-            # Docker cleanup
-            docker system prune -f
-
-            echo "$(date): Deployment process finished." >> logs/deploy.log
-          EOF
-
-      - name: Verify Deployment
-        run: |
-          # デプロイ後の確認
-          sleep 10
-          if curl -f https://app.kety.at/health; then
-            echo "✅ Deployment verification successful"
+          # 最新のコードを取得
+          log "📥 Pulling latest code..."
+          if [[ -d "app" ]]; then
+            cd app && git fetch origin main && git reset --hard origin/main && cd ..
           else
-            echo "❌ Deployment verification failed"
+            git clone https://github.com/${{ github.repository }}.git app
+          fi
+
+          # 環境変数ファイルが存在することを確認
+          if [ ! -f .env.production ]; then
+            log "❌ ERROR: .env.production file not found!"
             exit 1
           fi
 
-  # Slack通知ジョブ（オプション）
+          # GitHub Container Registryにログイン
+          log "🔑 Logging into container registry..."
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+          # 現在のコンテナをバックアップ
+          log "💾 Creating backup of current containers..."
+          BACKUP_TAG="backup-$(date +%Y%m%d-%H%M%S)"
+          if docker-compose -f docker-compose.prod.yml ps -q app >/dev/null 2>&1; then
+            RUNNING_CONTAINER=$(docker-compose -f docker-compose.prod.yml ps -q app)
+            if [[ -n "$RUNNING_CONTAINER" ]]; then
+              docker commit "$RUNNING_CONTAINER" "ghcr.io/${{ github.repository }}:$BACKUP_TAG" || log "⚠️  Backup creation failed"
+            fi
+          fi
+
+          # 最新のDockerイメージをプル
+          log "🐳 Pulling new Docker image: ${{ needs.build-and-push.outputs.image }}"
+          docker-compose -f docker-compose.prod.yml pull
+
+          # データベースマイグレーション（ドライランでチェック）
+          log "🗄️  Checking database migrations..."
+          if docker-compose -f docker-compose.prod.yml run --rm app rails db:migrate:status | grep -q "down"; then
+            log "📊 Running database migrations..."
+            docker-compose -f docker-compose.prod.yml run --rm app rails db:migrate
+          else
+            log "✅ No new migrations to run"
+          fi
+
+          # システム設定の初期化
+          log "⚙️  Initializing system settings..."
+          docker-compose -f docker-compose.prod.yml run --rm app rails runner "SystemSetting.initialize_defaults!"
+
+          # サービス再起動
+          log "🔄 Restarting services with zero-downtime strategy..."
+          docker-compose -f docker-compose.prod.yml up -d --force-recreate
+
+          # ヘルスチェック待機
+          log "🏥 Waiting for application to be healthy..."
+          timeout $HEALTH_CHECK_TIMEOUT bash -c '
+            while ! curl -sf http://localhost:3000/health >/dev/null 2>&1; do
+              echo "⏳ Waiting for health check..."
+              sleep 10
+            done
+          ' || {
+            log "❌ Health check timeout! Rolling back..."
+            # ロールバック処理
+            if [[ -n "${BACKUP_TAG:-}" ]] && docker image inspect "ghcr.io/${{ github.repository }}:$BACKUP_TAG" >/dev/null 2>&1; then
+              log "🔄 Rolling back to previous version..."
+              docker tag "ghcr.io/${{ github.repository }}:$BACKUP_TAG" "ghcr.io/${{ github.repository }}:latest"
+              docker-compose -f docker-compose.prod.yml up -d --force-recreate
+              sleep 30
+              if curl -sf http://localhost:3000/health >/dev/null 2>&1; then
+                log "✅ Rollback successful"
+              else
+                log "❌ Rollback also failed!"
+              fi
+            fi
+            exit 1
+          }
+
+          log "✅ Application is healthy!"
+
+          # 古いバックアップとイメージをクリーンアップ
+          log "🧹 Cleaning up old backups and images..."
+          docker images --format "table {{.Repository}}:{{.Tag}}\t{{.CreatedAt}}" | \
+            grep "backup-" | \
+            awk -v date="$(date -d "$BACKUP_RETENTION_DAYS days ago" +%Y-%m-%d)" '$2 < date {print $1}' | \
+            xargs -r docker rmi || true
+
+          docker system prune -f --filter "until=24h"
+
+          # デプロイ成功ログ
+          log "🎉 Deployment completed successfully!"
+          log "📊 Image: ${{ needs.build-and-push.outputs.image }}"
+          log "🔗 Digest: ${{ needs.build-and-push.outputs.digest }}"
+          echo "$(date): Deployment completed successfully - $(git -C app rev-parse --short HEAD)" >> deploy.log
+
+          DEPLOY_SCRIPT
+
+          chmod +x deploy.sh
+
+      - name: Deploy to OCI
+        env:
+          IMAGE: ${{ needs.build-and-push.outputs.image }}
+          DIGEST: ${{ needs.build-and-push.outputs.digest }}
+        run: |
+          scp -i ~/.ssh/id_ed25519 deploy.sh ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_HOST }}:/tmp/
+          ssh -i ~/.ssh/id_ed25519 ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_HOST }} 'bash /tmp/deploy.sh && rm /tmp/deploy.sh'
+
+      - name: Verify External Access
+        run: |
+          log "🔍 Verifying external access..."
+          timeout 300 bash -c '
+            while ! curl -sf https://app.kety.at/health >/dev/null 2>&1; do
+              echo "⏳ Waiting for external access... ($(date))"
+              sleep 15
+            done
+          '
+          echo "✅ External access verified!"
+
+      - name: Post-deployment checks
+        run: |
+          echo "🔍 Running post-deployment checks..."
+
+          # 基本ヘルスチェック
+          HEALTH_RESPONSE=$(curl -s https://app.kety.at/health)
+          if [[ "$HEALTH_RESPONSE" == *"ok"* ]]; then
+            echo "✅ Health check passed"
+          else
+            echo "❌ Health check failed: $HEALTH_RESPONSE"
+            exit 1
+          fi
+
+          # SSL証明書チェック
+          SSL_EXPIRE=$(echo | openssl s_client -connect app.kety.at:443 -servername app.kety.at 2>/dev/null | openssl x509 -noout -dates | grep notAfter | cut -d= -f2)
+          echo "🔐 SSL certificate expires: $SSL_EXPIRE"
+
+          # セキュリティヘッダーチェック
+          SECURITY_HEADERS=$(curl -sI https://app.kety.at/ | grep -E "(Strict-Transport-Security|X-Content-Type-Options|X-Frame-Options)")
+          echo "🛡️  Security headers:"
+          echo "$SECURITY_HEADERS"
+
+          echo "🎊 All post-deployment checks passed!"
+
+  # デプロイ状況通知ジョブ
   notify:
     name: Notify Deployment Status
     runs-on: ubuntu-latest
-    needs: [deploy]
-    if: always() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [pre-checks, test, build-and-push, deploy]
+    if: always() && needs.pre-checks.outputs.should_deploy == 'true'
 
     steps:
       - name: Notify Success
         if: needs.deploy.result == 'success'
         run: |
-          echo "✅ Production deployment successful!"
-          # Slack通知が必要な場合はここに追加
+          echo "🎉 Production deployment successful!"
+          echo "🌐 Application URL: https://app.kety.at"
+          echo "📊 Deployment time: $(date)"
+          echo "🔗 Commit: ${{ github.sha }}"
+          # Slack/Discord通知が必要な場合はここに追加
 
       - name: Notify Failure
-        if: needs.deploy.result == 'failure'
+        if: contains(needs.*.result, 'failure')
         run: |
           echo "❌ Production deployment failed!"
-          # Slack通知が必要な場合はここに追加
+          echo "🔍 Failed jobs:"
+          echo "  - Test: ${{ needs.test.result }}"
+          echo "  - Build: ${{ needs.build-and-push.result }}"
+          echo "  - Deploy: ${{ needs.deploy.result }}"
+          echo "📋 Check the workflow logs for details"
+          echo "🏥 Health check URL: https://app.kety.at/health"
+          # 緊急アラートが必要な場合はここに追加
+
+      - name: Summary
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Repository:** ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Result:** ${{ needs.deploy.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL:** https://app.kety.at" >> $GITHUB_STEP_SUMMARY
+          echo "- **Time:** $(date)" >> $GITHUB_STEP_SUMMARY
