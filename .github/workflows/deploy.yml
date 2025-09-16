@@ -385,11 +385,22 @@ jobs:
           IMAGE: ${{ needs.build-and-push.outputs.image }}
           DIGEST: ${{ needs.build-and-push.outputs.digest }}
         run: |
-          # デバッグスクリプトもアップロード
-          scp -i ~/.ssh/id_ed25519 scripts/debug-server.sh ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_HOST }}:/opt/shlink-ui-rails/
+          # サーバー側でソースコード更新後にデプロイスクリプトを実行
+          ssh -i ~/.ssh/id_ed25519 ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_HOST }} '
+            cd /opt/shlink-ui-rails
 
-          scp -i ~/.ssh/id_ed25519 deploy.sh ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_HOST }}:/tmp/
-          ssh -i ~/.ssh/id_ed25519 ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_HOST }} 'bash /tmp/deploy.sh && rm /tmp/deploy.sh'
+            # 最新のソースコードを取得（デプロイスクリプトも含む）
+            git fetch origin
+            git reset --hard origin/main
+
+            # 更新されたデプロイスクリプトを実行
+            export IMAGE="${{ needs.build-and-push.outputs.image }}"
+            export DIGEST="${{ needs.build-and-push.outputs.digest }}"
+            export GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
+            export GITHUB_ACTOR="${{ github.actor }}"
+
+            bash scripts/deploy.sh
+          '
 
           # デプロイ後の状況確認
           echo "🔍 デプロイ後のサーバー状況確認:"

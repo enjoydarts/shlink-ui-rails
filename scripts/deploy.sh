@@ -316,12 +316,12 @@ main() {
     # アプリケーションディレクトリに移動
     cd "$APP_DIR"
 
-    # サーバーローカルのソースコードを最新に更新
-    log "INFO" "Updating local source code..."
-    git fetch origin
-    git reset --hard origin/main
+    # ソースコードは既にGitHub Actionsで更新済み
+    log "INFO" "Source code already updated by GitHub Actions"
 
-    log "SUCCESS" "Local source code updated to latest commit"
+    # 現在のコミットハッシュを表示
+    local current_commit=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+    log "INFO" "Current commit: $current_commit"
 
     # 現在の状態をバックアップ
     create_backup
