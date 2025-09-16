@@ -347,11 +347,11 @@ jobs:
           echo "🔍 Running post-deployment checks..."
 
           # 基本ヘルスチェック
-          HEALTH_RESPONSE=$(curl -s https://app.kty.at/health)
-          if [[ "$HEALTH_RESPONSE" == *"ok"* ]]; then
-            echo "✅ Health check passed"
+          HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://app.kty.at/health)
+          if [[ "$HEALTH_STATUS" == "200" ]]; then
+            echo "✅ Health check passed (HTTP $HEALTH_STATUS)"
           else
-            echo "❌ Health check failed: $HEALTH_RESPONSE"
+            echo "❌ Health check failed: HTTP $HEALTH_STATUS"
             exit 1
           fi
 
