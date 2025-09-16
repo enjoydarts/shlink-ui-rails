@@ -2,12 +2,16 @@ class Admin::SolidQueueController < Admin::AdminController
   def index
     begin
       @stats = {
-        pending_jobs: SolidQueue::Job.where(finished_at: nil).count,
+        pending_jobs: SolidQueue::Job.joins("LEFT JOIN solid_queue_ready_executions ON solid_queue_ready_executions.job_id = solid_queue_jobs.id")
+                                    .where(finished_at: nil)
+                                    .where("solid_queue_ready_executions.id IS NOT NULL").count,
         running_jobs: SolidQueue::Job.joins("LEFT JOIN solid_queue_claimed_executions ON solid_queue_claimed_executions.job_id = solid_queue_jobs.id")
                                     .where(finished_at: nil)
                                     .where("solid_queue_claimed_executions.id IS NOT NULL").count,
-        finished_jobs: SolidQueue::Job.where.not(finished_at: nil).where(failed_execution_id: nil).count,
-        failed_jobs: SolidQueue::Job.where.not(failed_execution_id: nil).count,
+        finished_jobs: SolidQueue::Job.joins("LEFT JOIN solid_queue_failed_executions ON solid_queue_failed_executions.job_id = solid_queue_jobs.id")
+                                     .where.not(finished_at: nil)
+                                     .where("solid_queue_failed_executions.id IS NULL").count,
+        failed_jobs: SolidQueue::Job.joins("INNER JOIN solid_queue_failed_executions ON solid_queue_failed_executions.job_id = solid_queue_jobs.id").count,
         active_workers: SolidQueue::Process.where("last_heartbeat_at > ?", 1.minute.ago).count,
         total_workers: SolidQueue::Process.count
       }
@@ -62,8 +66,7 @@ class Admin::SolidQueueController < Admin::AdminController
   end
 
   def failed_jobs
-    @failed_jobs = SolidQueue::Job.where.not(failed_execution_id: nil)
-                                  .includes(:failed_execution)
+    @failed_jobs = SolidQueue::Job.joins("INNER JOIN solid_queue_failed_executions ON solid_queue_failed_executions.job_id = solid_queue_jobs.id")
                                   .order(created_at: :desc)
                                   .limit(50)
     render json: @failed_jobs.map { |job|
@@ -73,8 +76,7 @@ class Admin::SolidQueueController < Admin::AdminController
         class_name: job.class_name,
         arguments: job.arguments,
         created_at: job.created_at,
-        finished_at: job.finished_at,
-        error: job.failed_execution&.error
+        finished_at: job.finished_at
       }
     }
   end
@@ -90,8 +92,11 @@ class Admin::SolidQueueController < Admin::AdminController
   end
 
   def clear_finished
-    count = SolidQueue::Job.where.not(finished_at: nil).where(failed_execution_id: nil).count
-    SolidQueue::Job.where.not(finished_at: nil).where(failed_execution_id: nil).delete_all
+    finished_jobs = SolidQueue::Job.joins("LEFT JOIN solid_queue_failed_executions ON solid_queue_failed_executions.job_id = solid_queue_jobs.id")
+                                  .where.not(finished_at: nil)
+                                  .where("solid_queue_failed_executions.id IS NULL")
+    count = finished_jobs.count
+    finished_jobs.delete_all
     redirect_to admin_solid_queue_index_path, notice: "完了済みジョブ #{count} 件を削除しました。"
   end
 end
