@@ -607,6 +607,7 @@ DEPENDENCIES
   letter_opener_web
   mailersend-ruby
   mysql2 (~> 0.5)
+  net-smtp
   omniauth
   omniauth-google-oauth2
   omniauth-rails_csrf_protection

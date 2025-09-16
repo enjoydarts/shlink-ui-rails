@@ -1,3 +1,5 @@
+require "net/smtp"
+
 class Admin::SettingsController < Admin::AdminController
   def show
     @settings_by_category = SystemSetting.enabled
