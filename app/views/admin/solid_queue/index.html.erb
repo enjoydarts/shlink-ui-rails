@@ -184,31 +184,34 @@
             <div class="border border-gray-200 rounded-lg p-3">
               <div class="flex items-center justify-between">
                 <div class="flex-1">
-                  <p class="text-sm font-medium text-gray-900"><%= job.class_name %></p>
-                  <p class="text-xs text-gray-500">キュー: <%= job.queue_name %></p>
+                  <p class="text-sm font-medium text-gray-900"><%= job[:class_name] %></p>
+                  <p class="text-xs text-gray-500">キュー: <%= job[:queue_name] %></p>
                 </div>
                 <div class="flex items-center space-x-2">
-                  <% if job.finished_at %>
-                    <% if job.failed_execution %>
-                      <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                        失敗
-                      </span>
-                    <% else %>
-                      <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                        完了
-                      </span>
-                    <% end %>
-                  <% elsif job.ready_execution %>
+                  <% case job[:status] %>
+                  <% when 'failed' %>
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                      失敗
+                    </span>
+                  <% when 'finished' %>
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                      完了
+                    </span>
+                  <% when 'running' %>
                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                       実行中
                     </span>
-                  <% else %>
+                  <% when 'pending' %>
                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
                       待機中
                     </span>
+                  <% else %>
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                      スケジュール済み
+                    </span>
                   <% end %>
                   <span class="text-xs text-gray-500">
-                    <%= time_ago_in_words(job.created_at) %>前
+                    <%= time_ago_in_words(job[:created_at]) %>前
                   </span>
                 </div>
               </div>

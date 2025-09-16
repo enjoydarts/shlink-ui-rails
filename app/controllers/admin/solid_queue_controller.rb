@@ -16,8 +16,34 @@ class Admin::SolidQueueController < Admin::AdminController
         total_workers: SolidQueue::Process.count
       }
 
-      @recent_jobs = SolidQueue::Job.order(created_at: :desc).limit(20)
-      @active_processes = SolidQueue::Process.where("last_heartbeat_at > ?", 1.minute.ago)
+      jobs_data = SolidQueue::Job.select("
+          solid_queue_jobs.*,
+          CASE
+            WHEN solid_queue_jobs.finished_at IS NOT NULL AND solid_queue_failed_executions.id IS NOT NULL THEN 'failed'
+            WHEN solid_queue_jobs.finished_at IS NOT NULL THEN 'finished'
+            WHEN solid_queue_claimed_executions.id IS NOT NULL THEN 'running'
+            WHEN solid_queue_ready_executions.id IS NOT NULL THEN 'pending'
+            ELSE 'scheduled'
+          END as job_status
+        ")
+        .joins("LEFT JOIN solid_queue_failed_executions ON solid_queue_failed_executions.job_id = solid_queue_jobs.id")
+        .joins("LEFT JOIN solid_queue_claimed_executions ON solid_queue_claimed_executions.job_id = solid_queue_jobs.id")
+        .joins("LEFT JOIN solid_queue_ready_executions ON solid_queue_ready_executions.job_id = solid_queue_jobs.id")
+        .order(created_at: :desc)
+        .limit(20)
+
+      @recent_jobs = jobs_data.map do |job|
+        {
+          id: job.id,
+          class_name: job.class_name,
+          queue_name: job.queue_name,
+          created_at: job.created_at,
+          finished_at: job.finished_at,
+          status: job.job_status
+        }
+      end
+      @active_processes = SolidQueue::Process.includes(:claimed_executions)
+                                            .where("last_heartbeat_at > ?", 1.minute.ago)
                                             .order(last_heartbeat_at: :desc)
     rescue ActiveRecord::StatementInvalid => e
       @stats = {
