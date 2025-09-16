@@ -118,6 +118,9 @@ jobs:
           bin/rails db:create
           bundle exec ridgepole --config config/database.yml --env test --file db/schemas/Schemafile --apply
 
+      - name: Precompile assets
+        run: bundle exec rails assets:precompile
+
       - name: Run RuboCop
         run: bundle exec rubocop
 
