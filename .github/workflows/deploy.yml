@@ -268,16 +268,16 @@ jobs:
 
           # データベースマイグレーション（ドライランでチェック）
           log "🗄️  Checking database migrations..."
-          if docker-compose -f docker-compose.prod.yml run --rm app rails db:migrate:status | grep -q "down"; then
+          if docker-compose -f docker-compose.prod.yml run --rm app bundle exec rails db:migrate:status | grep -q "down"; then
             log "📊 Running database migrations..."
-            docker-compose -f docker-compose.prod.yml run --rm app rails db:migrate
+            docker-compose -f docker-compose.prod.yml run --rm app bundle exec rails db:migrate
           else
             log "✅ No new migrations to run"
           fi
 
           # システム設定の初期化
           log "⚙️  Initializing system settings..."
-          docker-compose -f docker-compose.prod.yml run --rm app rails runner "SystemSetting.initialize_defaults!"
+          docker-compose -f docker-compose.prod.yml run --rm app bundle exec rails runner "SystemSetting.initialize_defaults!"
 
           # サービス再起動
           log "🔄 Restarting services with zero-downtime strategy..."
