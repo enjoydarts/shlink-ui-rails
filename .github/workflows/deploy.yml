@@ -333,7 +333,7 @@ jobs:
 
       - name: Verify External Access
         run: |
-          log "🔍 Verifying external access..."
+          echo "🔍 Verifying external access..."
           timeout 300 bash -c '
             while ! curl -sf https://app.kty.at/health >/dev/null 2>&1; do
               echo "⏳ Waiting for external access... ($(date))"
