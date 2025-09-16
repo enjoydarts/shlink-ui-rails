@@ -258,13 +258,23 @@ jobs:
             fi
           fi
 
+          # 既存イメージを削除して強制更新
+          log "🗑️  Removing existing images to force update..."
+          docker rmi ghcr.io/${{ github.repository }}:latest || true
+          docker rmi ${{ needs.build-and-push.outputs.image }} || true
+
           # 最新のDockerイメージを強制プル
           log "🐳 Pulling new Docker image: ${{ needs.build-and-push.outputs.image }}"
           if docker pull ${{ needs.build-and-push.outputs.image }}; then
             docker tag ${{ needs.build-and-push.outputs.image }} ghcr.io/${{ github.repository }}:latest
             log "✅ Successfully pulled and tagged new image"
+
+            # イメージ詳細を表示
+            log "📋 Image details:"
+            docker images | grep "${{ github.repository }}" | head -3
           else
-            log "⚠️  Failed to pull new image, using existing latest image"
+            log "❌ Failed to pull new image, deployment will fail"
+            exit 1
           fi
 
           # データベーススキーマの適用（Ridgepole）
@@ -276,8 +286,15 @@ jobs:
           docker-compose -f docker-compose.prod.yml run --rm app bundle exec rails runner "SystemSetting.initialize_defaults!"
 
           # コミットハッシュを環境変数として設定
-          export GIT_COMMIT="${{ github.sha }}"
+          GIT_COMMIT="${{ github.sha }}"
+          log "📝 Setting GIT_COMMIT: $GIT_COMMIT"
+
+          # .env.productionからGIT_COMMITを削除（重複回避）
+          sed -i '/^GIT_COMMIT=/d' .env.production || true
           echo "GIT_COMMIT=$GIT_COMMIT" >> .env.production
+
+          log "📄 .env.production contents:"
+          tail -5 .env.production
 
           # サービス再起動
           log "🔄 Restarting services with zero-downtime strategy..."
