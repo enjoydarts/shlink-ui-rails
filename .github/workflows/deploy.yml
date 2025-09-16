@@ -189,7 +189,7 @@ jobs:
 
     environment:
       name: production
-      url: https://app.kety.at
+      url: https://app.kty.at
 
     steps:
       - name: Checkout code
@@ -333,7 +333,7 @@ jobs:
         run: |
           log "🔍 Verifying external access..."
           timeout 300 bash -c '
-            while ! curl -sf https://app.kety.at/health >/dev/null 2>&1; do
+            while ! curl -sf https://app.kty.at/health >/dev/null 2>&1; do
               echo "⏳ Waiting for external access... ($(date))"
               sleep 15
             done
@@ -345,7 +345,7 @@ jobs:
           echo "🔍 Running post-deployment checks..."
 
           # 基本ヘルスチェック
-          HEALTH_RESPONSE=$(curl -s https://app.kety.at/health)
+          HEALTH_RESPONSE=$(curl -s https://app.kty.at/health)
           if [[ "$HEALTH_RESPONSE" == *"ok"* ]]; then
             echo "✅ Health check passed"
           else
@@ -354,11 +354,11 @@ jobs:
           fi
 
           # SSL証明書チェック
-          SSL_EXPIRE=$(echo | openssl s_client -connect app.kety.at:443 -servername app.kety.at 2>/dev/null | openssl x509 -noout -dates | grep notAfter | cut -d= -f2)
+          SSL_EXPIRE=$(echo | openssl s_client -connect app.kty.at:443 -servername app.kty.at 2>/dev/null | openssl x509 -noout -dates | grep notAfter | cut -d= -f2)
           echo "🔐 SSL certificate expires: $SSL_EXPIRE"
 
           # セキュリティヘッダーチェック
-          SECURITY_HEADERS=$(curl -sI https://app.kety.at/ | grep -E "(Strict-Transport-Security|X-Content-Type-Options|X-Frame-Options)")
+          SECURITY_HEADERS=$(curl -sI https://app.kty.at/ | grep -E "(Strict-Transport-Security|X-Content-Type-Options|X-Frame-Options)")
           echo "🛡️  Security headers:"
           echo "$SECURITY_HEADERS"
 
@@ -376,7 +376,7 @@ jobs:
         if: needs.deploy.result == 'success'
         run: |
           echo "🎉 Production deployment successful!"
-          echo "🌐 Application URL: https://app.kety.at"
+          echo "🌐 Application URL: https://app.kty.at"
           echo "📊 Deployment time: $(date)"
           echo "🔗 Commit: ${{ github.sha }}"
           # Slack/Discord通知が必要な場合はここに追加
@@ -390,7 +390,7 @@ jobs:
           echo "  - Build: ${{ needs.build-and-push.result }}"
           echo "  - Deploy: ${{ needs.deploy.result }}"
           echo "📋 Check the workflow logs for details"
-          echo "🏥 Health check URL: https://app.kety.at/health"
+          echo "🏥 Health check URL: https://app.kty.at/health"
           # 緊急アラートが必要な場合はここに追加
 
       - name: Summary
@@ -401,5 +401,5 @@ jobs:
           echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Result:** ${{ needs.deploy.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **URL:** https://app.kety.at" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL:** https://app.kty.at" >> $GITHUB_STEP_SUMMARY
           echo "- **Time:** $(date)" >> $GITHUB_STEP_SUMMARY

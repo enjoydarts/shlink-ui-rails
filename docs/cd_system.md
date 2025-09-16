@@ -93,7 +93,7 @@ GitHub Actions Workflow
 **目的**: 外部からアプリケーションにアクセス可能か確認
 
 **処理内容**:
-- 外部URL（https://app.kety.at/health）でのヘルスチェック
+- 外部URL（https://app.kty.at/health）でのヘルスチェック
 - タイムアウト時間: 5分
 - 15秒間隔での再試行
 
@@ -216,7 +216,7 @@ CDシステムを動作させるために以下のSecretを設定する必要が
 
 ### ヘルスチェックエンドポイント
 
-- **URL**: https://app.kety.at/health
+- **URL**: https://app.kty.at/health
 - **期待レスポンス**: HTTP 200 OK
 - **内容**: アプリケーション状態の詳細情報
 
