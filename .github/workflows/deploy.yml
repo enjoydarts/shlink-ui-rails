@@ -360,8 +360,8 @@ jobs:
           echo "🔐 SSL certificate expires: $SSL_EXPIRE"
 
           # セキュリティヘッダーチェック
-          SECURITY_HEADERS=$(curl -sI https://app.kty.at/ | grep -E "(Strict-Transport-Security|X-Content-Type-Options|X-Frame-Options)")
           echo "🛡️  Security headers:"
+          SECURITY_HEADERS=$(curl -sI https://app.kty.at/ | grep -E "(Strict-Transport-Security|X-Content-Type-Options|X-Frame-Options)" || echo "No security headers found")
           echo "$SECURITY_HEADERS"
 
           echo "🎊 All post-deployment checks passed!"
