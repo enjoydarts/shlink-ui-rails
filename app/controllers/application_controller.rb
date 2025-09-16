@@ -39,10 +39,10 @@ class ApplicationController < ActionController::Base
     @current_version ||= begin
       if Rails.env.production?
         # 本番環境：環境変数から取得、なければgitコマンドで取得
-        ENV['GIT_COMMIT'] || `git rev-parse --short HEAD 2>/dev/null`.strip.presence || 'unknown'
+        ENV["GIT_COMMIT"] || `git rev-parse --short HEAD 2>/dev/null`.strip.presence || "unknown"
       else
         # 開発環境：gitコマンドで取得
-        `git rev-parse --short HEAD 2>/dev/null`.strip.presence || 'unknown'
+        `git rev-parse --short HEAD 2>/dev/null`.strip.presence || "unknown"
       end
     end
   end
