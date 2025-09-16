@@ -433,6 +433,66 @@ docker-compose exec web bin/rails importmap:outdated
 - ブラウザ開発者ツールを使用して未使用CSSクラスを特定
 - より良いユーザー体験のためHotwireキャッシュを活用
 
+## 🚀 本番デプロイ
+
+### Docker Composeを使用（推奨）
+
+このアプリケーションには、Solid Queueバックグラウンドジョブ処理を含む包括的な本番セットアップが含まれています。
+
+**前提条件:**
+- Docker と Docker Compose のインストール
+- 本番設定で構成された `.env.production` ファイル
+
+**クイックデプロイ:**
+```bash
+# 自動デプロイスクリプトを実行
+./scripts/deploy-production.sh
+```
+
+**手動デプロイ:**
+```bash
+# 1. 既存のコンテナを停止
+docker-compose -f docker-compose.prod.yml down --remove-orphans
+
+# 2. 本番イメージをビルド
+docker-compose -f docker-compose.prod.yml build --no-cache
+
+# 3. 全サービスを開始（アプリ + バックグラウンドジョブ）
+docker-compose -f docker-compose.prod.yml up -d
+
+# 4. サービスの稼働確認
+docker-compose -f docker-compose.prod.yml ps
+```
+
+**サービスアーキテクチャ:**
+- **app**: メインRailsアプリケーションサーバー（ポート3000）
+- **jobs**: Solid Queueバックグラウンドジョブワーカー
+- **共有ボリューム**: logs、tmp、storageディレクトリ
+
+**バックグラウンドジョブ:**
+アプリケーションは信頼性の高いバックグラウンドジョブ処理にSolid Queueを使用：
+- メール配信（パスワードリセット、通知）
+- Shlink APIとのURL同期
+- メンテナンスタスク
+
+**監視:**
+- Solid Queueダッシュボードへのアクセス： `/admin/solid_queue`
+- コンテナログの監視: `docker logs shlink-ui-rails-app`
+- ジョブワーカーの確認: `docker logs shlink-ui-rails-jobs`
+
+**環境変数:**
+`.env.production`の必須本番環境変数：
+```bash
+RAILS_ENV=production
+DATABASE_URL=mysql2://user:password@host:3306/database
+SHLINK_BASE_URL=https://your-shlink-instance.com
+SHLINK_API_KEY=your-api-key
+EMAIL_SMTP_ADDRESS=smtp.your-provider.com
+EMAIL_SMTP_USER_NAME=your-email@domain.com
+EMAIL_SMTP_PASSWORD=your-app-password
+SECRET_KEY_BASE=your-secret-key
+```
+
 ## 📄 ライセンス
 
 このプロジェクトはMITライセンスの下でライセンスされています - 詳細は [LICENSE](LICENSE) ファイルを参照してください。
