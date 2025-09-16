@@ -108,6 +108,10 @@ jobs:
       - name: Set up database
         env:
           RAILS_ENV: test
+          DATABASE_HOST: 127.0.0.1
+          DATABASE_NAME: shlink_ui_rails_test
+          DATABASE_USER: app
+          DATABASE_PASSWORD: apppass
           DATABASE_URL: mysql2://app:apppass@127.0.0.1:3306/shlink_ui_rails_test
           REDIS_URL: redis://localhost:6379/0
         run: |
