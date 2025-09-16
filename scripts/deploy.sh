@@ -258,20 +258,50 @@ emergency_rollback() {
     return 1
 }
 
-# 古いバックアップのクリーンアップ
-cleanup_old_backups() {
-    log "INFO" "Cleaning up old backups..."
+# 古いイメージのクリーンアップ
+cleanup_old_images() {
+    log "INFO" "Cleaning up old Docker images..."
 
-    # 古いバックアップイメージを削除
-    docker images --format "table {{.Repository}}:{{.Tag}}\t{{.CreatedAt}}" | \
+    # 1. 古いバックアップイメージを削除（7日以前）
+    log "INFO" "Removing old backup images (older than $BACKUP_RETENTION_DAYS days)..."
+    docker images --format "{{.Repository}}:{{.Tag}} {{.CreatedAt}}" | \
         grep "backup-" | \
-        awk -v date="$(date -d "$BACKUP_RETENTION_DAYS days ago" +%Y-%m-%d)" '$2 < date {print $1}' | \
-        xargs -r docker rmi 2>/dev/null || true
+        while read -r image created; do
+            # 日付を秒に変換して比較
+            image_date=$(date -d "$(echo "$created" | cut -d' ' -f1)" +%s 2>/dev/null || echo "0")
+            cutoff_date=$(date -d "$BACKUP_RETENTION_DAYS days ago" +%s)
 
-    # 使用されていないイメージをクリーンアップ
+            if [[ $image_date -lt $cutoff_date && $image_date -gt 0 ]]; then
+                log "INFO" "Removing old backup: $image"
+                docker rmi "$image" 2>/dev/null || true
+            fi
+        done
+
+    # 2. GitHub Container Registryの古いイメージを削除（最新3世代を保持）
+    log "INFO" "Removing old GHCR images (keeping latest 3 versions)..."
+    docker images --format "{{.Repository}}:{{.Tag}} {{.CreatedAt}}" | \
+        grep "ghcr.io/enjoydarts/shlink-ui-rails" | \
+        grep -v ":latest" | \
+        sort -k2 -r | \
+        tail -n +4 | \
+        while read -r image _; do
+            log "INFO" "Removing old GHCR image: $image"
+            docker rmi "$image" 2>/dev/null || true
+        done
+
+    # 3. <none>タグの未使用イメージを削除
+    log "INFO" "Removing dangling images..."
+    docker images --filter "dangling=true" -q | xargs -r docker rmi 2>/dev/null || true
+
+    # 4. 使用されていないイメージとコンテナをクリーンアップ
+    log "INFO" "Running system cleanup..."
     docker system prune -f --filter "until=24h" >/dev/null 2>&1 || true
 
-    log "SUCCESS" "Cleanup completed"
+    # 5. ストレージ使用量をログ出力
+    log "INFO" "Current Docker storage usage:"
+    docker system df 2>/dev/null || true
+
+    log "SUCCESS" "Image cleanup completed"
 }
 
 # メイン処理
@@ -286,13 +316,12 @@ main() {
     # アプリケーションディレクトリに移動
     cd "$APP_DIR"
 
-    # 最新コードを取得
-    log "INFO" "Pulling latest code..."
-    if [[ -d "app" ]]; then
-        cd app && git fetch origin main && git reset --hard origin/main && cd ..
-    else
-        git clone "$(git remote get-url origin)" app
-    fi
+    # ソースコードは既にGitHub Actionsで更新済み
+    log "INFO" "Source code already updated by GitHub Actions"
+
+    # 現在のコミットハッシュを表示
+    local current_commit=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+    log "INFO" "Current commit: $current_commit"
 
     # 現在の状態をバックアップ
     create_backup
@@ -327,7 +356,7 @@ main() {
     fi
 
     # クリーンアップ
-    cleanup_old_backups
+    cleanup_old_images
 
     # デプロイ成功ログ
     local commit_hash=""
