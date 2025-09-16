@@ -263,7 +263,7 @@ function testSettings(type) {
   })
   .then(response => response.json())
   .then(data => {
-    showTestResultModal(data.success, data.message, type);
+    showTestResultModal(data.success, data.message, type, data.details);
   })
   .catch(error => {
     showTestResultModal(false, 'テスト実行中にエラーが発生しました: ' + error.message, type);
@@ -274,17 +274,17 @@ function testSettings(type) {
   });
 }
 
-function showTestResultModal(success, message, testType) {
+function showTestResultModal(success, message, testType, details) {
   const modal = document.getElementById('test-result-modal');
   const backdrop = document.getElementById('test-result-modal-backdrop');
   const content = document.getElementById('test-result-modal-content');
-  
+
   // アイコンと色を設定
   const iconElement = document.getElementById('test-result-icon');
   const iconContainer = document.getElementById('test-result-icon-container');
   const titleElement = document.getElementById('test-result-title');
   const messageElement = document.getElementById('test-result-message');
-  
+
   if (success) {
     iconContainer.className = 'w-10 h-10 bg-green-100 rounded-full flex items-center justify-center';
     iconElement.className = 'w-6 h-6 text-green-600';
@@ -298,14 +298,45 @@ function showTestResultModal(success, message, testType) {
     titleElement.textContent = 'テスト失敗';
     titleElement.className = 'text-lg font-semibold text-red-900';
   }
-  
+
   const testTypeNames = {
     'email': 'メール設定',
     'captcha': 'CAPTCHA設定'
   };
-  
+
   document.getElementById('test-type-name').textContent = testTypeNames[testType] || testType + '設定';
   messageElement.textContent = message;
+
+  // 詳細エラー情報を表示
+  const detailsContainer = document.getElementById('test-result-details');
+  if (details && !success) {
+    let detailsHtml = '<div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">';
+    detailsHtml += '<h4 class="text-sm font-semibold text-red-800 mb-2">詳細情報</h4>';
+    detailsHtml += '<dl class="space-y-2">';
+
+    for (const [key, value] of Object.entries(details)) {
+      detailsHtml += `<div class="flex flex-col sm:flex-row">`;
+      detailsHtml += `<dt class="text-xs font-medium text-red-700 sm:w-24 mb-1 sm:mb-0">${key}:</dt>`;
+
+      if (Array.isArray(value)) {
+        detailsHtml += `<dd class="text-xs text-red-600">`;
+        value.forEach((item, index) => {
+          detailsHtml += `<div class="mb-1">• ${item}</div>`;
+        });
+        detailsHtml += `</dd>`;
+      } else {
+        detailsHtml += `<dd class="text-xs text-red-600 break-words">${value}</dd>`;
+      }
+      detailsHtml += `</div>`;
+    }
+
+    detailsHtml += '</dl></div>';
+    detailsContainer.innerHTML = detailsHtml;
+    detailsContainer.classList.remove('hidden');
+  } else {
+    detailsContainer.innerHTML = '';
+    detailsContainer.classList.add('hidden');
+  }
   
   modal.classList.remove('hidden');
   
@@ -621,6 +652,9 @@ function closeSuccessModal() {
           <h4 class="text-sm font-medium text-gray-800 mb-2">テスト結果詳細</h4>
           <p id="test-result-message" class="text-sm text-gray-700 leading-relaxed"></p>
         </div>
+
+        <!-- 詳細エラー情報コンテナ -->
+        <div id="test-result-details" class="hidden"></div>
       </div>
       
       <!-- Footer -->
