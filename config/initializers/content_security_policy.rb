@@ -25,10 +25,6 @@ Rails.application.configure do
 
   # Generate session nonces for permitted importmap, inline scripts, and inline styles.
   config.content_security_policy_nonce_generator = ->(request) { request.session.id.to_s }
-  # Development環境ではnonce無効化（unsafe-inlineを有効にするため）
-  unless Rails.env.production?
-    config.content_security_policy_nonce_directives = %w[]
-  else
-    config.content_security_policy_nonce_directives = %w[script-src style-src]
-  end
+  # All環境でnonce無効化（unsafe-inlineを有効にするため）
+  config.content_security_policy_nonce_directives = %w[]
 end
