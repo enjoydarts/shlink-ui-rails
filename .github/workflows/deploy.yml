@@ -244,6 +244,10 @@ jobs:
           log "🔑 Logging into container registry..."
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
+          # イメージ配布完了を少し待機
+          log "⏳ Waiting for image distribution..."
+          sleep 10
+
           # 現在のコンテナをバックアップ
           log "💾 Creating backup of current containers..."
           BACKUP_TAG="backup-$(date +%Y%m%d-%H%M%S)"
@@ -256,8 +260,12 @@ jobs:
 
           # 最新のDockerイメージを強制プル
           log "🐳 Pulling new Docker image: ${{ needs.build-and-push.outputs.image }}"
-          docker pull ${{ needs.build-and-push.outputs.image }}
-          docker tag ${{ needs.build-and-push.outputs.image }} ghcr.io/${{ github.repository }}:latest
+          if docker pull ${{ needs.build-and-push.outputs.image }}; then
+            docker tag ${{ needs.build-and-push.outputs.image }} ghcr.io/${{ github.repository }}:latest
+            log "✅ Successfully pulled and tagged new image"
+          else
+            log "⚠️  Failed to pull new image, using existing latest image"
+          fi
 
           # データベーススキーマの適用（Ridgepole）
           log "🗄️  Applying database schema with Ridgepole..."
