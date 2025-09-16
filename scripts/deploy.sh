@@ -54,7 +54,15 @@ log() {
 handle_error() {
     local exit_code=$?
     local line_number=$1
-    log "ERROR" "Deployment failed at line $line_number (exit code: $exit_code)"
+    local error_msg="Deployment failed at line $line_number (exit code: $exit_code)"
+
+    log "ERROR" "$error_msg"
+
+    # 現在のコミットハッシュを取得
+    local commit_hash=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+
+    # エラー通知を送信
+    send_deployment_notification "failure" "$commit_hash" "$error_msg"
 
     # 緊急時はロールバックを実行
     if [[ ${ROLLBACK_ON_ERROR:-true} == "true" ]]; then
@@ -250,6 +258,64 @@ emergency_rollback() {
     return 1
 }
 
+# デプロイ完了通知
+send_deployment_notification() {
+    local status="$1"
+    local commit_hash="$2"
+    local error_message="${3:-}"
+
+    local title
+    local color
+    local emoji
+
+    if [[ "$status" == "success" ]]; then
+        title="✅ デプロイ完了"
+        color="good"
+        emoji="🚀"
+    else
+        title="❌ デプロイ失敗"
+        color="danger"
+        emoji="🚨"
+    fi
+
+    local message="$emoji **$title**\n"
+    message+="**プロジェクト:** Shlink-UI-Rails\n"
+    message+="**環境:** Production (app.kty.at)\n"
+    message+="**コミット:** \`$commit_hash\`\n"
+    message+="**イメージ:** \`${IMAGE:-latest}\`\n"
+    message+="**時刻:** $(date '+%Y-%m-%d %H:%M:%S JST')\n"
+
+    if [[ "$status" != "success" && -n "$error_message" ]]; then
+        message+="\n**エラー:** $error_message"
+    fi
+
+    # Slack通知（環境変数が設定されている場合）
+    if [[ -n "${SLACK_WEBHOOK_URL:-}" ]]; then
+        log "INFO" "Sending Slack notification..."
+        curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"$message\",\"color\":\"$color\"}" \
+            "$SLACK_WEBHOOK_URL" 2>/dev/null || log "WARN" "Failed to send Slack notification"
+    fi
+
+    # Discord通知（環境変数が設定されている場合）
+    if [[ -n "${DISCORD_WEBHOOK_URL:-}" ]]; then
+        log "INFO" "Sending Discord notification..."
+        curl -X POST -H 'Content-type: application/json' \
+            --data "{\"content\":\"$message\"}" \
+            "$DISCORD_WEBHOOK_URL" 2>/dev/null || log "WARN" "Failed to send Discord notification"
+    fi
+
+    # メール通知（環境変数が設定されている場合）
+    if [[ -n "${NOTIFICATION_EMAIL:-}" ]]; then
+        log "INFO" "Sending email notification..."
+        echo -e "Subject: $title\n\n$message" | \
+            sendmail "$NOTIFICATION_EMAIL" 2>/dev/null || log "WARN" "Failed to send email notification"
+    fi
+
+    # システムログに記録
+    logger -t "shlink-ui-rails-deploy" "$title - Commit: $commit_hash"
+}
+
 # 古いイメージのクリーンアップ
 cleanup_old_images() {
     log "INFO" "Cleaning up old Docker images..."
@@ -363,6 +429,9 @@ main() {
 
     # 成功をファイルに記録
     echo "$(date): Deployment completed successfully - $commit_hash" >> "$APP_DIR/deploy.log"
+
+    # デプロイ完了通知を送信
+    send_deployment_notification "success" "$commit_hash"
 }
 
 # スクリプト実行
