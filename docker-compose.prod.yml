@@ -37,8 +37,8 @@ services:
       - app_tmp:/app/tmp  # tmpのみ名前付きボリューム（パーミッション対応）
       - ./storage:/app/storage
 
-    # ユーザー設定（ボリュームマウント時のパーミッション対応）
-    user: "1000:1000"
+    # ユーザー設定（shlinkユーザーのUID/GIDに合わせる）
+    user: "110:111"
 
     # ヘルスチェック設定
     healthcheck:
@@ -95,8 +95,8 @@ services:
       - app_tmp:/app/tmp  # tmpのみ名前付きボリューム（パーミッション対応）
       - ./storage:/app/storage
 
-    # ユーザー設定（ボリュームマウント時のパーミッション対応）
-    user: "1000:1000"
+    # ユーザー設定（shlinkユーザーのUID/GIDに合わせる）
+    user: "110:111"
 
     # アプリケーションサービスの起動を待機
     depends_on:
