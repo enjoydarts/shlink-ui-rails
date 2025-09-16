@@ -112,7 +112,7 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
         run: |
           bin/rails db:create
-          bin/rails db:ridgepole:apply
+          bundle exec ridgepole --config config/database.yml --env test --file db/schemas/Schemafile --apply
 
       - name: Run RuboCop
         run: bundle exec rubocop
