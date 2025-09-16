@@ -7,9 +7,7 @@
 services:
   # Rails アプリケーションサーバー
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile.production
+    image: ghcr.io/enjoydarts/shlink-ui-rails:latest
 
     # コンテナ名設定
     container_name: shlink-ui-rails-app
@@ -67,9 +65,7 @@ services:
 
   # バックグラウンドジョブ処理（Solid Queue）
   jobs:
-    build:
-      context: .
-      dockerfile: Dockerfile.production
+    image: ghcr.io/enjoydarts/shlink-ui-rails:latest
 
     # コンテナ名設定
     container_name: shlink-ui-rails-jobs

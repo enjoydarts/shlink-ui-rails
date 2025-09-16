@@ -317,6 +317,11 @@ jobs:
 
           # ヘルスチェック待機
           log "🏥 Waiting for application to be healthy..."
+
+          # コンテナログを出力
+          log "📋 Container logs:"
+          docker-compose -f docker-compose.prod.yml logs --tail=20 app || true
+
           timeout $HEALTH_CHECK_TIMEOUT bash -c '
             while ! curl -sf http://localhost:3000/health >/dev/null 2>&1; do
               echo "⏳ Waiting for health check..."
@@ -340,6 +345,21 @@ jobs:
           }
 
           log "✅ Application is healthy!"
+
+          # デプロイ後の機能確認
+          log "🔍 Testing deployed features..."
+
+          # /version エンドポイントのテスト
+          if curl -sf "http://localhost:3000/version" >/dev/null 2>&1; then
+            VERSION_RESPONSE=$(curl -s "http://localhost:3000/version")
+            log "✅ /version endpoint working: $VERSION_RESPONSE"
+          else
+            log "❌ /version endpoint failed - this indicates deployment issues"
+          fi
+
+          # Railsルート確認
+          log "📋 Current Rails routes (first 10):"
+          docker-compose -f docker-compose.prod.yml exec -T app bundle exec rails routes | head -10 || true
 
           # 古いバックアップとイメージをクリーンアップ
           log "🧹 Cleaning up old backups and images..."
@@ -365,8 +385,15 @@ jobs:
           IMAGE: ${{ needs.build-and-push.outputs.image }}
           DIGEST: ${{ needs.build-and-push.outputs.digest }}
         run: |
+          # デバッグスクリプトもアップロード
+          scp -i ~/.ssh/id_ed25519 scripts/debug-server.sh ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_HOST }}:/opt/shlink-ui-rails/
+
           scp -i ~/.ssh/id_ed25519 deploy.sh ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_HOST }}:/tmp/
           ssh -i ~/.ssh/id_ed25519 ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_HOST }} 'bash /tmp/deploy.sh && rm /tmp/deploy.sh'
+
+          # デプロイ後の状況確認
+          echo "🔍 デプロイ後のサーバー状況確認:"
+          ssh -i ~/.ssh/id_ed25519 ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_HOST }} 'cd /opt/shlink-ui-rails && bash debug-server.sh'
 
       - name: Verify External Access
         run: |
