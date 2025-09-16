@@ -121,6 +121,11 @@ class Admin::SettingsController < Admin::AdminController
       enable_starttls_auto: SystemSetting.get("email.smtp_enable_starttls_auto", true)
     }.compact
 
+    # 設定情報をログに記録（パスワードは非表示）
+    safe_settings = smtp_settings.dup
+    safe_settings[:password] = "[HIDDEN]" if safe_settings[:password].present?
+    Rails.logger.info "SMTP Test Settings: #{safe_settings}"
+
     # テスト用メーラー設定
     test_mailer = ActionMailer::Base.new
     test_mailer.delivery_method = :smtp
@@ -136,17 +141,122 @@ class Admin::SettingsController < Admin::AdminController
       smtp_settings[:authentication]
     ) do |smtp|
       # 接続が成功すればここに到達
+      Rails.logger.info "SMTP connection successful to #{smtp_settings[:address]}:#{smtp_settings[:port]}"
     end
 
     { success: true, message: "SMTP設定のテストが成功しました。SMTPサーバーへの接続が確認できました。" }
   rescue Net::SMTPAuthenticationError => e
-    { success: false, message: "SMTP認証に失敗しました: #{e.message}" }
+    error_details = {
+      error_type: "認証エラー",
+      server: "#{smtp_settings[:address]}:#{smtp_settings[:port]}",
+      username: smtp_settings[:user_name],
+      auth_method: smtp_settings[:authentication],
+      details: e.message,
+      backtrace: e.backtrace&.first(3)
+    }
+    Rails.logger.error "SMTP Authentication Error: #{error_details}"
+
+    {
+      success: false,
+      message: "SMTP認証に失敗しました",
+      details: {
+        "エラータイプ" => error_details[:error_type],
+        "サーバー" => error_details[:server],
+        "ユーザー名" => error_details[:username],
+        "認証方式" => error_details[:auth_method],
+        "詳細メッセージ" => error_details[:details]
+      }
+    }
   rescue Net::SMTPConnectError => e
-    { success: false, message: "SMTPサーバーへの接続に失敗しました: #{e.message}" }
+    error_details = {
+      error_type: "接続エラー",
+      server: "#{smtp_settings[:address]}:#{smtp_settings[:port]}",
+      details: e.message,
+      backtrace: e.backtrace&.first(3)
+    }
+    Rails.logger.error "SMTP Connection Error: #{error_details}"
+
+    {
+      success: false,
+      message: "SMTPサーバーへの接続に失敗しました",
+      details: {
+        "エラータイプ" => error_details[:error_type],
+        "サーバー" => error_details[:server],
+        "詳細メッセージ" => error_details[:details],
+        "確認事項" => [
+          "サーバーアドレスとポート番号が正しいか",
+          "ファイアウォールでポートが開放されているか",
+          "サーバーが稼働しているか"
+        ]
+      }
+    }
   rescue Timeout::Error => e
-    { success: false, message: "SMTP接続がタイムアウトしました: #{e.message}" }
+    error_details = {
+      error_type: "タイムアウトエラー",
+      server: "#{smtp_settings[:address]}:#{smtp_settings[:port]}",
+      details: e.message,
+      backtrace: e.backtrace&.first(3)
+    }
+    Rails.logger.error "SMTP Timeout Error: #{error_details}"
+
+    {
+      success: false,
+      message: "SMTP接続がタイムアウトしました",
+      details: {
+        "エラータイプ" => error_details[:error_type],
+        "サーバー" => error_details[:server],
+        "詳細メッセージ" => error_details[:details],
+        "確認事項" => [
+          "ネットワーク接続が安定しているか",
+          "サーバーの応答が遅すぎないか",
+          "ポート番号が正しいか（通常587または465）"
+        ]
+      }
+    }
+  rescue SocketError => e
+    error_details = {
+      error_type: "DNS/ネットワークエラー",
+      server: "#{smtp_settings[:address]}:#{smtp_settings[:port]}",
+      details: e.message,
+      backtrace: e.backtrace&.first(3)
+    }
+    Rails.logger.error "SMTP Socket Error: #{error_details}"
+
+    {
+      success: false,
+      message: "DNSまたはネットワークエラーが発生しました",
+      details: {
+        "エラータイプ" => error_details[:error_type],
+        "サーバー" => error_details[:server],
+        "詳細メッセージ" => error_details[:details],
+        "確認事項" => [
+          "サーバーアドレスが正しいか",
+          "DNS設定が正しいか",
+          "インターネット接続が有効か"
+        ]
+      }
+    }
   rescue StandardError => e
-    { success: false, message: "SMTP設定のテストに失敗しました: #{e.message}" }
+    error_details = {
+      error_type: "予期しないエラー",
+      server: "#{smtp_settings[:address]}:#{smtp_settings[:port]}",
+      error_class: e.class.name,
+      details: e.message,
+      backtrace: e.backtrace&.first(5)
+    }
+    Rails.logger.error "SMTP Unexpected Error: #{error_details}"
+
+    {
+      success: false,
+      message: "SMTP設定のテストに失敗しました",
+      details: {
+        "エラータイプ" => error_details[:error_type],
+        "エラークラス" => error_details[:error_class],
+        "サーバー" => error_details[:server],
+        "詳細メッセージ" => error_details[:details],
+        "スタックトレース" => error_details[:backtrace]
+      }
+    }
   end
 
   def test_mailersend_settings
