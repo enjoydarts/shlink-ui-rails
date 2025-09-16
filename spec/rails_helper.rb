@@ -85,6 +85,9 @@ RSpec.configure do |config|
     # RSpec モックレジストリをクリア（重要！）
     RSpec::Mocks.space.reset_all
 
+    # SystemSetting変更時の設定リロードをスタブ化（テスト高速化のため）
+    allow(ApplicationConfig).to receive(:reload_all_settings!).and_return(true)
+
     # Rack::Attackのカウンターをリセット
     Rack::Attack.cache.store.clear if Rack::Attack.cache.store.respond_to?(:clear)
 

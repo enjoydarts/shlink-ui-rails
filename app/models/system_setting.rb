@@ -19,6 +19,10 @@ class SystemSetting < ApplicationRecord
   scope :enabled, -> { where(enabled: true) }
   scope :by_category, ->(category) { where(category: category) }
 
+  # 設定変更時に全アプリケーション設定を動的に更新
+  after_save :reload_application_settings
+  after_destroy :reload_application_settings
+
   # 設定値を適切な型で取得
   def typed_value
     case setting_type
@@ -494,5 +498,13 @@ class SystemSetting < ApplicationRecord
       Rails.logger.debug "Config gem access error for key '#{key}': #{e.message}"
       fallback_value
     end
+  end
+
+  private
+
+  # 設定変更時に全アプリケーション設定を動的に更新
+  def reload_application_settings
+    # バックグラウンドで設定を更新（パフォーマンスを考慮）
+    ApplicationConfig.reload_all_settings!
   end
 end
