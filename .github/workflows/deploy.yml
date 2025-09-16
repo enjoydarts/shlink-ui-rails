@@ -399,6 +399,11 @@ jobs:
             export GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
             export GITHUB_ACTOR="${{ github.actor }}"
 
+            # 通知設定をGitHub Secretsから取得
+            export SLACK_WEBHOOK_URL="${{ secrets.SLACK_WEBHOOK_URL }}"
+            export DISCORD_WEBHOOK_URL="${{ secrets.DISCORD_WEBHOOK_URL }}"
+            export NOTIFICATION_EMAIL="${{ secrets.NOTIFICATION_EMAIL }}"
+
             bash scripts/deploy.sh
           '
 
