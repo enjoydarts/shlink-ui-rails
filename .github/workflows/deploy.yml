@@ -111,7 +111,8 @@ jobs:
           DATABASE_URL: mysql2://app:apppass@127.0.0.1:3306/shlink_ui_rails_test
           REDIS_URL: redis://localhost:6379/0
         run: |
-          bin/rails db:create db:migrate
+          bin/rails db:create
+          bin/rails db:ridgepole:apply
 
       - name: Run RuboCop
         run: bundle exec rubocop
