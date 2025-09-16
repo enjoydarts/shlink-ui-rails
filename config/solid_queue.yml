@@ -27,3 +27,5 @@ production:
     - queues: "*"
       threads: 3
       processes: 2
+  schedulers:
+    - recurring_tasks: true
