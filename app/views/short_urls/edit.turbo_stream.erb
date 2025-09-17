@@ -1,5 +1,7 @@
-<%= turbo_stream.update "edit-modal" do %>
-  <%= render "edit_modal", short_url: @short_url, edit_form: @edit_form %>
+<%= turbo_stream.replace "edit-modal" do %>
+  <div id="edit-modal" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
+    <%= render "edit_modal", short_url: @short_url, edit_form: @edit_form %>
+  </div>
 <% end %>
 
 <%= turbo_stream.replace "backdrop" do %>
