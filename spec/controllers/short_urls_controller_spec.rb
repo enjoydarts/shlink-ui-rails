@@ -260,7 +260,7 @@ RSpec.describe ShortUrlsController, type: :controller do
   end
 
   describe 'GET #edit' do
-    let(:short_url) { create(:short_url, user: user, short_code: 'test123') }
+    let!(:short_url) { create(:short_url, user: user, short_code: 'test123') }
 
     context '存在するshort_codeの場合' do
       it 'HTTP成功ステータスを返す' do
@@ -304,7 +304,7 @@ RSpec.describe ShortUrlsController, type: :controller do
   end
 
   describe 'PATCH #update' do
-    let(:short_url) { create(:short_url, user: user, short_code: 'test123') }
+    let!(:short_url) { create(:short_url, user: user, short_code: 'test123') }
     let(:mock_service) { instance_double(Shlink::UpdateShortUrlService) }
     let(:shlink_response) do
       {

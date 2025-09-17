@@ -175,20 +175,37 @@ function resetDeleteButton() {
 }
 
 function showToast(message, type = 'info') {
+  // 既存のトーストを削除
+  const existingToasts = document.querySelectorAll('.toast-notification');
+  existingToasts.forEach(toast => toast.remove());
+
   const toast = document.createElement('div');
   toast.innerHTML = message;
-  
+  toast.classList.add('toast-notification'); // 識別用のクラスを追加
+
   let bgColor = 'bg-blue-500';
   if (type === 'success') {
     bgColor = 'bg-green-500';
   } else if (type === 'error') {
     bgColor = 'bg-red-500';
   }
-  
-  toast.className = `fixed top-4 right-4 ${bgColor} text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300 max-w-sm`;
+
+  toast.className = `toast-notification fixed top-4 right-2 sm:right-4 ${bgColor} text-white px-4 sm:px-6 py-3 rounded-lg shadow-lg z-[9999] transition-all duration-300 max-w-[calc(100vw-1rem)] sm:max-w-sm`;
   document.body.appendChild(toast);
-  
+
+  // アニメーション効果を追加
+  toast.style.transform = 'translateX(100%)';
+  toast.style.opacity = '0';
+
+  // スライドイン
   setTimeout(() => {
+    toast.style.transform = 'translateX(0)';
+    toast.style.opacity = '1';
+  }, 10);
+
+  // 自動削除
+  setTimeout(() => {
+    toast.style.transform = 'translateX(100%)';
     toast.style.opacity = '0';
     setTimeout(() => {
       if (document.body.contains(toast)) {
@@ -230,6 +247,8 @@ function closeEditModal() {
     modal.innerHTML = '';
   }
 
+  // ボタンの状態をリセット
+
   // ESCキーリスナーを削除
   document.removeEventListener('keydown', handleEditModalEscapeKey);
 }
@@ -241,7 +260,7 @@ function handleEditModalEscapeKey(event) {
 }
 
 // モーダルが表示された時にESCキーリスナーを追加とタグの初期化
-document.addEventListener('turbo:stream-render', function() {
+document.addEventListener('turbo:stream-render', function(event) {
   const modal = document.getElementById('edit-modal');
   if (modal && !modal.classList.contains('hidden')) {
     document.addEventListener('keydown', handleEditModalEscapeKey);
@@ -255,8 +274,13 @@ document.addEventListener('turbo:stream-render', function() {
         application.load();
       }
     }
-  }
+
+    // ボタンの初期状態を確実に設定
+    } else {
+    // モーダルが非表示になった場合もボタンの状態をリセット
+    }
 });
+
 
 function openIndividualAnalysis(shortCode) {
   // URL別分析タブに切り替えて特定URLを選択

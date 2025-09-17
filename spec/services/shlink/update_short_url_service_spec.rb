@@ -1,16 +1,10 @@
 require 'rails_helper'
 
 RSpec.describe Shlink::UpdateShortUrlService, type: :service do
-  let(:service) { described_class.new }
   let(:short_code) { 'test123' }
   let(:base_url) { 'https://example.com' }
   let(:api_key) { 'test-api-key' }
-
-  before do
-    allow(service).to receive(:shlink_base_url).and_return(base_url)
-    allow(service).to receive(:shlink_api_key).and_return(api_key)
-    allow(service).to receive(:shlink_timeout).and_return(30)
-  end
+  let(:service) { described_class.new(base_url: base_url, api_key: api_key) }
 
   describe '#call' do
     let(:response_body) do
@@ -118,7 +112,7 @@ RSpec.describe Shlink::UpdateShortUrlService, type: :service do
             "title" => "Updated Title",
             "longUrl" => "https://google.com",
             "tags" => [ "tag1", "tag2" ],
-            "validUntil" => "2024-12-31T23:59:59Z",
+            "validUntil" => "2024-12-31T23:59:59+00:00",
             "maxVisits" => 100
           ))
       end
@@ -186,17 +180,8 @@ RSpec.describe Shlink::UpdateShortUrlService, type: :service do
     end
 
     context '空のパラメータの場合' do
-      before do
-        stub_request(:patch, "#{base_url}/rest/v3/short-urls/#{short_code}")
-          .to_return(
-            status: 200,
-            body: response_body.to_json,
-            headers: { 'Content-Type' => 'application/json' }
-          )
-      end
-
       it '空のペイロードを送信しない' do
-        service.call(
+        result = service.call(
           short_code: short_code,
           title: nil,
           long_url: "",
@@ -205,8 +190,8 @@ RSpec.describe Shlink::UpdateShortUrlService, type: :service do
           max_visits: nil
         )
 
-        expect(WebMock).to have_requested(:patch, "#{base_url}/rest/v3/short-urls/#{short_code}")
-          .with(body: "{}")
+        expect(result).to eq({})
+        expect(WebMock).not_to have_requested(:patch, "#{base_url}/rest/v3/short-urls/#{short_code}")
       end
     end
   end

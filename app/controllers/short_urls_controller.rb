@@ -61,10 +61,16 @@ class ShortUrlsController < ApplicationController
     @short_url = current_user.short_urls.active.find_by(short_code: short_code)
 
     unless @short_url
-      render json: {
-        success: false,
-        message: "指定された短縮URLが見つかりません"
-      }, status: :not_found
+      respond_to do |format|
+        format.turbo_stream { head :not_found }
+        format.html { redirect_to mypage_path, alert: "指定された短縮URLが見つかりません" }
+        format.json {
+          render json: {
+            success: false,
+            message: "指定された短縮URLが見つかりません"
+          }, status: :not_found
+        }
+      end
       return
     end
 
@@ -81,10 +87,16 @@ class ShortUrlsController < ApplicationController
     @short_url = current_user.short_urls.active.find_by(short_code: short_code)
 
     unless @short_url
-      render json: {
-        success: false,
-        message: "指定された短縮URLが見つかりません"
-      }, status: :not_found
+      respond_to do |format|
+        format.turbo_stream { head :not_found }
+        format.html { redirect_to mypage_path, alert: "指定された短縮URLが見つかりません" }
+        format.json {
+          render json: {
+            success: false,
+            message: "指定された短縮URLが見つかりません"
+          }, status: :not_found
+        }
+      end
       return
     end
 
@@ -99,7 +111,15 @@ class ShortUrlsController < ApplicationController
         )
 
         # ローカルDBも更新
-        update_local_short_url(result)
+        local_update_success = update_local_short_url(result)
+        if local_update_success
+          Rails.logger.info "Successfully updated local database for #{short_code}"
+        else
+          Rails.logger.error "Failed to update local database for #{short_code}, but Shlink update was successful"
+          # ローカルDBの更新に失敗してもShlinkの更新は成功しているため、ユーザーには成功を通知
+          # ただし、同期が必要であることを伝える
+        end
+
 
         respond_to do |format|
           format.turbo_stream { render :update_success }
@@ -130,7 +150,7 @@ class ShortUrlsController < ApplicationController
             success: false,
             message: "入力内容に問題があります",
             errors: @edit_form.errors.full_messages
-          }, status: :unprocessable_entity
+          }, status: :unprocessable_content
         }
       end
     end
@@ -205,24 +225,31 @@ class ShortUrlsController < ApplicationController
   end
 
   def update_local_short_url(shlink_result)
+    meta = shlink_result["meta"] || {}
     short_url_data = {
       title: shlink_result["title"],
       long_url: shlink_result["longUrl"],
       tags: shlink_result["tags"]&.to_json,
       meta: shlink_result["meta"]&.to_json,
-      valid_since: parse_date(shlink_result["validSince"]),
-      valid_until: parse_date(shlink_result["validUntil"]),
-      max_visits: shlink_result["maxVisits"],
+      valid_since: parse_date(meta["validSince"]),
+      valid_until: parse_date(meta["validUntil"]),
+      max_visits: meta["maxVisits"],
       crawlable: shlink_result["crawlable"] != false,
       forward_query: shlink_result["forwardQuery"] != false
     }
 
     @short_url.assign_attributes(short_url_data)
     @short_url.save!
+    @short_url.reload  # 最新データでリロード
 
-    Rails.logger.info "Updated short URL in database: #{@short_url.short_code}"
+    Rails.logger.info "Updated short URL in database: #{@short_url.short_code} - title: #{@short_url.title}"
+    true
   rescue => e
     Rails.logger.error "Failed to update short URL in database: #{e.message}"
-    # Don't fail the request if database save fails
+    Rails.logger.error "Backtrace: #{e.backtrace.first(5).join("\n")}"
+    Rails.logger.error "Shlink result that failed to save: #{shlink_result.inspect}"
+
+    # エラーを再発生させず、falseを返して失敗を示す
+    false
   end
 end

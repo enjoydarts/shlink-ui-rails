@@ -6,14 +6,14 @@ class EditShortUrlForm
   attribute :title, :string
   attribute :long_url, :string
   attribute :valid_until, :datetime
-  attribute :max_visits, :integer
+  attribute :max_visits, :string
   attribute :tags, :string
   attribute :custom_slug, :string
 
   validates :short_code, presence: true
   validates :long_url, format: URI::DEFAULT_PARSER.make_regexp(%w[http https]), allow_blank: true
   validates :valid_until, comparison: { greater_than: -> { Time.current } }, allow_blank: true
-  validates :max_visits, numericality: { greater_than: 0, only_integer: true }, allow_blank: true
+  validate :validate_max_visits_format
   validate :validate_tags_format
   validate :validate_custom_slug_format
 
@@ -24,7 +24,7 @@ class EditShortUrlForm
       title: short_url.title,
       long_url: short_url.long_url,
       valid_until: short_url.valid_until,
-      max_visits: short_url.max_visits,
+      max_visits: short_url.max_visits&.to_s,
       tags: short_url.tags_array.join(", "),
       custom_slug: short_url.short_code
     )
@@ -49,17 +49,57 @@ class EditShortUrlForm
 
   # 更新用のパラメータを取得
   def update_params
-    {
-      title: title.presence,
-      long_url: long_url.presence,
-      tags: tags_array.any? ? tags_array : nil,
-      valid_until: valid_until,
-      max_visits: max_visits,
-      custom_slug: custom_slug != short_code ? custom_slug.presence : nil
-    }.compact
+    params = {}
+    params[:title] = title if title.present?
+    params[:long_url] = long_url if long_url.present?
+
+    # タグの処理
+    if tags.present?
+      params[:tags] = tags_array if tags_array.any?
+    elsif tags == ""
+      # 空文字の場合はnullを送信してタグをクリア
+      params[:tags] = nil
+    end
+
+    # 有効期限の処理
+    if valid_until.present?
+      params[:valid_until] = valid_until
+    elsif valid_until == ""
+      # 空文字の場合はnullを送信して値をクリア
+      params[:valid_until] = nil
+    end
+
+    # 訪問制限の処理
+    if max_visits.present?
+      params[:max_visits] = max_visits.to_i
+    elsif max_visits == ""
+      # 空文字の場合はnullを送信して値をクリア
+      params[:max_visits] = nil
+    end
+
+    # カスタムスラッグの処理（元のshort_codeと同じ場合は除外）
+    params[:custom_slug] = custom_slug if custom_slug.present? && custom_slug != short_code
+
+    params
   end
 
   private
+
+  def validate_max_visits_format
+    return if max_visits.blank?
+
+    # 数値でない場合
+    unless max_visits.to_s.match?(/\A\d+\z/)
+      errors.add(:max_visits, "訪問制限は正の整数で入力してください")
+      return
+    end
+
+    # 正の整数でない場合
+    visits = max_visits.to_i
+    if visits <= 0
+      errors.add(:max_visits, "訪問制限は1以上の整数で入力してください")
+    end
+  end
 
   def validate_tags_format
     return if tags.blank?

@@ -11,6 +11,8 @@ module Shlink
     # @return [Hash] Shlink APIからのレスポンス
     def call(short_code:, title: nil, long_url: nil, tags: nil, valid_until: nil, max_visits: nil, custom_slug: nil)
       payload = build_payload(title, long_url, tags, valid_until, max_visits, custom_slug)
+      return {} if payload.empty?
+
       response = make_request(short_code, payload)
       handle_response(response)
     rescue Faraday::Error => e
@@ -54,6 +56,7 @@ module Shlink
     end
 
     def make_request(short_code, payload)
+      Rails.logger.info "Sending to Shlink API: #{payload.inspect}"
       conn.patch("/rest/v3/short-urls/#{short_code}") do |req|
         req.headers.merge!(api_headers)
         req.body = payload

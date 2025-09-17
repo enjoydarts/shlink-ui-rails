@@ -20,7 +20,7 @@ RSpec.describe EditShortUrlForm, type: :model do
       expect(form.title).to eq('Test Title')
       expect(form.long_url).to eq('https://example.com')
       expect(form.valid_until).to eq(short_url.valid_until)
-      expect(form.max_visits).to eq(100)
+      expect(form.max_visits).to eq('100')
       expect(form.tags).to eq('tag1, tag2')
       expect(form.custom_slug).to eq('test123')
     end

@@ -29,9 +29,11 @@ module Shlink
     def handle_response(response)
       case response.status
       when 200, 201
+        Rails.logger.info "Shlink API response: #{response.body.inspect}"
         response.body
       else
         error_message = extract_error_message(response.body)
+        Rails.logger.error "Shlink API error: #{response.body.inspect}"
         raise Shlink::Error, "Shlink API error (#{response.status}): #{error_message}"
       end
     end
