@@ -283,7 +283,7 @@ send_deployment_notification() {
     message+="**環境:** Production (app.kty.at)\n"
     message+="**コミット:** \`$commit_hash\`\n"
     message+="**イメージ:** \`${IMAGE:-latest}\`\n"
-    message+="**時刻:** $(date '+%Y-%m-%d %H:%M:%S JST')\n"
+    message+="**時刻:** $(TZ=Asia/Tokyo date '+%Y-%m-%d %H:%M:%S JST')\n"
 
     if [[ "$status" != "success" && -n "$error_message" ]]; then
         message+="\n**エラー:** $error_message"
@@ -377,8 +377,9 @@ main() {
     # ソースコードは既にGitHub Actionsで更新済み
     log "INFO" "Source code already updated by GitHub Actions"
 
-    # 現在のコミットハッシュを表示
+    # 現在のコミットハッシュを取得して環境変数に設定
     local current_commit=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+    export GIT_COMMIT="$current_commit"
     log "INFO" "Current commit: $current_commit"
 
     # 現在の状態をバックアップ
