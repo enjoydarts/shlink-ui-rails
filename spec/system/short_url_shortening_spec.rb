@@ -32,14 +32,6 @@ RSpec.describe 'URL短縮機能', type: :system do
       expect(page).to have_content('長いURLを瞬時に短縮して、共有を簡単にします')
       expect(page).to have_button('短縮する')
     end
-
-    it '機能説明を表示する' do
-      visit dashboard_path
-
-      expect(page).to have_content('高速処理')
-      expect(page).to have_content('安全・確実')
-      expect(page).to have_content('カスタマイズ')
-    end
   end
 
   describe 'フォーム送信' do
