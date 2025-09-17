@@ -5,6 +5,13 @@ ja:
         long_url: "URL"
         valid_until: "有効期限"
         max_visits: "最大訪問回数"
+      edit_short_url_form:
+        title: "タイトル"
+        long_url: "URL"
+        valid_until: "有効期限"
+        max_visits: "最大訪問回数"
+        tags: "タグ"
+        custom_slug: "カスタムスラッグ"
     errors:
       models:
         shorten_form:
@@ -16,6 +23,22 @@ ja:
               greater_than: "は現在時刻より後の時間を入力してください"
             max_visits:
               greater_than: "は0より大きい値を入力してください"
+        edit_short_url_form:
+          attributes:
+            long_url:
+              blank: "を入力してください"
+              invalid: "は無効なURLです"
+            valid_until:
+              greater_than: "は現在時刻より後の時間を入力してください"
+            max_visits:
+              greater_than: "は0より大きい値を入力してください"
+            tags:
+              too_many: "は最大10個まで設定できます"
+              too_long: "は各タグ20文字以内で入力してください"
+            custom_slug:
+              invalid: "は英数字、ハイフン、アンダースコアのみ使用できます"
+              too_short: "は3文字以上で入力してください"
+              too_long: "は50文字以内で入力してください"
   activerecord:
     errors:
       messages:

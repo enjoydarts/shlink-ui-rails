@@ -1,0 +1,17 @@
+<!-- 該当のURLカードを再読み込み -->
+<%= turbo_stream.replace "short-url-card-#{@short_url.short_code}" do %>
+  <%= render "mypage/short_url_card", short_url: @short_url %>
+<% end %>
+
+<%= turbo_stream.replace "edit-modal" do %>
+  <div id="edit-modal" class="hidden"></div>
+<% end %>
+
+<!-- トースト表示用のカスタムイベントを発火 -->
+<%= turbo_stream.append "body" do %>
+  <div data-controller="toast-trigger"
+       data-toast-trigger-message-value="短縮URLを更新しました"
+       data-toast-trigger-type-value="success"
+       data-action="turbo:before-stream-render@document->toast-trigger#show"
+       class="hidden"></div>
+<% end %>
