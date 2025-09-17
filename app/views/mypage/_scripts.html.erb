@@ -198,15 +198,71 @@ function showToast(message, type = 'info') {
   }, type === 'success' ? 2000 : 4000);
 }
 
+// 編集モーダル用の関数
+async function openEditModal(shortCode) {
+  try {
+    const response = await fetch(`/short_urls/${shortCode}/edit`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'text/vnd.turbo-stream.html',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      }
+    });
+
+    if (response.ok) {
+      const turboStreamContent = await response.text();
+      // Turbo Streamのレスポンスを直接実行
+      Turbo.renderStreamMessage(turboStreamContent);
+    } else {
+      showToast('編集画面の読み込みに失敗しました', 'error');
+    }
+  } catch (error) {
+    console.error('Edit modal error:', error);
+    showToast('ネットワークエラーが発生しました', 'error');
+  }
+}
+
+function closeEditModal() {
+  const backdrop = document.getElementById('backdrop');
+  const modal = document.getElementById('edit-modal');
+
+  if (backdrop) {
+    backdrop.classList.add('hidden');
+    backdrop.innerHTML = '';
+  }
+
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.innerHTML = '';
+  }
+
+  // ESCキーリスナーを削除
+  document.removeEventListener('keydown', handleEditModalEscapeKey);
+}
+
+function handleEditModalEscapeKey(event) {
+  if (event.key === 'Escape') {
+    closeEditModal();
+  }
+}
+
+// モーダルが表示された時にESCキーリスナーを追加
+document.addEventListener('turbo:frame-load', function() {
+  const modal = document.getElementById('edit-modal');
+  if (modal && !modal.classList.contains('hidden')) {
+    document.addEventListener('keydown', handleEditModalEscapeKey);
+  }
+});
+
 function openIndividualAnalysis(shortCode) {
   // URL別分析タブに切り替えて特定URLを選択
-  
+
   // まずタブを切り替え
   const individualTab = document.querySelector('[data-tab="individual"]');
   if (individualTab) {
     individualTab.click();
   }
-  
+
   // 少し待ってからURLを選択（タブ切り替えの処理を待つため）
   setTimeout(() => {
     const controllerElement = document.querySelector('[data-controller*="individual-analysis"]');
@@ -225,7 +281,7 @@ function openIndividualAnalysis(shortCode) {
         }
       }
     }
-    
+
     // フォールバック: 従来のselect要素を使用
     const urlSelect = document.querySelector('[data-individual-analysis-target="urlSelect"]');
     if (urlSelect) {

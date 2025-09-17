@@ -1,0 +1,7 @@
+<%= turbo_stream.update "edit-modal" do %>
+  <%= render "edit_modal", short_url: @short_url, edit_form: @edit_form %>
+<% end %>
+
+<%= turbo_stream.replace "backdrop" do %>
+  <div id="backdrop" class="fixed inset-0 bg-gray-600 bg-opacity-50 z-40" onclick="closeEditModal()"></div>
+<% end %>

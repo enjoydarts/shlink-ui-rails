@@ -259,6 +259,207 @@ RSpec.describe ShortUrlsController, type: :controller do
     end
   end
 
+  describe 'GET #edit' do
+    let(:short_url) { create(:short_url, user: user, short_code: 'test123') }
+
+    context '存在するshort_codeの場合' do
+      it 'HTTP成功ステータスを返す' do
+        get :edit, params: { short_code: 'test123' }, format: :turbo_stream
+        expect(response).to have_http_status(:success)
+      end
+
+      it 'EditShortUrlFormを@edit_formに割り当てる' do
+        get :edit, params: { short_code: 'test123' }, format: :turbo_stream
+        expect(assigns(:edit_form)).to be_a(EditShortUrlForm)
+        expect(assigns(:edit_form).short_code).to eq('test123')
+      end
+
+      it 'ShortUrlを@short_urlに割り当てる' do
+        get :edit, params: { short_code: 'test123' }, format: :turbo_stream
+        expect(assigns(:short_url)).to eq(short_url)
+      end
+    end
+
+    context '存在しないshort_codeの場合' do
+      it 'not foundステータスを返す' do
+        get :edit, params: { short_code: 'nonexistent' }, format: :json
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it 'エラーメッセージを返す' do
+        get :edit, params: { short_code: 'nonexistent' }, format: :json
+        expect(JSON.parse(response.body)['message']).to eq('指定された短縮URLが見つかりません')
+      end
+    end
+
+    context '他ユーザーのshort_urlの場合' do
+      let(:other_user) { create(:user) }
+      let!(:other_short_url) { create(:short_url, user: other_user, short_code: 'other123') }
+
+      it 'not foundステータスを返す' do
+        get :edit, params: { short_code: 'other123' }, format: :json
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe 'PATCH #update' do
+    let(:short_url) { create(:short_url, user: user, short_code: 'test123') }
+    let(:mock_service) { instance_double(Shlink::UpdateShortUrlService) }
+    let(:shlink_response) do
+      {
+        'shortCode' => 'test123',
+        'shortUrl' => 'https://shlink.example.com/test123',
+        'longUrl' => 'https://updated.example.com',
+        'title' => 'Updated Title',
+        'tags' => [ 'tag1', 'tag2' ]
+      }
+    end
+
+    before do
+      allow(Shlink::UpdateShortUrlService).to receive(:new).and_return(mock_service)
+    end
+
+    context '有効なパラメータの場合' do
+      let(:valid_params) do
+        {
+          short_code: 'test123',
+          edit_short_url_form: {
+            title: 'Updated Title',
+            long_url: 'https://updated.example.com',
+            tags: 'tag1, tag2'
+          }
+        }
+      end
+
+      before do
+        allow(mock_service).to receive(:call).and_return(shlink_response)
+      end
+
+      it 'HTTP成功ステータスを返す' do
+        patch :update, params: valid_params, format: :turbo_stream
+        expect(response).to have_http_status(:success)
+      end
+
+      it 'Shlink APIを呼び出す' do
+        expect(mock_service).to receive(:call).with(
+          short_code: 'test123',
+          title: 'Updated Title',
+          long_url: 'https://updated.example.com',
+          tags: [ 'tag1', 'tag2' ]
+        )
+
+        patch :update, params: valid_params, format: :turbo_stream
+      end
+
+      it 'ローカルDBを更新する' do
+        patch :update, params: valid_params, format: :turbo_stream
+
+        short_url.reload
+        expect(short_url.title).to eq('Updated Title')
+        expect(short_url.long_url).to eq('https://updated.example.com')
+      end
+
+      context 'JSON形式のリクエストの場合' do
+        it '成功メッセージを返す' do
+          patch :update, params: valid_params, format: :json
+
+          expect(response).to have_http_status(:success)
+          expect(JSON.parse(response.body)['success']).to be true
+          expect(JSON.parse(response.body)['message']).to eq('短縮URLを更新しました')
+        end
+      end
+    end
+
+    context '無効なパラメータの場合' do
+      let(:invalid_params) do
+        {
+          short_code: 'test123',
+          edit_short_url_form: {
+            long_url: 'invalid-url'
+          }
+        }
+      end
+
+      it 'unprocessable entityステータスを返す' do
+        patch :update, params: invalid_params, format: :json
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+
+      it 'エラーメッセージを返す' do
+        patch :update, params: invalid_params, format: :json
+
+        response_body = JSON.parse(response.body)
+        expect(response_body['success']).to be false
+        expect(response_body['message']).to eq('入力内容に問題があります')
+        expect(response_body['errors']).to be_present
+      end
+    end
+
+    context 'Shlink APIエラーの場合' do
+      let(:valid_params) do
+        {
+          short_code: 'test123',
+          edit_short_url_form: {
+            title: 'Updated Title'
+          }
+        }
+      end
+
+      before do
+        allow(mock_service).to receive(:call)
+          .and_raise(Shlink::Error, 'API connection failed')
+      end
+
+      it 'bad gatewayステータスを返す' do
+        patch :update, params: valid_params, format: :json
+        expect(response).to have_http_status(:bad_gateway)
+      end
+
+      it 'エラーメッセージを返す' do
+        patch :update, params: valid_params, format: :json
+
+        response_body = JSON.parse(response.body)
+        expect(response_body['success']).to be false
+        expect(response_body['message']).to include('API connection failed')
+      end
+    end
+
+    context '存在しないshort_codeの場合' do
+      let(:params) do
+        {
+          short_code: 'nonexistent',
+          edit_short_url_form: {
+            title: 'Updated Title'
+          }
+        }
+      end
+
+      it 'not foundステータスを返す' do
+        patch :update, params: params, format: :json
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context '他ユーザーのshort_urlの場合' do
+      let(:other_user) { create(:user) }
+      let!(:other_short_url) { create(:short_url, user: other_user, short_code: 'other123') }
+      let(:params) do
+        {
+          short_code: 'other123',
+          edit_short_url_form: {
+            title: 'Updated Title'
+          }
+        }
+      end
+
+      it 'not foundステータスを返す' do
+        patch :update, params: params, format: :json
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
   describe 'プライベートメソッド' do
     describe '#shorten_params' do
       let(:params) do
@@ -285,6 +486,42 @@ RSpec.describe ShortUrlsController, type: :controller do
             long_url: 'https://example.com',
             slug: 'test-slug',
             tags: 'tag1, tag2'
+          ).permit!
+        )
+      end
+    end
+
+    describe '#edit_short_url_params' do
+      let(:params) do
+        ActionController::Parameters.new(
+          edit_short_url_form: {
+            title: 'Test Title',
+            long_url: 'https://example.com',
+            valid_until: '2024-12-31T23:59:59',
+            max_visits: '100',
+            tags: 'tag1, tag2',
+            custom_slug: 'custom-slug',
+            other_param: 'should_be_filtered'
+          },
+          other_key: 'should_be_filtered'
+        )
+      end
+
+      before do
+        allow(controller).to receive(:params).and_return(params)
+      end
+
+      it 'edit_short_url_formから許可されたパラメータのみを返す' do
+        permitted_params = controller.send(:edit_short_url_params)
+
+        expect(permitted_params).to eq(
+          ActionController::Parameters.new(
+            title: 'Test Title',
+            long_url: 'https://example.com',
+            valid_until: '2024-12-31T23:59:59',
+            max_visits: '100',
+            tags: 'tag1, tag2',
+            custom_slug: 'custom-slug'
           ).permit!
         )
       end

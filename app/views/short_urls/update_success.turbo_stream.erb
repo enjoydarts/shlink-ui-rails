@@ -1,0 +1,20 @@
+<%= turbo_stream.remove "edit-modal" %>
+<%= turbo_stream.remove "backdrop" %>
+
+<%= turbo_stream.prepend "flash-messages" do %>
+  <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4" data-turbo-temporary>
+    <div class="flex">
+      <svg class="w-5 h-5 text-green-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <div class="ml-3">
+        <p class="text-sm font-medium text-green-800">短縮URLを更新しました</p>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- 該当のURLカードを再読み込み -->
+<%= turbo_stream.replace "short-url-card-#{@short_url.short_code}" do %>
+  <%= render "mypage/short_url_card", short_url: @short_url %>
+<% end %>

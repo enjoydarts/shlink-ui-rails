@@ -47,7 +47,12 @@ Rails.application.routes.draw do
 
   # Authentication required pages
   authenticate :user do
-    resource :short_urls, only: [ :new, :create ]
+    resource :short_urls, only: [ :new, :create ] do
+      collection do
+        get ":short_code/edit", to: "short_urls#edit", as: :edit_short_url
+        patch ":short_code", to: "short_urls#update", as: :update_short_url
+      end
+    end
     get "test", to: "short_urls#test"
     get "qr/:short_code", to: "short_urls#qr_code", as: :qr_code
     get "dashboard", to: "short_urls#new", as: :dashboard
