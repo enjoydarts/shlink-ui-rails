@@ -10,6 +10,9 @@ RSpec.describe 'Admin Authentication', type: :request do
       allow(Settings).to receive_message_chain(:shlink, :base_url).and_return("https://test.example.com")
       allow(Settings).to receive_message_chain(:shlink, :api_key).and_return("test-api-key")
     end
+
+    # CSRF保護を無効化（テスト環境用）
+    allow_any_instance_of(ActionController::Base).to receive(:protect_against_forgery?).and_return(false)
   end
 
   describe 'admin routes authentication' do
@@ -29,8 +32,8 @@ RSpec.describe 'Admin Authentication', type: :request do
         expect(response).to redirect_to(new_user_session_path)
       end
 
-      it 'redirects admin jobs to login' do
-        get '/admin/jobs'
+      it 'redirects admin solid_queue to login' do
+        get '/admin/solid_queue'
         expect(response).to redirect_to(new_user_session_path)
       end
     end
@@ -69,8 +72,8 @@ RSpec.describe 'Admin Authentication', type: :request do
         expect(response).to have_http_status(:success)
       end
 
-      it 'allows access to admin jobs' do
-        get '/admin/jobs'
+      it 'allows access to admin solid_queue' do
+        get '/admin/solid_queue'
         expect(response).to have_http_status(:success)
       end
     end
@@ -78,7 +81,7 @@ RSpec.describe 'Admin Authentication', type: :request do
 
   describe 'after_sign_in_path_for' do
     it 'redirects admin to admin dashboard after login' do
-      post '/users/sign_in', params: {
+      post user_session_path, params: {
         user: {
           email: admin_user.email,
           password: 'Password123!'
@@ -88,7 +91,7 @@ RSpec.describe 'Admin Authentication', type: :request do
     end
 
     it 'redirects normal user to dashboard after login' do
-      post '/users/sign_in', params: {
+      post user_session_path, params: {
         user: {
           email: normal_user.email,
           password: 'Password123!'
