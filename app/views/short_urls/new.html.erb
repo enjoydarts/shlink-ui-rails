@@ -21,7 +21,7 @@
       <%= form_with model: @shorten, url: short_urls_path, local: false, data: { controller: "submitter" }, class: "space-y-6" do |f| %>
         <div class="space-y-2">
           <label class="block text-sm font-semibold text-gray-700 mb-2">📎 短縮したいURL</label>
-          <%= f.url_field :long_url, 
+          <%= f.url_field :long_url,
                 placeholder: "https://example.com/very/long/url/path",
                 class: "w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-base placeholder-gray-400 bg-gray-50/50" %>
           <%= render_field_error(@shorten.errors[:long_url]) %>
@@ -29,7 +29,7 @@
 
         <div class="space-y-2">
           <label class="block text-sm font-semibold text-gray-700 mb-2">🏷️ カスタムスラッグ（オプション）</label>
-          <%= f.text_field :slug, 
+          <%= f.text_field :slug,
                 placeholder: "my-custom-link",
                 class: "w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 text-base placeholder-gray-400 bg-gray-50/50" %>
           <p class="text-sm text-gray-500 flex items-center space-x-1">
@@ -43,9 +43,9 @@
         <!-- QR Code Option -->
         <div class="space-y-2">
           <div class="flex items-center space-x-3 p-4 rounded-2xl bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200/50">
-            <%= f.check_box :include_qr_code, 
+            <%= f.check_box :include_qr_code,
                   class: "w-5 h-5 text-purple-600 border-2 border-purple-300 rounded focus:ring-purple-500 focus:ring-2 transition-all duration-200" %>
-            <%= f.label :include_qr_code, "📱 QRコードも生成する", 
+            <%= f.label :include_qr_code, "📱 QRコードも生成する",
                   class: "text-sm font-semibold text-purple-700 flex items-center space-x-2 cursor-pointer" %>
           </div>
           <p class="text-sm text-gray-500 flex items-center space-x-1 ml-2">
@@ -58,7 +58,7 @@
 
         <!-- Advanced Options Accordion -->
         <div class="border-t border-gray-200 pt-6" data-controller="accordion">
-          <button type="button" 
+          <button type="button"
                   data-action="click->accordion#toggle"
                   class="w-full flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg p-2 hover:bg-gray-50 transition-colors duration-200">
             <h3 class="text-lg font-semibold text-gray-800 flex items-center space-x-2">
@@ -68,21 +68,21 @@
               </svg>
               <span>高度なオプション</span>
             </h3>
-            <svg data-accordion-target="chevron" 
-                 class="w-5 h-5 text-gray-500 transition-transform duration-300" 
-                 fill="none" 
-                 stroke="currentColor" 
+            <svg data-accordion-target="chevron"
+                 class="w-5 h-5 text-gray-500 transition-transform duration-300"
+                 fill="none"
+                 stroke="currentColor"
                  viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
           </button>
-          
+
           <div data-accordion-target="content" class="pt-4">
             <div class="space-y-4">
               <!-- Expiration Date Field -->
               <div class="space-y-2">
                 <label class="block text-sm font-semibold text-gray-700 mb-2">⏰ 有効期限（オプション）</label>
-                <%= f.datetime_local_field :valid_until, 
+                <%= f.datetime_local_field :valid_until,
                       class: "w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all duration-200 text-base bg-gray-50/50" %>
                 <p class="text-sm text-gray-500 flex items-center space-x-1">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,7 +96,7 @@
               <!-- Max Visits Field -->
               <div class="space-y-2">
                 <label class="block text-sm font-semibold text-gray-700 mb-2">👥 最大訪問回数（オプション）</label>
-                <%= f.number_field :max_visits, 
+                <%= f.number_field :max_visits,
                       placeholder: "例: 100",
                       min: 1,
                       class: "w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 text-base bg-gray-50/50" %>
@@ -112,14 +112,14 @@
               <!-- Tags Field -->
               <div class="space-y-2" data-controller="tag-input" data-tag-input-max-tags-value="<%= Settings.system.short_url.max_tags %>" data-tag-input-max-length-value="<%= Settings.system.short_url.max_tag_length %>">
                 <label class="block text-sm font-semibold text-gray-700 mb-2">🏷️ タグ（オプション）</label>
-                
+
                 <!-- タグ入力欄（タグを入力欄内に表示） -->
                 <div class="relative">
-                  <div data-tag-input-target="inputContainer" 
+                  <div data-tag-input-target="inputContainer"
                        class="min-h-[3rem] w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus-within:border-purple-500 focus-within:ring-4 focus-within:ring-purple-100 transition-all duration-200 bg-gray-50/50 flex flex-wrap items-center gap-2">
                     <!-- タグが動的に追加される場所 -->
                     <div data-tag-input-target="tagContainer" class="flex flex-wrap items-center gap-2"></div>
-                    
+
                     <!-- 実際の入力フィールド -->
                     <input type="text"
                            data-tag-input-target="input"
@@ -128,10 +128,10 @@
                            class="flex-1 min-w-[120px] border-none outline-none bg-transparent text-base placeholder-gray-400" />
                   </div>
                 </div>
-                
+
                 <!-- 隠しフィールド（実際の送信データ） -->
                 <%= f.hidden_field :tags, data: { tag_input_target: "hiddenInput" } %>
-                
+
                 <p class="text-sm text-gray-500 flex items-center space-x-1">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -160,39 +160,6 @@
 
       <!-- Results Area -->
       <div id="result" class="mt-8"></div>
-    </div>
-
-    <!-- Features Section -->
-    <div class="mt-12 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="text-center p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/20">
-        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-          </svg>
-        </div>
-        <h3 class="font-semibold text-gray-800 mb-1">高速処理</h3>
-        <p class="text-sm text-gray-600">瞬時にURLを短縮</p>
-      </div>
-      
-      <div class="text-center p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/20">
-        <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-        </div>
-        <h3 class="font-semibold text-gray-800 mb-1">安全・確実</h3>
-        <p class="text-sm text-gray-600">信頼性の高いサービス</p>
-      </div>
-      
-      <div class="text-center p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/20">
-        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-          <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM7 3H5a2 2 0 00-2 2v12a4 4 0 004 4h2M9 3h10a2 2 0 012 2v12a4 4 0 01-2 2H9M9 3v18"></path>
-          </svg>
-        </div>
-        <h3 class="font-semibold text-gray-800 mb-1">カスタマイズ</h3>
-        <p class="text-sm text-gray-600">自由なスラッグ設定</p>
-      </div>
     </div>
   </div>
 </div>
