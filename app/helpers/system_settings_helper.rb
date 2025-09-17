@@ -147,6 +147,8 @@ module SystemSettingsHelper
       # ActionMailer設定を再読み込み
       email_adapter_setting = SystemSetting.get("email.adapter", "smtp")
       case email_adapter_setting.downcase
+      when "letter_opener"
+        Rails.application.config.action_mailer.delivery_method = :letter_opener
       when "mailersend"
         Rails.application.config.action_mailer.delivery_method = :mailersend
         # MailerSend API設定の更新

@@ -59,7 +59,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: bundle exec solid_queue
+    command: ./bin/jobs
     volumes:
       - ./:/app
       - bundle:/usr/local/bundle

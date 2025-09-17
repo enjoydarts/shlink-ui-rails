@@ -101,15 +101,9 @@
             <% end %>
           </li>
           <li>
-            <%= link_to admin_jobs_path,
-                class: "flex items-center px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 #{'bg-blue-100 text-blue-700' if current_page?(admin_jobs_path) || controller_name == 'jobs'}" do %>
-              🔄 ジョブ管理
-            <% end %>
-          </li>
-          <li>
             <%= link_to admin_solid_queue_index_path,
-                class: "flex items-center px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 #{'bg-blue-100 text-blue-700' if current_page?(admin_solid_queue_index_path) || controller_name == 'solid_queue'}" do %>
-              🚀 Solid Queue
+                class: "flex items-center px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 #{'bg-blue-100 text-blue-700' if current_page?(admin_solid_queue_index_path) || controller_name == 'solid_queue' || controller_name == 'jobs'}" do %>
+              🔄 ジョブ管理
             <% end %>
           </li>
         </ul>

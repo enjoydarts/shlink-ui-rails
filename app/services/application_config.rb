@@ -192,11 +192,20 @@ class ApplicationConfig
       }
 
       # SMTP設定
-      email_adapter = get("email.adapter", Rails.env.development? ? "letter_opener" : "smtp")
+      email_adapter = get("email.adapter")
+
+      # デバッグログ追加
+      Rails.logger.info "ApplicationConfig.reload_action_mailer_settings! - email_adapter: #{email_adapter.inspect}"
+
+      # デフォルト値の設定（SystemSettingに値がない場合）
+      if email_adapter.blank?
+        email_adapter = Rails.env.development? ? "letter_opener" : "smtp"
+        Rails.logger.info "Using default email_adapter: #{email_adapter}"
+      end
 
       case email_adapter
       when "letter_opener"
-        Rails.application.config.action_mailer.delivery_method = :letter_opener_web
+        Rails.application.config.action_mailer.delivery_method = :letter_opener
         Rails.application.config.action_mailer.perform_deliveries = true
       when "smtp"
         Rails.application.config.action_mailer.delivery_method = :smtp
