@@ -23,7 +23,7 @@
 
     <!-- モーダルボディ -->
     <div class="p-6">
-      <%= form_with model: edit_form, url: update_short_url_path(short_url.short_code), method: :patch, local: false, class: "space-y-6" do |form| %>
+      <%= form_with model: edit_form, url: short_url_path(short_url.short_code), method: :patch, local: false, class: "space-y-6" do |form| %>
         <!-- タイトル -->
         <div>
           <%= form.label :title, "タイトル", class: "block text-sm font-medium text-gray-700 mb-2" %>
