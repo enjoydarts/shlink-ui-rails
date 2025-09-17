@@ -223,13 +223,7 @@ async function openEditModal(shortCode) {
 }
 
 function closeEditModal() {
-  const backdrop = document.getElementById('backdrop');
   const modal = document.getElementById('edit-modal');
-
-  if (backdrop) {
-    backdrop.classList.add('hidden');
-    backdrop.innerHTML = '';
-  }
 
   if (modal) {
     modal.classList.add('hidden');
@@ -246,11 +240,21 @@ function handleEditModalEscapeKey(event) {
   }
 }
 
-// モーダルが表示された時にESCキーリスナーを追加
-document.addEventListener('turbo:frame-load', function() {
+// モーダルが表示された時にESCキーリスナーを追加とタグの初期化
+document.addEventListener('turbo:stream-render', function() {
   const modal = document.getElementById('edit-modal');
   if (modal && !modal.classList.contains('hidden')) {
     document.addEventListener('keydown', handleEditModalEscapeKey);
+
+    // タグの初期化
+    const tagController = modal.querySelector('[data-controller*="tag-input"]');
+    if (tagController) {
+      // Stimulusコントローラーを手動で初期化
+      const application = window.Stimulus || window.Application;
+      if (application) {
+        application.load();
+      }
+    }
   }
 });
 
