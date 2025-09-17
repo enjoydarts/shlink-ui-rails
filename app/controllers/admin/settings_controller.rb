@@ -1,6 +1,7 @@
 require "net/smtp"
 
 class Admin::SettingsController < Admin::AdminController
+  include SystemSettingsHelper
   def show
     @settings_by_category = SystemSetting.enabled
                                           .group_by(&:category)
@@ -14,12 +15,16 @@ class Admin::SettingsController < Admin::AdminController
     allowed_keys = SystemSetting.pluck(:key_name)
     settings_params = params.require(:settings).permit(*allowed_keys)
 
+    Rails.logger.info "Settings update params: #{settings_params.inspect}"
+
     ActiveRecord::Base.transaction do
       settings_params.each do |key, value|
         setting = SystemSetting.find_by(key_name: key)
         next unless setting
 
-        setting.update!(value: value)
+        Rails.logger.info "Updating #{key}: #{setting.value} -> #{value}"
+        result = setting.update!(value: value)
+        Rails.logger.info "Update result for #{key}: #{result}, new value: #{setting.reload.value}"
       end
     end
 
@@ -31,8 +36,11 @@ class Admin::SettingsController < Admin::AdminController
 
     redirect_to admin_settings_path, notice: "システム設定を更新しました。"
   rescue ActiveRecord::RecordInvalid => e
+    Rails.logger.error "Settings update validation error: #{e.message}"
     redirect_to admin_settings_path, alert: "設定の更新に失敗しました: #{e.message}"
   rescue StandardError => e
+    Rails.logger.error "Settings update error: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
     redirect_to admin_settings_path, alert: "予期しないエラーが発生しました: #{e.message}"
   end
 

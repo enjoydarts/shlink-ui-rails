@@ -20,8 +20,7 @@ class SystemSetting < ApplicationRecord
   scope :by_category, ->(category) { where(category: category) }
 
   # 設定変更時に全アプリケーション設定を動的に更新
-  after_save :reload_application_settings
-  after_destroy :reload_application_settings
+  after_commit :reload_application_settings
 
   # 設定値を適切な型で取得
   def typed_value

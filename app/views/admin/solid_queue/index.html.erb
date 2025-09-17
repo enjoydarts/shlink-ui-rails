@@ -1,8 +1,8 @@
-<% content_for :title, "Solid Queue ダッシュボード" %>
+<% content_for :title, "ジョブ管理" %>
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <div class="mb-8">
-    <h1 class="text-3xl font-bold text-gray-900">🚀 Solid Queue ダッシュボード</h1>
+    <h1 class="text-3xl font-bold text-gray-900">🔄 ジョブ管理</h1>
     <p class="mt-2 text-gray-600">バックグラウンドジョブの実行状況と詳細な統計情報</p>
   </div>
 
@@ -108,28 +108,93 @@
   <!-- 操作ボタン -->
   <div class="mb-8">
     <div class="bg-white border border-gray-200 rounded-lg p-6">
-      <h2 class="text-lg font-semibold text-gray-900 mb-4">🎛️ ワーカー操作</h2>
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">🎛️ ジョブ操作</h2>
       <div class="flex flex-wrap gap-4">
-        <%= button_to "⏸️ 全ワーカー一時停止", pause_all_admin_solid_queue_index_path,
-            method: :post,
-            class: "bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors",
-            confirm: "全てのワーカーを一時停止しますか？" %>
-
-        <%= button_to "▶️ 全ワーカー再開", resume_all_admin_solid_queue_index_path,
-            method: :post,
-            class: "bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors",
-            confirm: "全てのワーカーを再開しますか？" %>
-
         <%= button_to "🗑️ 完了ジョブ削除", clear_finished_admin_solid_queue_index_path,
             method: :delete,
             class: "bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors",
             confirm: "完了済みジョブを全て削除しますか？" %>
+
+        <% if @stats[:failed_jobs] > 0 %>
+          <%= button_to "🔄 失敗ジョブ一括再実行", retry_all_admin_solid_queue_index_path,
+              method: :post,
+              class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors",
+              confirm: "全ての失敗ジョブを再実行しますか？" %>
+
+          <%= button_to "🗑️ 失敗ジョブ一括削除", clear_all_admin_solid_queue_index_path,
+              method: :delete,
+              class: "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors",
+              confirm: "全ての失敗ジョブを削除しますか？この操作は取り消せません。" %>
+        <% end %>
 
         <%= link_to "🔄 画面更新", admin_solid_queue_index_path,
             class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors" %>
       </div>
     </div>
   </div>
+
+  <!-- 失敗したジョブ -->
+  <% if @stats[:failed_jobs] > 0 %>
+    <div class="bg-white border border-gray-200 rounded-lg p-6 mb-8">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">❌ 失敗したジョブ</h2>
+      <% failed_jobs = SolidQueue::FailedExecution.includes(:job).limit(10) %>
+      <% if failed_jobs.any? %>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">ジョブ種類</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">キュー名</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">エラー内容</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">失敗日時</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">アクション</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <% failed_jobs.each do |failed_execution| %>
+                <% job = failed_execution.job %>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-2 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">
+                      <%= job&.class_name || '(削除済みジョブ)' %>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                      ID: <%= job&.id || 'N/A' %>
+                    </div>
+                  </td>
+                  <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                    <%= job&.queue_name || 'N/A' %>
+                  </td>
+                  <td class="px-4 py-2">
+                    <div class="text-sm text-red-600 max-w-xs overflow-hidden">
+                      <%= truncate(failed_execution.error.to_s, length: 100) %>
+                    </div>
+                  </td>
+                  <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                    <%= failed_execution.created_at.strftime('%Y/%m/%d %H:%M') %>
+                  </td>
+                  <td class="px-4 py-2 whitespace-nowrap text-sm font-medium">
+                    <div class="flex space-x-2">
+                      <% if job %>
+                        <%= button_to "再実行", retry_admin_solid_queue_path(failed_execution),
+                            method: :post,
+                            class: "text-blue-600 hover:text-blue-900",
+                            confirm: "ジョブ「#{job.class_name}」を再実行しますか？" %>
+                      <% end %>
+                      <%= button_to "削除", admin_solid_queue_path(failed_execution),
+                          method: :delete,
+                          class: "text-red-600 hover:text-red-900",
+                          confirm: "ジョブ「#{job&.class_name || '削除済みジョブ'}」を削除しますか？" %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
     <!-- アクティブプロセス -->
