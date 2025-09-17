@@ -45,7 +45,7 @@ RSpec.describe 'Short URL editing', type: :system do
               shortCode: "test123",
               longUrl: "https://updated.example.com",
               title: "Updated Title",
-              tags: ["updated-tag1", "updated-tag2"],
+              tags: [ "updated-tag1", "updated-tag2" ],
               meta: {
                 maxVisits: 100,
                 validUntil: nil
