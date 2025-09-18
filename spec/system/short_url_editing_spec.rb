@@ -54,6 +54,10 @@ RSpec.describe 'Short URL editing', type: :system do
             headers: { 'Content-Type' => 'application/json' }
           )
 
+        # デバイス別リダイレクトルール設定をモック
+        stub_request(:post, "#{ENV['SHLINK_BASE_URL']}/rest/v3/short-urls/test123/redirect-rules")
+          .to_return(status: 200, body: '{}', headers: { 'Content-Type' => 'application/json' })
+
         # 編集ページにアクセス
         visit edit_short_url_path(short_url.short_code)
 
@@ -71,6 +75,10 @@ RSpec.describe 'Short URL editing', type: :system do
       end
 
       it 'バリデーションエラーが表示される' do
+        # デバイス別リダイレクトルール設定をモック
+        stub_request(:post, "#{ENV['SHLINK_BASE_URL']}/rest/v3/short-urls/test123/redirect-rules")
+          .to_return(status: 200, body: '{}', headers: { 'Content-Type' => 'application/json' })
+
         # 編集ページにアクセス
         visit edit_short_url_path(short_url.short_code)
 
@@ -94,6 +102,10 @@ RSpec.describe 'Short URL editing', type: :system do
             headers: { 'Content-Type' => 'application/json' }
           )
 
+        # デバイス別リダイレクトルール設定をモック
+        stub_request(:post, "#{ENV['SHLINK_BASE_URL']}/rest/v3/short-urls/test123/redirect-rules")
+          .to_return(status: 200, body: '{}', headers: { 'Content-Type' => 'application/json' })
+
         # 編集ページにアクセス
         visit edit_short_url_path(short_url.short_code)
 
@@ -112,6 +124,10 @@ RSpec.describe 'Short URL editing', type: :system do
       it '他ユーザーのURLは編集できない' do
         other_user = create(:user)
         other_short_url = create(:short_url, user: other_user, short_code: 'other123')
+
+        # デバイス別リダイレクトルール設定をモック（念のため）
+        stub_request(:post, "#{ENV['SHLINK_BASE_URL']}/rest/v3/short-urls/other123/redirect-rules")
+          .to_return(status: 200, body: '{}', headers: { 'Content-Type' => 'application/json' })
 
         # 他のユーザーのURL編集ページにアクセス
         visit edit_short_url_path(other_short_url.short_code)

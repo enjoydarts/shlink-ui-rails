@@ -306,6 +306,7 @@ RSpec.describe ShortUrlsController, type: :controller do
   describe 'PATCH #update' do
     let!(:short_url) { create(:short_url, user: user, short_code: 'test123') }
     let(:mock_service) { instance_double(Shlink::UpdateShortUrlService) }
+    let(:mock_redirect_service) { instance_double(Shlink::SetRedirectRulesService) }
     let(:shlink_response) do
       {
         'shortCode' => 'test123',
@@ -318,6 +319,8 @@ RSpec.describe ShortUrlsController, type: :controller do
 
     before do
       allow(Shlink::UpdateShortUrlService).to receive(:new).and_return(mock_service)
+      allow(Shlink::SetRedirectRulesService).to receive(:new).and_return(mock_redirect_service)
+      allow(mock_redirect_service).to receive(:call).and_return({})
     end
 
     context '有効なパラメータの場合' do
@@ -327,7 +330,8 @@ RSpec.describe ShortUrlsController, type: :controller do
           edit_short_url_form: {
             title: 'Updated Title',
             long_url: 'https://updated.example.com',
-            tags: 'tag1, tag2'
+            tags: 'tag1, tag2',
+            device_redirects_enabled: 'false'
           }
         }
       end

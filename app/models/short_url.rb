@@ -91,4 +91,35 @@ class ShortUrl < ApplicationRecord
   def restore!
     update!(deleted_at: nil)
   end
+
+  # デバイス別リダイレクトルール関連のメソッド
+  def device_redirect_rules
+    # 実際の実装では、Shlink APIからリダイレクトルールを取得する必要がある
+    # ここではプレースホルダーとして空配列を返す
+    []
+  end
+
+  def android_redirect_url
+    rules = device_redirect_rules
+    android_rule = rules.find { |rule|
+      rule.dig("conditions")&.any? { |c| c["type"] == "device" && c["matchValue"] == "android" }
+    }
+    android_rule&.dig("longUrl")
+  end
+
+  def ios_redirect_url
+    rules = device_redirect_rules
+    ios_rule = rules.find { |rule|
+      rule.dig("conditions")&.any? { |c| c["type"] == "device" && c["matchValue"] == "iOS" }
+    }
+    ios_rule&.dig("longUrl")
+  end
+
+  def desktop_redirect_url
+    rules = device_redirect_rules
+    desktop_rule = rules.find { |rule|
+      rule.dig("conditions")&.any? { |c| c["type"] == "device" && c["matchValue"] == "desktop" }
+    }
+    desktop_rule&.dig("longUrl")
+  end
 end

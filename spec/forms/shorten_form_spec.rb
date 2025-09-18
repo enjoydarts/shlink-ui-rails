@@ -10,6 +10,21 @@ RSpec.describe ShortenForm, type: :model do
       it '有効である' do
         expect(subject).to be_valid
       end
+
+      context 'デバイス別リダイレクトが有効な場合' do
+        let(:attributes) do
+          {
+            long_url: 'https://example.com/very/long/url',
+            device_redirects_enabled: true,
+            android_url: 'https://play.google.com/store/apps/details?id=example',
+            ios_url: 'https://apps.apple.com/app/id123456789'
+          }
+        end
+
+        it '有効である' do
+          expect(subject).to be_valid
+        end
+      end
     end
 
     context '無効な属性の場合' do
@@ -46,6 +61,37 @@ RSpec.describe ShortenForm, type: :model do
         it '無効である' do
           expect(subject).not_to be_valid
           expect(subject.errors[:long_url]).to include('は無効なURLです')
+        end
+      end
+
+      context 'デバイス別リダイレクトが無効な場合' do
+        context 'デバイス別リダイレクトが有効だがURLが未設定の場合' do
+          let(:attributes) do
+            {
+              long_url: 'https://example.com/very/long/url',
+              device_redirects_enabled: true
+            }
+          end
+
+          it '無効である' do
+            expect(subject).not_to be_valid
+            expect(subject.errors[:base]).to include('デバイス別リダイレクトを有効にする場合は、少なくとも1つのデバイス用URLを設定してください')
+          end
+        end
+
+        context 'デバイス用URLの形式が無効な場合' do
+          let(:attributes) do
+            {
+              long_url: 'https://example.com/very/long/url',
+              device_redirects_enabled: true,
+              android_url: 'invalid-url'
+            }
+          end
+
+          it '無効である' do
+            expect(subject).not_to be_valid
+            expect(subject.errors[:android_url]).to be_present
+          end
         end
       end
     end
@@ -333,6 +379,82 @@ RSpec.describe ShortenForm, type: :model do
 
       it '空の配列を返す' do
         expect(subject).to eq([])
+      end
+    end
+  end
+
+  describe '#device_redirect_rules' do
+    subject { form.device_redirect_rules }
+
+    context 'デバイス別リダイレクトが無効な場合' do
+      let(:form) do
+        described_class.new(
+          long_url: 'https://example.com',
+          device_redirects_enabled: false,
+          android_url: 'https://play.google.com/store/apps/details?id=example'
+        )
+      end
+
+      it '空の配列を返す' do
+        expect(subject).to eq([])
+      end
+    end
+
+    context 'デバイス別リダイレクトが有効な場合' do
+      let(:form) do
+        described_class.new(
+          long_url: 'https://example.com',
+          device_redirects_enabled: true,
+          android_url: 'https://play.google.com/store/apps/details?id=example',
+          ios_url: 'https://apps.apple.com/app/id123456789',
+          desktop_url: 'https://example.com/desktop'
+        )
+      end
+
+      it '正しいリダイレクトルールを返す' do
+        expected_rules = [
+          {
+            longUrl: 'https://play.google.com/store/apps/details?id=example',
+            conditions: [
+              { type: "device", matchValue: "android", matchKey: nil }
+            ]
+          },
+          {
+            longUrl: 'https://apps.apple.com/app/id123456789',
+            conditions: [
+              { type: "device", matchValue: "iOS", matchKey: nil }
+            ]
+          },
+          {
+            longUrl: 'https://example.com/desktop',
+            conditions: [
+              { type: "device", matchValue: "desktop", matchKey: nil }
+            ]
+          }
+        ]
+        expect(subject).to eq(expected_rules)
+      end
+    end
+
+    context '一部のデバイス用URLのみ設定された場合' do
+      let(:form) do
+        described_class.new(
+          long_url: 'https://example.com',
+          device_redirects_enabled: true,
+          android_url: 'https://play.google.com/store/apps/details?id=example'
+        )
+      end
+
+      it '設定されたデバイスのルールのみ返す' do
+        expected_rules = [
+          {
+            longUrl: 'https://play.google.com/store/apps/details?id=example',
+            conditions: [
+              { type: "device", matchValue: "android", matchKey: nil }
+            ]
+          }
+        ]
+        expect(subject).to eq(expected_rules)
       end
     end
   end
