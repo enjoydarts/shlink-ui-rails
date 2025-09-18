@@ -8,7 +8,9 @@ fi
 
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
-  ./bin/rails db:prepare
+  echo "🔄 Applying database schema with Ridgepole..."
+  bundle exec ridgepole -c config/database.yml -E production --apply -f db/schemas/Schemafile
+  echo "✅ Database schema applied successfully"
 fi
 
 exec "${@}"
