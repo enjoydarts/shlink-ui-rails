@@ -87,8 +87,8 @@ export default class extends Controller {
   showTab(tabName) {
     // 全てのタブとパネルを非アクティブ化
     this.tabTargets.forEach(tab => {
-      tab.classList.remove("active", "bg-white", "text-blue-600", "shadow-sm")
-      tab.classList.add("text-gray-600", "hover:text-blue-600", "hover:bg-white/50")
+      tab.classList.remove("active", "bg-white", "dark:bg-gray-700", "text-blue-600", "dark:text-blue-400", "shadow-sm")
+      tab.classList.add("text-gray-600", "dark:text-gray-400", "hover:text-blue-600", "dark:hover:text-blue-400", "hover:bg-white/50", "dark:hover:bg-gray-700/50")
       tab.setAttribute("aria-selected", "false")
       tab.setAttribute("tabindex", "-1")
     })
@@ -104,8 +104,8 @@ export default class extends Controller {
 
     if (activeTab && activePanel) {
       // タブのスタイリング
-      activeTab.classList.add("active", "bg-white", "text-blue-600", "shadow-sm")
-      activeTab.classList.remove("text-gray-600", "hover:text-blue-600", "hover:bg-white/50")
+      activeTab.classList.add("active", "bg-white", "dark:bg-gray-700", "text-blue-600", "dark:text-blue-400", "shadow-sm")
+      activeTab.classList.remove("text-gray-600", "dark:text-gray-400", "hover:text-blue-600", "dark:hover:text-blue-400", "hover:bg-white/50", "dark:hover:bg-gray-700/50")
       activeTab.setAttribute("aria-selected", "true")
       activeTab.setAttribute("tabindex", "0")
 

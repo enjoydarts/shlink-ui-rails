@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8 px-4">
   <div class="w-full max-w-md mx-auto">
     <!-- Header Section -->
     <div class="text-center mb-8">
@@ -7,49 +7,49 @@
           <path fill="currentColor" d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1M12 7C13.4 7 14.8 8.6 14.8 10V11H16V16H8V11H9.2V10C9.2 8.6 10.6 7 12 7M12 8.2C11.2 8.2 10.4 8.7 10.4 10V11H13.6V10C13.6 8.7 12.8 8.2 12 8.2Z"/>
         </svg>
       </div>
-      <h1 class="text-3xl font-bold text-gray-800 mb-2">2段階認証</h1>
+      <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">2段階認証</h1>
 <% if @user.totp_enabled? && @user.webauthn_enabled? %>
-        <p class="text-lg text-gray-600">セキュリティキーまたは認証アプリで認証してください</p>
+        <p class="text-lg text-gray-600 dark:text-gray-300">セキュリティキーまたは認証アプリで認証してください</p>
       <% elsif @user.webauthn_enabled? %>
-        <p class="text-lg text-gray-600">セキュリティキーで認証してください</p>
+        <p class="text-lg text-gray-600 dark:text-gray-300">セキュリティキーで認証してください</p>
       <% else %>
-        <p class="text-lg text-gray-600">認証アプリで生成されたコードを入力してください</p>
+        <p class="text-lg text-gray-600 dark:text-gray-300">認証アプリで生成されたコードを入力してください</p>
       <% end %>
     </div>
 
     <!-- Main Card -->
-    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 md:p-10 hover:shadow-2xl transition-all duration-300">
+    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/30 p-8 md:p-10 hover:shadow-2xl transition-all duration-300">
       
       <!-- Error Messages -->
       <% if flash[:alert] %>
-        <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
+        <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700/30 rounded-2xl">
           <div class="flex items-center space-x-3">
             <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.962-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
             </svg>
-            <span class="text-red-700 font-medium"><%= flash[:alert] %></span>
+            <span class="text-red-700 dark:text-red-300 font-medium"><%= flash[:alert] %></span>
           </div>
         </div>
       <% end %>
 
       <!-- Security Notice -->
-      <div class="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-2xl">
+      <div class="mb-6 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700/30 rounded-2xl">
         <div class="flex items-center space-x-3">
           <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
           </svg>
-          <span class="text-orange-700 font-medium">追加認証が必要です</span>
+          <span class="text-orange-700 dark:text-orange-300 font-medium">追加認証が必要です</span>
         </div>
       </div>
 
       <!-- WebAuthn Authentication (if available) -->
       <% if @user.webauthn_enabled? %>
-        <div class="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-2xl" 
+        <div class="mb-6 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700/30 rounded-2xl" 
              data-controller="webauthn" 
              data-webauthn-options-url-value="<%= authentication_options_users_webauthn_credentials_path %>">
           <div class="text-center">
-            <h3 class="text-lg font-semibold text-purple-800 mb-3">🔑 セキュリティキーで認証</h3>
-            <p class="text-sm text-purple-700 mb-4">
+            <h3 class="text-lg font-semibold text-purple-800 dark:text-purple-200 mb-3">🔑 セキュリティキーで認証</h3>
+            <p class="text-sm text-purple-700 dark:text-purple-300 mb-4">
               登録済みのセキュリティキーを使用して認証できます
             </p>
             <button type="button" 
@@ -60,8 +60,8 @@
               </svg>
               セキュリティキーで認証
             </button>
-            <div data-webauthn-target="errorMessage" class="hidden mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p class="text-sm text-red-700"></p>
+            <div data-webauthn-target="errorMessage" class="hidden mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700/30 rounded-lg">
+              <p class="text-sm text-red-700 dark:text-red-300"></p>
             </div>
           </div>
         </div>
@@ -73,7 +73,7 @@
               <div class="w-full border-t border-gray-300"></div>
             </div>
             <div class="relative flex justify-center text-sm">
-              <span class="px-2 bg-white text-gray-500">または</span>
+              <span class="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">または</span>
             </div>
           </div>
         <% end %>
@@ -85,30 +85,30 @@
         <!-- TOTP Code Field (only if TOTP is enabled) -->
         <% if @user.totp_enabled? %>
           <div class="space-y-3">
-            <%= f.label :totp_code, "🔐 認証コード", class: "block text-sm font-semibold text-gray-700 mb-3" %>
+            <%= f.label :totp_code, "🔐 認証コード", class: "block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3" %>
             <%= f.text_field :totp_code, 
                   autofocus: true, 
                   autocomplete: "one-time-code",
                   placeholder: "123456",
                   maxlength: 8,
                   pattern: "[0-9a-zA-Z]{6,8}",
-                  class: "w-full px-5 py-4 rounded-2xl border-2 border-gray-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 text-base placeholder-gray-400 bg-gray-50/50 text-center font-mono text-xl tracking-widest" %>
+                  class: "w-full px-5 py-4 rounded-2xl border-2 border-gray-200 dark:border-gray-600 focus:border-green-500 focus:ring-4 focus:ring-green-100 dark:focus:ring-green-900/30 transition-all duration-200 text-base placeholder-gray-400 dark:placeholder-gray-500 bg-gray-50/50 dark:bg-gray-700/50 text-center font-mono text-xl tracking-widest text-gray-900 dark:text-gray-100" %>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-              <div class="p-3 bg-gray-50 rounded-xl">
+              <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                 <div class="flex items-center space-x-2">
                   <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                   </svg>
-                  <span class="text-sm text-gray-600">Google Authenticator</span>
+                  <span class="text-sm text-gray-600 dark:text-gray-300">Google Authenticator</span>
                 </div>
               </div>
-              <div class="p-3 bg-gray-50 rounded-xl">
+              <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                 <div class="flex items-center space-x-2">
                   <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                   </svg>
-                  <span class="text-sm text-gray-600">Authy</span>
+                  <span class="text-sm text-gray-600 dark:text-gray-300">Authy</span>
                 </div>
               </div>
             </div>
@@ -133,14 +133,14 @@
       <!-- Help Section (only if TOTP is enabled) -->
       <% if @user.totp_enabled? %>
         <div class="mt-8 space-y-4">
-          <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-2xl">
+          <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/30 rounded-2xl">
             <div class="flex items-start space-x-3">
               <svg class="w-5 h-5 text-yellow-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
               <div>
-                <h3 class="text-sm font-semibold text-yellow-800 mb-1">バックアップコードについて</h3>
-                <p class="text-sm text-yellow-700">
+                <h3 class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-1">バックアップコードについて</h3>
+                <p class="text-sm text-yellow-700 dark:text-yellow-300">
                   認証アプリが利用できない場合は、バックアップコードも使用できます。
                   バックアップコードは8桁の英数字です。
                 </p>
@@ -149,12 +149,12 @@
           </div>
 
           <div class="text-center space-y-3">
-            <div class="text-sm text-gray-500">
+            <div class="text-sm text-gray-500 dark:text-gray-400">
               認証アプリが利用できませんか？
             </div>
             <details class="text-left">
-              <summary class="cursor-pointer text-sm text-blue-600 hover:text-blue-800">トラブルシューティング</summary>
-              <div class="mt-3 p-4 bg-gray-50 rounded-xl text-sm text-gray-600 space-y-2">
+              <summary class="cursor-pointer text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">トラブルシューティング</summary>
+              <div class="mt-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl text-sm text-gray-600 dark:text-gray-300 space-y-2">
                 <p>• 認証アプリの時刻が正確であることを確認してください</p>
                 <p>• コードは30秒ごとに更新されます</p>
                 <p>• バックアップコードは一度のみ使用可能です</p>
@@ -169,7 +169,7 @@
       <div class="mt-8 text-center">
         <%= link_to "ログアウト", destroy_user_session_path, 
               data: { "turbo-method": "delete" },
-              class: "text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200" %>
+              class: "text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-200" %>
       </div>
     </div>
   </div>

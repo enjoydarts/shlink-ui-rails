@@ -2,37 +2,54 @@
 <div class="space-y-8">
   
   <!-- プロフィール設定セクション -->
-  <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6 lg:p-8">
+  <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/20 p-6 lg:p-8">
     <div class="flex items-center mb-6">
-      <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mr-4">
+      <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mr-4">
         <svg width="20" height="20" viewBox="0 0 24 24" class="text-blue-600">
           <path fill="currentColor" d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
         </svg>
       </div>
       <div>
-        <h3 class="text-xl font-bold text-gray-800"><%= t('accounts.show.profile_settings') %></h3>
-        <p class="text-sm text-gray-600 mt-1"><%= t('accounts.tabs.basic_description') %></p>
+        <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200"><%= t('accounts.show.profile_settings') %></h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1"><%= t('accounts.tabs.basic_description') %></p>
       </div>
     </div>
-    
+
     <%= render 'profile_form' %>
+  </div>
+
+  <!-- テーマ設定セクション -->
+  <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/20 p-6 lg:p-8">
+    <div class="flex items-center mb-6">
+      <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center mr-4">
+        <svg width="20" height="20" viewBox="0 0 24 24" class="text-purple-600">
+          <path fill="currentColor" d="M12 18.5C16.97 18.5 21 14.47 21 9.5C21 14.47 16.97 18.5 12 18.5C7.03 18.5 3 14.47 3 9.5C3 14.47 7.03 18.5 12 18.5M12 2L13.09 8.26L22 9L13.09 9.74L12 16L10.91 9.74L2 9L10.91 8.26L12 2M12 12.5C8.69 12.5 6 9.81 6 6.5C6 9.81 8.69 12.5 12 12.5C15.31 12.5 18 9.81 18 6.5C18 9.81 15.31 12.5 12 12.5Z"/>
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200">テーマ設定</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">アプリケーションの表示テーマを設定できます</p>
+      </div>
+    </div>
+
+    <%= render 'theme_form' %>
   </div>
   
   <!-- アカウント情報表示 -->
-  <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl border border-blue-100 p-6 lg:p-8">
+  <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-3xl border border-blue-100 dark:border-blue-700/30 p-6 lg:p-8">
     <div class="flex items-center mb-4">
-      <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+      <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mr-3">
         <svg width="16" height="16" viewBox="0 0 24 24" class="text-blue-600">
           <path fill="currentColor" d="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
         </svg>
       </div>
-      <h4 class="text-lg font-semibold text-blue-800">アカウント情報</h4>
+      <h4 class="text-lg font-semibold text-blue-800 dark:text-blue-200">アカウント情報</h4>
     </div>
     
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="bg-white/60 rounded-xl p-4 border border-blue-200/50">
-        <dt class="text-sm font-medium text-blue-700 mb-1">アカウント種別</dt>
-        <dd class="text-sm text-blue-900">
+      <div class="bg-white/60 dark:bg-gray-800/60 rounded-xl p-4 border border-blue-200/50 dark:border-blue-700/50">
+        <dt class="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">アカウント種別</dt>
+        <dd class="text-sm text-blue-900 dark:text-blue-200">
           <% if @user.from_omniauth? %>
             <span class="inline-flex items-center">
               <svg class="w-4 h-4 mr-1" viewBox="0 0 24 24">
@@ -54,33 +71,33 @@
         </dd>
       </div>
       
-      <div class="bg-white/60 rounded-xl p-4 border border-blue-200/50">
-        <dt class="text-sm font-medium text-blue-700 mb-1">権限レベル</dt>
-        <dd class="text-sm text-blue-900">
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+      <div class="bg-white/60 dark:bg-gray-800/60 rounded-xl p-4 border border-blue-200/50 dark:border-blue-700/50">
+        <dt class="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">権限レベル</dt>
+        <dd class="text-sm text-blue-900 dark:text-blue-200">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
             <%= @user.role.humanize %>
           </span>
         </dd>
       </div>
       
-      <div class="bg-white/60 rounded-xl p-4 border border-blue-200/50">
-        <dt class="text-sm font-medium text-blue-700 mb-1">メール確認状況</dt>
-        <dd class="text-sm text-blue-900">
+      <div class="bg-white/60 dark:bg-gray-800/60 rounded-xl p-4 border border-blue-200/50 dark:border-blue-700/50">
+        <dt class="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">メール確認状況</dt>
+        <dd class="text-sm text-blue-900 dark:text-blue-200">
           <% if @user.confirmed? %>
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
               ✓ <%= t('accounts.show.confirmed_status') %>
             </span>
           <% else %>
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300">
               <%= t('accounts.show.unconfirmed_status') %>
             </span>
           <% end %>
         </dd>
       </div>
       
-      <div class="bg-white/60 rounded-xl p-4 border border-blue-200/50">
-        <dt class="text-sm font-medium text-blue-700 mb-1">登録日時</dt>
-        <dd class="text-sm text-blue-900"><%= @user.created_at.strftime("%Y年%m月%d日") %></dd>
+      <div class="bg-white/60 dark:bg-gray-800/60 rounded-xl p-4 border border-blue-200/50 dark:border-blue-700/50">
+        <dt class="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">登録日時</dt>
+        <dd class="text-sm text-blue-900 dark:text-blue-200"><%= @user.created_at.strftime("%Y年%m月%d日") %></dd>
       </div>
     </div>
   </div>

@@ -417,23 +417,23 @@ export default class extends Controller {
     
     if (urls.length === 0) {
       const noResultsDiv = document.createElement('div')
-      noResultsDiv.className = 'p-2 text-sm text-gray-500 text-center'
+      noResultsDiv.className = 'p-2 text-sm text-gray-500 dark:text-gray-400 text-center'
       noResultsDiv.textContent = '検索結果がありません'
       dropdown.appendChild(noResultsDiv)
     } else {
       urls.forEach(url => {
         const item = document.createElement('div')
-        item.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0'
+        item.className = 'px-3 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-600 last:border-b-0'
         item.dataset.shortCode = url.short_code
         item.dataset.urlData = JSON.stringify(url)
-        
+
         item.innerHTML = `
           <div class="flex justify-between items-center">
             <div class="flex-1 min-w-0">
-              <div class="text-sm font-medium text-gray-900 truncate">${url.title}</div>
-              <div class="text-xs text-gray-500 truncate">${url.short_url}</div>
+              <div class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">${url.title}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400 truncate">${url.short_url}</div>
             </div>
-            <div class="text-xs text-gray-400 ml-2">${url.visit_count}回</div>
+            <div class="text-xs text-gray-400 dark:text-gray-500 ml-2">${url.visit_count}回</div>
           </div>
         `
         

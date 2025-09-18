@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html class="<%= body_theme_class %>">
   <head>
     <title><%= content_for(:title) || "Shlink-UI-Rails" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -52,12 +52,42 @@
     <% end %>
 
     <%= javascript_importmap_tags %>
+
+    <!-- 即座のダークモード適用テスト -->
+    <script>
+      // ページ読み込み直後にテーマを確認・適用
+      (function() {
+        console.log('Immediate theme application script running');
+        console.log('Initial HTML classes:', document.documentElement.className);
+
+        // 既にdarkクラスがある場合は何もしない
+        if (document.documentElement.classList.contains('dark')) {
+          console.log('Dark class already present');
+          return;
+        }
+
+        // ローカルストレージやcookieでユーザーのテーマ設定を確認
+        // この例では、system-themeクラスがある場合にシステム設定を確認
+        if (document.documentElement.classList.contains('system-theme')) {
+          console.log('System theme detected, checking user preference');
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          console.log('System prefers dark:', prefersDark);
+
+          if (prefersDark) {
+            document.documentElement.classList.add('dark');
+            console.log('Applied dark mode for system preference');
+          }
+        }
+
+        console.log('Final HTML classes:', document.documentElement.className);
+      })();
+    </script>
   </head>
 
-  <body data-turbo-action="replace">
+  <body class="bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen" data-turbo-action="replace" <%= tag.attributes(theme_controller_data) %>>
     <!-- Navigation Bar -->
     <% if user_signed_in? %>
-      <nav class="bg-white/90 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50" data-controller="mobile-menu" data-action="click@window->mobile-menu#closeOnOutsideClick keydown@window->mobile-menu#closeOnEscape">
+      <nav class="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50" data-controller="mobile-menu" data-action="click@window->mobile-menu#closeOnOutsideClick keydown@window->mobile-menu#closeOnEscape">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between items-center h-16">
             <!-- Logo -->
@@ -68,12 +98,12 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.102m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
                   </svg>
                 </div>
-                <span class="font-bold text-gray-900">Shlink-UI-Rails</span>
+                <span class="font-bold text-gray-900 dark:text-white">Shlink-UI-Rails</span>
               <% end %>
             </div>
 
             <!-- Desktop Navigation Links -->
-            <div class="hidden md:flex items-center bg-gray-100 rounded-xl p-1">
+            <div class="hidden md:flex items-center bg-gray-100 dark:bg-gray-800 rounded-xl p-1 mx-auto">
               <%= link_to dashboard_path, class: nav_link_class('dashboard') do %>
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -94,14 +124,14 @@
               <div class="relative" data-controller="user-menu" data-action="click@window->user-menu#outsideClick keydown@window->user-menu#keydown">
                 <button type="button"
                         data-action="click->user-menu#toggle"
-                        class="flex items-center space-x-3 px-3 py-2 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        class="flex items-center space-x-3 px-3 py-2 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                   <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                     <span class="text-white text-sm font-semibold">
                       <%= current_user.display_name.first.upcase %>
                     </span>
                   </div>
                   <div class="text-sm text-left">
-                    <p class="text-gray-900 font-medium"><%= current_user.display_name %></p>
+                    <p class="text-gray-900 dark:text-white font-medium"><%= current_user.display_name %></p>
                     <% if current_user.admin? %>
                       <p class="text-gray-500">管理者ユーザ</p>
                     <% end %>
@@ -113,11 +143,11 @@
 
                 <!-- Dropdown Menu -->
                 <div data-user-menu-target="dropdown"
-                     class="hidden opacity-0 scale-95 absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 transform transition-all duration-150 ease-out z-50">
+                     class="hidden opacity-0 scale-95 absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 transform transition-all duration-150 ease-out z-50">
                   <div class="py-2">
                     <!-- Account Settings -->
                     <%= link_to account_path,
-                          class: "flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200" do %>
+                          class: "flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200" do %>
                       <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -128,7 +158,7 @@
                     <!-- Admin Panel Link (Only for admin users) -->
                     <% if current_user.admin? %>
                       <%= link_to admin_dashboard_path,
-                            class: "flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200" do %>
+                            class: "flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200" do %>
                         <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
                         </svg>
@@ -168,23 +198,23 @@
         </div>
 
         <!-- Mobile Menu -->
-        <div class="md:hidden hidden opacity-0 -translate-y-2 transition-all duration-200 ease-out bg-white border-t border-gray-200" data-mobile-menu-target="menu">
+        <div class="md:hidden hidden opacity-0 -translate-y-2 transition-all duration-200 ease-out bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700" data-mobile-menu-target="menu">
           <div class="px-4 py-3 space-y-3">
             <!-- Mobile Navigation Links -->
             <div class="space-y-2">
-              <%= link_to dashboard_path, class: "flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200" do %>
+              <%= link_to dashboard_path, class: "flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200" do %>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
                 <span class="font-medium">URL作成</span>
               <% end %>
-              <%= link_to mypage_path, class: "flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200" do %>
+              <%= link_to mypage_path, class: "flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200" do %>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                 </svg>
                 <span class="font-medium">マイページ</span>
               <% end %>
-              <%= link_to account_path, class: "flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200" do %>
+              <%= link_to account_path, class: "flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200" do %>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -194,7 +224,7 @@
 
               <!-- Admin Panel Link for Mobile (Only for admin users) -->
               <% if current_user.admin? %>
-                <%= link_to admin_dashboard_path, class: "flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200" do %>
+                <%= link_to admin_dashboard_path, class: "flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200" do %>
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
                   </svg>
@@ -202,6 +232,7 @@
                 <% end %>
               <% end %>
             </div>
+
 
             <!-- Mobile User Info -->
             <div class="border-t border-gray-200 pt-3">
@@ -212,7 +243,7 @@
                   </span>
                 </div>
                 <div>
-                  <p class="text-gray-900 font-medium"><%= current_user.display_name %></p>
+                  <p class="text-gray-900 dark:text-white font-medium"><%= current_user.display_name %></p>
                   <% if current_user.admin? %>
                     <p class="text-gray-500 text-sm">管理者ユーザ</p>
                   <% end %>
@@ -240,9 +271,9 @@
     <%= yield %>
 
     <!-- Footer with Version Info -->
-    <footer class="bg-gray-50 border-t border-gray-200 mt-8">
+    <footer class="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 mt-8">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div class="flex justify-between items-center text-sm text-gray-500">
+        <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
           <div>
             © 2025 Shlink-UI-Rails
           </div>
