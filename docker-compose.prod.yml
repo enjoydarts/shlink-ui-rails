@@ -28,6 +28,7 @@ services:
       - RAILS_ENV=production
       - RAILS_SERVE_STATIC_FILES=true
       - RAILS_LOG_TO_STDOUT=true
+      - RAILS_LOG_FILE=production-web.log
       - TZ=Asia/Tokyo
       - GIT_COMMIT=${GIT_COMMIT}
 
@@ -85,6 +86,7 @@ services:
     # 追加の環境変数
     environment:
       - RAILS_ENV=production
+      - RAILS_LOG_FILE=production-jobs.log
       - SOLID_QUEUE_LOG_LEVEL=info
       - TZ=Asia/Tokyo
       - GIT_COMMIT=${GIT_COMMIT}
