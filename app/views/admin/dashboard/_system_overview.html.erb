@@ -1,8 +1,8 @@
 <!-- システム概要 - ヘルスチェックとリソース情報を統合 -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
   <!-- システム健康状態 -->
-  <div class="card p-6">
-    <h2 class="text-xl font-bold text-gray-900 mb-4">🏥 システム健康状態</h2>
+  <div class="card p-4 sm:p-6">
+    <h2 class="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">🏥 システム健康状態</h2>
     <div class="space-y-4">
       <div class="flex justify-between items-center">
         <span class="text-gray-700">データベース</span>
@@ -32,8 +32,8 @@
   </div>
 
   <!-- サーバーリソース -->
-  <div class="card p-6">
-    <h2 class="text-xl font-bold text-gray-900 mb-4">📊 サーバーリソース</h2>
+  <div class="card p-4 sm:p-6">
+    <h2 class="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">📊 サーバーリソース</h2>
     <div class="space-y-4">
       <% if @server_monitor[:system][:memory][:error] %>
         <div class="text-red-600 text-sm">
