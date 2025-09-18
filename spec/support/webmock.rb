@@ -5,6 +5,13 @@ RSpec.configure do |config|
     WebMock.reset!
     WebMock.disable_net_connect!(allow_localhost: true)
 
+    # ConfigShortcutsのShlink設定をテスト用にスタブ
+    allow_any_instance_of(Shlink::BaseService).to receive(:shlink_base_url).and_return('https://test.example.com')
+    allow_any_instance_of(Shlink::BaseService).to receive(:shlink_api_key).and_return('test-api-key')
+
+    # ShortUrlモデルのredirect rules同期をモック
+    allow_any_instance_of(ShortUrl).to receive(:sync_redirect_rules_from_api).and_return([])
+
     # Google OAuth APIをスタブ
     WebMock.stub_request(:post, "https://oauth2.googleapis.com/token")
       .to_return(status: 200, body: {
@@ -38,9 +45,8 @@ RSpec.configure do |config|
         headers: { "Content-Type" => "application/json" }
       )
 
-    # Shlink API short URLs listing
-    WebMock.stub_request(:get, /#{Regexp.escape(Settings.shlink.base_url)}\/rest\/v\d+\/short-urls/)
-      .with(headers: { "X-Api-Key" => Settings.shlink.api_key })
+    # Shlink API short URLs listing - 任意のbase URLに対応
+    WebMock.stub_request(:get, /\/rest\/v\d+\/short-urls/)
       .to_return(
         status: 200,
         body: {
@@ -60,6 +66,19 @@ RSpec.configure do |config|
 
     # Shlink API short URL creation
     WebMock.stub_request(:post, "#{Settings.shlink.base_url}/rest/v3/short-urls")
+      .with(headers: { "X-Api-Key" => Settings.shlink.api_key })
+      .to_return(
+        status: 200,
+        body: {
+          shortCode: "abc123",
+          shortUrl: "https://s.test/abc123",
+          longUrl: "https://example.com"
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    # Shlink API individual short URL details
+    WebMock.stub_request(:get, /#{Regexp.escape(Settings.shlink.base_url)}\/rest\/v\d+\/short-urls\/[^\/]+$/)
       .with(headers: { "X-Api-Key" => Settings.shlink.api_key })
       .to_return(
         status: 200,
@@ -92,6 +111,28 @@ RSpec.configure do |config|
               totalItems: 0
             }
           }
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    # Shlink API redirect rules - 任意のbase URLに対応
+    WebMock.stub_request(:get, %r{https://[^/]+/rest/v\d+/short-urls/[^/]+/redirect-rules})
+      .to_return(
+        status: 200,
+        body: {
+          defaultLongUrl: "https://example.com",
+          redirectRules: []
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    # Shlink API redirect rules setting - 任意のbase URLに対応
+    WebMock.stub_request(:post, %r{https://[^/]+/rest/v\d+/short-urls/[^/]+/redirect-rules})
+      .to_return(
+        status: 200,
+        body: {
+          defaultLongUrl: "https://example.com",
+          redirectRules: []
         }.to_json,
         headers: { "Content-Type" => "application/json" }
       )
