@@ -31,6 +31,7 @@ services:
       - RAILS_LOG_FILE=production-web.log
       - TZ=Asia/Tokyo
       - GIT_COMMIT=${GIT_COMMIT}
+      - BUILD_TIME=${BUILD_TIME}
 
     # ボリューム設定（ホストパス指定で管理しやすく）
     volumes:
@@ -90,6 +91,7 @@ services:
       - SOLID_QUEUE_LOG_LEVEL=info
       - TZ=Asia/Tokyo
       - GIT_COMMIT=${GIT_COMMIT}
+      - BUILD_TIME=${BUILD_TIME}
 
     # ボリューム設定（appサービスと共有）
     volumes:

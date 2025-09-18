@@ -26,8 +26,12 @@ docker container prune -f
 echo "🔨 Building Docker images..."
 docker-compose -f docker-compose.prod.yml build --no-cache
 
-# サービスを起動
+# 環境変数を設定してサービスを起動
 echo "▶️ Starting services..."
+export GIT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+export BUILD_TIME=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+echo "📅 Git commit: $GIT_COMMIT"
+echo "📅 Build time: $BUILD_TIME"
 docker-compose -f docker-compose.prod.yml up -d
 
 # ヘルスチェック待機
