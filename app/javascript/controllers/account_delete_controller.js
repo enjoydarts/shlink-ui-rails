@@ -15,10 +15,16 @@ export default class extends Controller {
   connect() {
     // ESCキーでモーダルを閉じる
     document.addEventListener("keydown", this.handleKeydown.bind(this))
+    // グローバル関数を設定
+    window.openAccountDeleteModal = this.openModal.bind(this)
   }
 
   disconnect() {
     document.removeEventListener("keydown", this.handleKeydown.bind(this))
+    // グローバル関数をクリーンアップ
+    if (window.openAccountDeleteModal) {
+      delete window.openAccountDeleteModal
+    }
   }
 
   // モーダルを開く
@@ -136,9 +142,11 @@ export default class extends Controller {
 
   // フォーム送信
   submitForm() {
-    const form = this.element.querySelector("form")
+    const form = document.getElementById("account-delete-form")
     if (form) {
       form.submit()
+    } else {
+      console.error("Account delete form not found")
     }
   }
 

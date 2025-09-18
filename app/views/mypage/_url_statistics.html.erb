@@ -1,40 +1,40 @@
 <div class="space-y-3">
   <!-- Visit Count -->
-  <div class="flex items-center justify-between bg-gray-50 rounded-xl p-3">
-    <span class="text-sm font-medium text-gray-700">アクセス数</span>
-    <span class="text-lg font-bold text-gray-900"><%= short_url.visit_display %></span>
+  <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3">
+    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">アクセス数</span>
+    <span class="text-lg font-bold text-gray-900 dark:text-gray-100"><%= short_url.visit_display %></span>
   </div>
 
   <!-- Expiration -->
   <% if short_url.has_expiration? %>
-    <div class="flex items-center justify-between bg-orange-50 rounded-xl p-3">
-      <span class="text-sm font-medium text-orange-700">有効期限</span>
+    <div class="flex items-center justify-between bg-orange-50 dark:bg-orange-900/20 rounded-xl p-3">
+      <span class="text-sm font-medium text-orange-700 dark:text-orange-300">有効期限</span>
       <div class="text-right">
-        <p class="text-sm font-bold text-orange-900">
+        <p class="text-sm font-bold text-orange-900 dark:text-orange-200">
           <%= short_url.valid_until.strftime("%Y/%m/%d") %>
         </p>
-        <p class="text-xs text-orange-700">
+        <p class="text-xs text-orange-700 dark:text-orange-400">
           <%= short_url.valid_until.strftime("%H:%M") %>
         </p>
       </div>
     </div>
   <% else %>
-    <div class="flex items-center justify-between bg-gray-50 rounded-xl p-3">
-      <span class="text-sm font-medium text-gray-600">有効期限</span>
-      <span class="text-sm text-gray-500">無制限</span>
+    <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3">
+      <span class="text-sm font-medium text-gray-600 dark:text-gray-400">有効期限</span>
+      <span class="text-sm text-gray-500 dark:text-gray-400">無制限</span>
     </div>
   <% end %>
 
   <!-- Visit Limit -->
   <% if short_url.has_visit_limit? %>
-    <div class="flex items-center justify-between bg-purple-50 rounded-xl p-3">
-      <span class="text-sm font-medium text-purple-700">残り回数</span>
-      <span class="text-lg font-bold text-purple-900"><%= short_url.remaining_visits %></span>
+    <div class="flex items-center justify-between bg-purple-50 dark:bg-purple-900/20 rounded-xl p-3">
+      <span class="text-sm font-medium text-purple-700 dark:text-purple-300">残り回数</span>
+      <span class="text-lg font-bold text-purple-900 dark:text-purple-200"><%= short_url.remaining_visits %></span>
     </div>
   <% else %>
-    <div class="flex items-center justify-between bg-gray-50 rounded-xl p-3">
-      <span class="text-sm font-medium text-gray-600">訪問制限</span>
-      <span class="text-sm text-gray-500">無制限</span>
+    <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3">
+      <span class="text-sm font-medium text-gray-600 dark:text-gray-400">訪問制限</span>
+      <span class="text-sm text-gray-500 dark:text-gray-400">無制限</span>
     </div>
   <% end %>
 </div>

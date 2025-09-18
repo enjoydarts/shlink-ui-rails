@@ -7,22 +7,22 @@
   
   <!-- Modal Content -->
   <div class="fixed inset-0 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300" 
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300" 
          id="delete-modal-content"
          style="transform: scale(0.95); opacity: 0;">
       
       <!-- Header -->
-      <div class="flex items-center justify-between p-6 border-b border-gray-100">
+      <div class="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
         <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+          <div class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
             <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
             </svg>
           </div>
-          <h3 class="text-lg font-semibold text-gray-900">短縮URLの削除</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">短縮URLの削除</h3>
         </div>
         <button onclick="closeDeleteModal()" 
-                class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
@@ -32,32 +32,32 @@
       <!-- Body -->
       <div class="p-6">
         <div class="mb-4">
-          <p class="text-gray-600 mb-2">以下の短縮URLを削除しようとしています：</p>
-          <div class="bg-gray-50 rounded-lg p-3 border">
-            <p id="delete-modal-title" class="font-semibold text-gray-900 mb-1"></p>
-            <p id="delete-modal-url" class="text-sm text-blue-600"></p>
+          <p class="text-gray-600 dark:text-gray-400 mb-2">以下の短縮URLを削除しようとしています：</p>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+            <p id="delete-modal-title" class="font-semibold text-gray-900 dark:text-gray-100 mb-1"></p>
+            <p id="delete-modal-url" class="text-sm text-blue-600 dark:text-blue-400"></p>
           </div>
         </div>
         
-        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+        <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700/30 rounded-lg p-4 mb-4">
           <div class="flex items-start space-x-3">
             <svg class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
             </svg>
             <div>
-              <h4 class="text-sm font-medium text-red-800 mb-1">重要な注意事項</h4>
-              <p class="text-sm text-red-700">この操作は取り消すことができません。削除後は、この短縮URLにアクセスできなくなります。</p>
+              <h4 class="text-sm font-medium text-red-800 dark:text-red-200 mb-1">重要な注意事項</h4>
+              <p class="text-sm text-red-700 dark:text-red-300">この操作は取り消すことができません。削除後は、この短縮URLにアクセスできなくなります。</p>
             </div>
           </div>
         </div>
         
-        <p class="text-gray-600">本当に削除してもよろしいですか？</p>
+        <p class="text-gray-600 dark:text-gray-400">本当に削除してもよろしいですか？</p>
       </div>
       
       <!-- Footer -->
-      <div class="flex items-center justify-end space-x-3 px-6 py-4 bg-gray-50 rounded-b-2xl">
+      <div class="flex items-center justify-end space-x-3 px-6 py-4 bg-gray-50 dark:bg-gray-900/50 rounded-b-2xl">
         <button onclick="closeDeleteModal()" 
-                class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium">
+                class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200 font-medium">
           キャンセル
         </button>
         <button id="confirm-delete-btn" 

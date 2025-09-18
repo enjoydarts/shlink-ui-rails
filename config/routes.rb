@@ -57,7 +57,7 @@ Rails.application.routes.draw do
     delete "short_urls/:short_code", to: "mypage#destroy", as: :delete_short_url
 
     # Account management
-    resource :account, only: [ :show ], controller: :accounts
+    resource :account, only: [ :show, :update ], controller: :accounts
 
     # Statistics API
     namespace :statistics do

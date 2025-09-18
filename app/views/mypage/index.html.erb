@@ -1,11 +1,11 @@
-<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8 px-4">
   <div class="w-full max-w-6xl mx-auto">
     <%= render 'header' %>
     <%= render 'statistics_cards' %>
     <%= render 'action_buttons' %>
 
     <!-- Main Content with Tabs -->
-    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6 md:p-8" data-controller="mypage-tabs">
+    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/20 p-6 md:p-8" data-controller="mypage-tabs">
       <%= render 'tab_navigation' %>
       <%= render 'tab_content' %>
     </div>

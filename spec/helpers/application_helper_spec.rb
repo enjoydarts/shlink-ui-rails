@@ -80,12 +80,12 @@ RSpec.describe ApplicationHelper, type: :helper do
       end
 
       it 'mypageがアクティブな場合、アクティブクラスが返される' do
-        expected_class = "inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white text-blue-600 shadow-sm"
+        expected_class = "inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
         expect(helper.nav_link_class('mypage')).to eq(expected_class)
       end
 
       it 'dashboardが非アクティブな場合、非アクティブクラスが返される' do
-        expected_class = "inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-600 hover:text-blue-600 hover:bg-white/50"
+        expected_class = "inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/50 dark:hover:bg-gray-700/50"
         expect(helper.nav_link_class('dashboard')).to eq(expected_class)
       end
     end
@@ -96,7 +96,7 @@ RSpec.describe ApplicationHelper, type: :helper do
       end
 
       it 'dashboardがアクティブな場合、アクティブクラスが返される' do
-        expected_class = "inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white text-blue-600 shadow-sm"
+        expected_class = "inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
         expect(helper.nav_link_class('dashboard')).to eq(expected_class)
       end
     end
@@ -107,7 +107,7 @@ RSpec.describe ApplicationHelper, type: :helper do
       end
 
       it 'dashboardがアクティブとして扱われる' do
-        expected_class = "inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white text-blue-600 shadow-sm"
+        expected_class = "inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
         expect(helper.nav_link_class('dashboard')).to eq(expected_class)
       end
     end
@@ -118,7 +118,7 @@ RSpec.describe ApplicationHelper, type: :helper do
       end
 
       it 'dashboardがアクティブとして扱われる' do
-        expected_class = "inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white text-blue-600 shadow-sm"
+        expected_class = "inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
         expect(helper.nav_link_class('dashboard')).to eq(expected_class)
       end
     end
@@ -129,7 +129,7 @@ RSpec.describe ApplicationHelper, type: :helper do
       end
 
       it '全てのページが非アクティブクラスになる' do
-        expected_class = "inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-600 hover:text-blue-600 hover:bg-white/50"
+        expected_class = "inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/50 dark:hover:bg-gray-700/50"
         expect(helper.nav_link_class('dashboard')).to eq(expected_class)
         expect(helper.nav_link_class('mypage')).to eq(expected_class)
       end

@@ -7,24 +7,24 @@
 
   <!-- URL Selection and Controls -->
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-    <h2 class="text-2xl font-bold text-gray-900">URL別分析</h2>
+    <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">URL別分析</h2>
     
     <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
       <!-- URL Selection with Search -->
       <div class="flex items-center space-x-2">
-        <label for="url-search" class="text-sm font-medium text-gray-700 whitespace-nowrap">URL選択:</label>
+        <label for="url-search" class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">URL選択:</label>
         <div class="relative w-full sm:w-64">
           <input type="text" 
                  id="url-search"
                  placeholder="タイトルや短縮URLで検索..."
                  data-action="input->individual-analysis#searchUrls focus->individual-analysis#showDropdown"
                  data-individual-analysis-target="searchInput"
-                 class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                 class="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
           
           <!-- Dropdown for search results -->
-          <div class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto"
+          <div class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto"
                data-individual-analysis-target="dropdown">
-            <div class="p-2 text-sm text-gray-500 text-center" data-individual-analysis-target="noResults">
+            <div class="p-2 text-sm text-gray-500 dark:text-gray-400 text-center" data-individual-analysis-target="noResults">
               検索結果がありません
             </div>
           </div>
@@ -40,10 +40,10 @@
       
       <!-- Period Filter -->
       <div class="flex items-center space-x-2">
-        <label for="individual-period-select" class="text-sm font-medium text-gray-700 whitespace-nowrap">期間:</label>
+        <label for="individual-period-select" class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">期間:</label>
         <select id="individual-period-select" 
                 data-action="change->individual-analysis#changePeriod"
-                class="block w-32 px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                class="block w-32 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
           <option value="7d">1週間</option>
           <option value="30d" selected>1ヶ月</option>
           <option value="90d">3ヶ月</option>
@@ -54,15 +54,15 @@
   </div>
 
   <!-- URL Info Card -->
-  <div data-individual-analysis-target="urlInfo" class="hidden bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-6 mb-6">
+  <div data-individual-analysis-target="urlInfo" class="hidden bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-700/30 p-6 mb-6">
     <div class="flex items-start justify-between">
       <div class="flex-1">
-        <h3 class="text-lg font-semibold text-gray-900 mb-2" data-individual-analysis-target="urlTitle">URL Title</h3>
-        <p class="text-sm text-gray-600 mb-1">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2" data-individual-analysis-target="urlTitle">URL Title</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
           <span class="font-medium">短縮URL:</span>
           <a href="#" target="_blank" class="text-blue-600 hover:text-blue-800 underline ml-1" data-individual-analysis-target="shortUrl"></a>
         </p>
-        <p class="text-sm text-gray-600 mb-1">
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
           <span class="font-medium">元URL:</span>
           <span class="ml-1 break-all" data-individual-analysis-target="longUrl"></span>
         </p>
@@ -82,32 +82,32 @@
   <div data-individual-analysis-target="chartsContainer" class="hidden">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
       <!-- Daily Visits Chart -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h4 class="text-lg font-medium text-gray-900 mb-4">日別アクセス推移</h4>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">日別アクセス推移</h4>
         <div class="h-64">
           <canvas data-individual-analysis-target="dailyChart"></canvas>
         </div>
       </div>
 
       <!-- Hourly Visits Chart -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h4 class="text-lg font-medium text-gray-900 mb-4">時間帯別アクセス</h4>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">時間帯別アクセス</h4>
         <div class="h-64">
           <canvas data-individual-analysis-target="hourlyChart"></canvas>
         </div>
       </div>
 
       <!-- Browser Stats Chart -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h4 class="text-lg font-medium text-gray-900 mb-4">ブラウザ別アクセス</h4>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">ブラウザ別アクセス</h4>
         <div class="h-64">
           <canvas data-individual-analysis-target="browserChart"></canvas>
         </div>
       </div>
 
       <!-- Country Stats Chart -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h4 class="text-lg font-medium text-gray-900 mb-4">国別アクセス（Top 10）</h4>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">国別アクセス（Top 10）</h4>
         <div class="h-64">
           <canvas data-individual-analysis-target="countryChart"></canvas>
         </div>
@@ -117,16 +117,16 @@
     <!-- Additional Stats Row -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- Referer Stats Chart -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h4 class="text-lg font-medium text-gray-900 mb-4">参照元別アクセス（Top 10）</h4>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">参照元別アクセス（Top 10）</h4>
         <div class="h-64">
           <canvas data-individual-analysis-target="refererChart"></canvas>
         </div>
       </div>
 
       <!-- Summary Stats -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h4 class="text-lg font-medium text-gray-900 mb-4">統計サマリー</h4>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">統計サマリー</h4>
         <div class="space-y-4">
           <div class="flex justify-between items-center py-2 border-b border-gray-100">
             <span class="text-gray-600">総アクセス数</span>
@@ -155,7 +155,7 @@
       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
     </svg>
-    <p class="text-sm text-gray-500">URL一覧を読み込んでいます...</p>
+    <p class="text-sm text-gray-500 dark:text-gray-400">URL一覧を読み込んでいます...</p>
   </div>
 
   <!-- No URL Selected State -->
@@ -163,8 +163,8 @@
     <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.102m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
     </svg>
-    <h3 class="text-lg font-medium text-gray-900 mb-2">URLを選択してください</h3>
-    <p class="text-gray-500 mb-4">上のドロップダウンから分析したいURLを選択すると、詳細な統計グラフが表示されます</p>
+    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">URLを選択してください</h3>
+    <p class="text-gray-500 dark:text-gray-400 mb-4">上のドロップダウンから分析したいURLを選択すると、詳細な統計グラフが表示されます</p>
   </div>
 
   <!-- Error State -->
@@ -172,8 +172,8 @@
     <svg class="w-16 h-16 text-red-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
     </svg>
-    <h3 class="text-lg font-medium text-gray-900 mb-2">データの読み込みに失敗しました</h3>
-    <p class="text-gray-500 mb-4" data-individual-analysis-target="errorMessage">統計データの取得でエラーが発生しました</p>
+    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">データの読み込みに失敗しました</h3>
+    <p class="text-gray-500 dark:text-gray-400 mb-4" data-individual-analysis-target="errorMessage">統計データの取得でエラーが発生しました</p>
     <button data-action="click->individual-analysis#retry" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
       <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>

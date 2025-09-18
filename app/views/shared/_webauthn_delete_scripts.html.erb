@@ -18,19 +18,19 @@ function openWebauthnDeleteModal() {
   const modal = document.getElementById('webauthn-delete-modal');
   const backdrop = document.getElementById('webauthn-delete-modal-backdrop');
   const content = document.getElementById('webauthn-delete-modal-content');
-  
+
   // ボタンの状態をリセット
   resetWebauthnDeleteButton();
-  
+
   modal.classList.remove('hidden');
-  
+
   // アニメーション用の少し遅延
   setTimeout(() => {
-    backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    backdrop.style.opacity = '1';
     content.style.transform = 'scale(1)';
     content.style.opacity = '1';
   }, 10);
-  
+
   // ESCキーでモーダルを閉じる
   document.addEventListener('keydown', handleWebauthnDeleteEscapeKey);
 }
@@ -39,17 +39,17 @@ function closeWebauthnDeleteModal() {
   const modal = document.getElementById('webauthn-delete-modal');
   const backdrop = document.getElementById('webauthn-delete-modal-backdrop');
   const content = document.getElementById('webauthn-delete-modal-content');
-  
-  backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+
+  backdrop.style.opacity = '0';
   content.style.transform = 'scale(0.95)';
   content.style.opacity = '0';
-  
+
   setTimeout(() => {
     modal.classList.add('hidden');
     pendingWebauthnDeleteData = null;
     resetWebauthnDeleteButton();
   }, 300);
-  
+
   // ESCキーリスナーを削除
   document.removeEventListener('keydown', handleWebauthnDeleteEscapeKey);
 }

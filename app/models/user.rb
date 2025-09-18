@@ -11,8 +11,16 @@ class User < ApplicationRecord
     admin: "admin"
   }, default: :normal_user
 
+  # Theme preferences
+  enum :theme_preference, {
+    light: "light",
+    dark: "dark",
+    system: "system"
+  }, default: :system
+
   validates :name, presence: true, if: :from_omniauth?
   validates :role, inclusion: { in: roles.keys }
+  validates :theme_preference, inclusion: { in: theme_preferences.keys }
 
   # 強固なパスワード要求
   validate :password_strength, if: :password_required? && :should_validate_strong_password?
@@ -227,6 +235,44 @@ class User < ApplicationRecord
   # @return [Boolean] 認証成功の場合true
   def verify_webauthn_authentication(credential, challenge)
     WebauthnService.verify_authentication(self, credential, challenge)
+  end
+
+  # Theme management methods
+
+  # テーマ設定の表示名を取得
+  # @return [String] テーマの日本語表示名
+  def theme_display_name
+    case theme_preference
+    when "light"
+      "ライトモード"
+    when "dark"
+      "ダークモード"
+    when "system"
+      "システム設定に従う"
+    else
+      "不明"
+    end
+  end
+
+  # 利用可能なテーマオプションを取得
+  # @return [Array<Array>] [[表示名, 値], ...] の配列
+  def self.theme_options
+    [
+      [ "ライトモード", "light" ],
+      [ "ダークモード", "dark" ],
+      [ "システム設定に従う", "system" ]
+    ]
+  end
+
+  # テーマ設定を更新
+  # @param new_theme [String] 新しいテーマ設定
+  # @return [Boolean] 更新成功の場合true
+  def update_theme!(new_theme)
+    if theme_preferences.key?(new_theme)
+      update!(theme_preference: new_theme)
+    else
+      false
+    end
   end
 
   # Devise session compatibility method for newer versions
