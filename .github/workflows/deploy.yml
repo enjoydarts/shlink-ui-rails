@@ -461,7 +461,21 @@ jobs:
           echo "🌐 Application URL: https://app.kty.at"
           echo "📊 Deployment time: $(date)"
           echo "🔗 Commit: ${{ github.sha }}"
-          # Slack/Discord通知が必要な場合はここに追加
+
+          # Discord成功通知
+          if [[ -n "${{ secrets.DISCORD_WEBHOOK_URL }}" ]]; then
+            curl -H "Content-Type: application/json" \
+                 -X POST \
+                 -d '{
+                   "embeds": [{
+                     "title": "🚀 GitHub Actions デプロイ完了",
+                     "description": "**プロジェクト:** ${{ github.repository }}\n**環境:** Production (app.kty.at)\n**コミット:** `${{ github.sha }}`\n**ブランチ:** `${{ github.ref_name }}`\n**時刻:** $(date)\n\n**URL:** https://app.kty.at",
+                     "color": 3066993,
+                     "footer": {"text": "GitHub Actions"}
+                   }]
+                 }' \
+                 "${{ secrets.DISCORD_WEBHOOK_URL }}" || echo "Discord通知失敗"
+          fi
 
       - name: Notify Failure
         if: contains(needs.*.result, 'failure')
@@ -473,7 +487,26 @@ jobs:
           echo "  - Deploy: ${{ needs.deploy.result }}"
           echo "📋 Check the workflow logs for details"
           echo "🏥 Health check URL: https://app.kty.at/health"
-          # 緊急アラートが必要な場合はここに追加
+
+          # Discord失敗通知
+          if [[ -n "${{ secrets.DISCORD_WEBHOOK_URL }}" ]]; then
+            FAILED_JOBS=""
+            [[ "${{ needs.test.result }}" == "failure" ]] && FAILED_JOBS="${FAILED_JOBS}• Test: 失敗\n"
+            [[ "${{ needs.build-and-push.result }}" == "failure" ]] && FAILED_JOBS="${FAILED_JOBS}• Build: 失敗\n"
+            [[ "${{ needs.deploy.result }}" == "failure" ]] && FAILED_JOBS="${FAILED_JOBS}• Deploy: 失敗\n"
+
+            curl -H "Content-Type: application/json" \
+                 -X POST \
+                 -d "{
+                   \"embeds\": [{
+                     \"title\": \"🚨 GitHub Actions デプロイ失敗\",
+                     \"description\": \"**プロジェクト:** ${{ github.repository }}\n**環境:** Production (app.kty.at)\n**コミット:** \`${{ github.sha }}\`\n**ブランチ:** \`${{ github.ref_name }}\`\n**時刻:** $(date)\n\n**失敗したジョブ:**\n${FAILED_JOBS}\n**ログ:** [GitHub Actions](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\",
+                     \"color\": 15158332,
+                     \"footer\": {\"text\": \"GitHub Actions\"}
+                   }]
+                 }" \
+                 "${{ secrets.DISCORD_WEBHOOK_URL }}" || echo "Discord通知失敗"
+          fi
 
       - name: Summary
         run: |

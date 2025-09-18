@@ -38,17 +38,36 @@ Rails.application.configure do
 
   # Log to both file and STDOUT for production
   # コンテナごとに別々のログファイルを使用
-  log_file_name = ENV.fetch("RAILS_LOG_FILE", "production.log")
-  file_logger = Logger.new(Rails.root.join("logs", log_file_name), "daily")
-  file_logger.formatter = Logger::Formatter.new
-
   stdout_logger = Logger.new(STDOUT)
   stdout_logger.formatter = Logger::Formatter.new
 
-  # Combine both loggers
-  config.logger = ActiveSupport::TaggedLogging.new(
-    ActiveSupport::BroadcastLogger.new(file_logger, stdout_logger)
-  )
+  begin
+    log_file_name = ENV.fetch("RAILS_LOG_FILE", "production.log")
+    log_file_path = Rails.root.join("log", log_file_name)
+
+    # ディレクトリを作成
+    FileUtils.mkdir_p(log_file_path.dirname) unless log_file_path.dirname.exist?
+
+    # ファイルの書き込み権限をテスト
+    test_file = log_file_path.to_s + ".test"
+    puts "🔍 Testing write permission to: #{test_file}"
+    File.write(test_file, "test")
+    File.delete(test_file)
+    puts "✅ Write permission test passed"
+
+    file_logger = Logger.new(log_file_path, "daily")
+    file_logger.formatter = Logger::Formatter.new
+
+    # Combine both loggers
+    config.logger = ActiveSupport::TaggedLogging.new(
+      ActiveSupport::BroadcastLogger.new(file_logger, stdout_logger)
+    )
+    puts "✅ File logging initialized: #{log_file_path}"
+  rescue => e
+    # ファイルログに失敗した場合はSTDOUTのみ
+    puts "⚠️  Warning: Failed to initialize file logging (#{e.message}), using STDOUT only"
+    config.logger = ActiveSupport::TaggedLogging.new(stdout_logger)
+  end
 
   # Change to "debug" to log everything (including potentially personally-identifiable information!)
   config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
