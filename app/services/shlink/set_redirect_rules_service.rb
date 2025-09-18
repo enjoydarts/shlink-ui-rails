@@ -27,7 +27,7 @@ module Shlink
     def make_request(short_code, payload)
       conn.post("/rest/v3/short-urls/#{short_code}/redirect-rules") do |req|
         req.headers.merge!(api_headers)
-        req.headers['Content-Type'] = 'application/json'
+        req.headers["Content-Type"] = "application/json"
         req.body = payload.to_json
       end
     end
