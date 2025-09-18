@@ -193,7 +193,8 @@ export default class extends Controller {
       challenge: challenge,
       allowCredentials: allowCredentials,
       timeout: options.timeout,
-      userVerification: options.userVerification
+      userVerification: options.userVerification,
+      rpId: options.rpId
     }
     
     console.log('Get options:', getOptions)
