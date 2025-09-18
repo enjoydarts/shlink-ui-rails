@@ -10,6 +10,7 @@ WebAuthn.configure do |config|
 
   # デフォルトのRP（Relying Party）設定
   config.rp_name = Settings.webauthn.rp_name
+  config.rp_id = Settings.webauthn.rp_id
 
   # Origin設定 (3.4.1では allowed_origins を使用)
   config.allowed_origins = [ Settings.webauthn.origin ]
