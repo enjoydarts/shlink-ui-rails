@@ -225,8 +225,8 @@ RSpec.describe User, type: :model do
 
       context 'WebAuthnクレデンシャルがある場合' do
         before do
-          # WebAuthnCredential modelが存在することを想定
-          allow(user.webauthn_credentials).to receive(:exists?).and_return(true)
+          # アクティブなWebAuthnCredentialが存在することを想定
+          allow(user.webauthn_credentials).to receive(:active).and_return(double(exists?: true))
         end
 
         it 'trueを返すこと' do
