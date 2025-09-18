@@ -71,11 +71,18 @@ class WebauthnService
     # @param nickname [String] クレデンシャルのニックネーム
     # @return [WebauthnCredential] 作成されたクレデンシャル
     def register_credential(user, credential_response, challenge, nickname: nil)
+      Rails.logger.debug "WebAuthn registration - RP ID: #{rp_id}, Origin: #{origin}"
+      Rails.logger.debug "WebAuthn registration - Challenge: #{challenge}"
+
       # WebAuthn 3.4.1の正しいAPIを使用
       webauthn_credential = WebAuthn::Credential.from_create(credential_response)
 
-      # 検証を実行
-      webauthn_credential.verify(challenge)
+      # 検証を実行（必要なパラメータを明示的に指定）
+      webauthn_credential.verify(
+        challenge,
+        rp_id: rp_id,
+        origin: origin
+      )
 
       # データベースに保存
       user.webauthn_credentials.create!(
@@ -124,11 +131,13 @@ class WebauthnService
       # WebAuthn 3.4.1の正しいAPIを使用
       webauthn_credential = WebAuthn::Credential.from_get(credential_response)
 
-      # 検証を実行
+      # 検証を実行（必要なパラメータを明示的に指定）
       webauthn_credential.verify(
         challenge,
         public_key: stored_credential.public_key,
-        sign_count: stored_credential.sign_count
+        sign_count: stored_credential.sign_count,
+        rp_id: rp_id,
+        origin: origin
       )
 
       # 成功した場合、使用履歴を更新
