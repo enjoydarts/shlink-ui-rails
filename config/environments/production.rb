@@ -37,7 +37,9 @@ Rails.application.configure do
   config.log_tags = [ :request_id ]
 
   # Log to both file and STDOUT for production
-  file_logger = Logger.new(Rails.root.join("logs", "production.log"), "daily")
+  # コンテナごとに別々のログファイルを使用
+  log_file_name = ENV.fetch("RAILS_LOG_FILE", "production.log")
+  file_logger = Logger.new(Rails.root.join("logs", log_file_name), "daily")
   file_logger.formatter = Logger::Formatter.new
 
   stdout_logger = Logger.new(STDOUT)
