@@ -1,18 +1,18 @@
 <!-- 人気の短縮URL & 最近の短縮URL -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
   <!-- 人気の短縮URL -->
-  <div class="card p-6">
-    <h2 class="text-xl font-bold text-gray-900 mb-4">🔥 人気の短縮URL</h2>
+  <div class="card p-4 sm:p-6">
+    <h2 class="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">🔥 人気の短縮URL</h2>
     <% if @system_stats[:short_urls][:most_popular].any? %>
       <div class="space-y-3">
         <% @system_stats[:short_urls][:most_popular].each do |url| %>
           <div class="border-b border-gray-200 pb-3 last:border-b-0">
             <div class="flex justify-between items-start">
               <div class="flex-1 min-w-0">
-                <div class="font-medium text-blue-600 text-sm truncate">
+                <div class="font-medium text-blue-600 text-xs sm:text-sm truncate">
                   <%= url[:short_url] %>
                 </div>
-                <div class="text-gray-600 text-sm truncate">
+                <div class="text-gray-600 text-xs sm:text-sm truncate">
                   <%= url[:long_url] %>
                 </div>
               </div>
@@ -32,22 +32,23 @@
   </div>
 
   <!-- 最近の短縮URL -->
-  <div class="card p-6">
-    <h2 class="text-xl font-bold text-gray-900 mb-4">🕒 最近の短縮URL</h2>
+  <div class="card p-4 sm:p-6">
+    <h2 class="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">🕒 最近の短縮URL</h2>
     <% if @system_stats[:short_urls][:recent_created].any? %>
       <div class="space-y-3">
         <% @system_stats[:short_urls][:recent_created].each do |url| %>
           <div class="border-b border-gray-200 pb-3 last:border-b-0">
             <div class="flex justify-between items-start">
               <div class="flex-1 min-w-0">
-                <div class="font-medium text-blue-600 text-sm truncate">
+                <div class="font-medium text-blue-600 text-xs sm:text-sm truncate">
                   <%= url[:short_url] %>
                 </div>
-                <div class="text-gray-600 text-sm truncate">
+                <div class="text-gray-600 text-xs sm:text-sm truncate">
                   <%= url[:long_url] %>
                 </div>
                 <div class="text-gray-400 text-xs mt-1">
-                  <span class="font-medium"><%= url[:user_name] %></span> • <%= time_ago_in_words(url[:created_at]) %>前
+                  <span class="font-medium"><%= url[:user_name] %></span><br class="sm:hidden">
+                  <span class="hidden sm:inline"> • </span><%= time_ago_in_words(url[:created_at]) %>前
                 </div>
               </div>
             </div>
