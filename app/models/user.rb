@@ -187,9 +187,9 @@ class User < ApplicationRecord
   has_many :webauthn_credentials, dependent: :destroy
 
   # FIDO2セキュリティキーが登録されているか
-  # @return [Boolean] 登録済みの場合true
+  # @return [Boolean] アクティブなクレデンシャルが存在する場合true
   def webauthn_enabled?
-    webauthn_credentials.exists?
+    webauthn_credentials.active.exists?
   end
 
   # アクティブなWebAuthnクレデンシャルを取得
