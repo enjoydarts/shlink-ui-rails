@@ -38,11 +38,9 @@ Rails.application.configure do
 
   # Log to both file and STDOUT for production
   file_logger = Logger.new(Rails.root.join("logs", "production.log"), "daily")
-  file_logger.level = Logger::INFO
   file_logger.formatter = Logger::Formatter.new
 
   stdout_logger = Logger.new(STDOUT)
-  stdout_logger.level = Logger::INFO
   stdout_logger.formatter = Logger::Formatter.new
 
   # Combine both loggers
