@@ -168,7 +168,7 @@ RSpec.describe Admin::UserManagementService, type: :service do
 
       before do
         # 既存のデータをクリーンアップ
-        User.where.not(id: [ user1.id, user2.id ]).destroy_all
+        User.where.not(id: [user1.id, user2.id]).destroy_all
         ShortUrl.destroy_all
 
         create_list(:short_url, 5, user: user1)
