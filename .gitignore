@@ -65,3 +65,9 @@ config/environments/*.local.yml
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# etc...
+Caddyfile
+.vscode/
+.idea/
+*.swp
