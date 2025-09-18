@@ -89,6 +89,7 @@ services:
       - RAILS_ENV=production
       - RAILS_LOG_FILE=production-jobs.log
       - SOLID_QUEUE_LOG_LEVEL=info
+      - RAILS_LOG_TO_STDOUT=true  # STDOUTログ有効化
       - TZ=Asia/Tokyo
       - GIT_COMMIT=${GIT_COMMIT}
       - BUILD_TIME=${BUILD_TIME}
