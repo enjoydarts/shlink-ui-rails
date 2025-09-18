@@ -91,4 +91,62 @@ class ShortUrl < ApplicationRecord
   def restore!
     update!(deleted_at: nil)
   end
+
+  # JSON serialization for redirect_rules
+  def device_redirect_rules
+    return [] if redirect_rules.blank?
+
+    JSON.parse(redirect_rules)
+  rescue JSON::ParserError
+    []
+  end
+
+  def device_redirect_rules=(value)
+    self.redirect_rules = value.to_json
+  end
+
+  # Sync redirect rules from Shlink API
+  def sync_redirect_rules_from_api
+    begin
+      service = Shlink::GetRedirectRulesService.new
+      result = service.call(short_code: short_code)
+
+      # GetRedirectRulesService は直接レスポンスボディを返す
+      rules = result["redirectRules"] || []
+      self.device_redirect_rules = rules
+      save! if changed?
+      Rails.logger.info "Synced redirect rules for #{short_code}: #{rules.size} rules"
+      rules
+    rescue Shlink::Error => e
+      Rails.logger.warn "Failed to fetch redirect rules for #{short_code}: #{e.message}"
+      device_redirect_rules
+    rescue => e
+      Rails.logger.error "Error syncing redirect rules for #{short_code}: #{e.message}"
+      device_redirect_rules
+    end
+  end
+
+  def android_redirect_url
+    rules = device_redirect_rules
+    android_rule = rules.find { |rule|
+      rule.dig("conditions")&.any? { |c| c["type"] == "device" && c["matchValue"] == "android" }
+    }
+    android_rule&.dig("longUrl")
+  end
+
+  def ios_redirect_url
+    rules = device_redirect_rules
+    ios_rule = rules.find { |rule|
+      rule.dig("conditions")&.any? { |c| c["type"] == "device" && c["matchValue"] == "ios" }
+    }
+    ios_rule&.dig("longUrl")
+  end
+
+  def desktop_redirect_url
+    rules = device_redirect_rules
+    desktop_rule = rules.find { |rule|
+      rule.dig("conditions")&.any? { |c| c["type"] == "device" && c["matchValue"] == "desktop" }
+    }
+    desktop_rule&.dig("longUrl")
+  end
 end

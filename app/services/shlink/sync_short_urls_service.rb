@@ -152,6 +152,9 @@ module Shlink
         short_url.save!
         Rails.logger.info "Synced stats for short URL: #{short_url.short_code} for user #{user.id} (visits: #{short_url.visit_count})"
       end
+
+      # redirect rules を同期
+      short_url.sync_redirect_rules_from_api
     end
 
     def extract_short_url_attributes(data)

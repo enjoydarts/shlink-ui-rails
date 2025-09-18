@@ -86,6 +86,9 @@ create_table "short_urls", force: :cascade do |t|
   # Forward query parameters
   t.boolean "forward_query", default: true, null: false
 
+  # Device-specific redirect rules
+  t.text "redirect_rules", comment: "JSON array of device redirect rules"
+
   # User association
   t.references :user, null: false, foreign_key: true
 

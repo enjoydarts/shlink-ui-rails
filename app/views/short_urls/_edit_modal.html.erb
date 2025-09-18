@@ -139,6 +139,53 @@
           <% end %>
         </div>
 
+        <!-- Device-specific URLs -->
+        <div class="space-y-2" data-controller="device-redirect">
+          <div class="flex items-center justify-between mb-3">
+            <label class="block text-sm font-medium text-gray-700">📱 デバイス別リダイレクト</label>
+            <button type="button"
+                    data-action="click->device-redirect#toggle"
+                    data-device-redirect-target="toggleBtn"
+                    class="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors duration-200">
+              編集
+            </button>
+          </div>
+
+          <div data-device-redirect-target="container" class="hidden space-y-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200/50">
+            <p class="text-sm text-gray-600 mb-3">デバイスの種類に応じて異なるURLにリダイレクトできます</p>
+
+            <!-- Android URL -->
+            <div class="space-y-1">
+              <label class="block text-sm font-medium text-gray-700">🤖 Android用URL</label>
+              <%= form.url_field :android_url,
+                    placeholder: "https://play.google.com/store/apps/details?id=...",
+                    class: "w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all duration-200 text-sm bg-white",
+                    data: { device_redirect_target: "androidUrl" } %>
+            </div>
+
+            <!-- iOS URL -->
+            <div class="space-y-1">
+              <label class="block text-sm font-medium text-gray-700">🍎 iOS用URL</label>
+              <%= form.url_field :ios_url,
+                    placeholder: "https://apps.apple.com/app/id...",
+                    class: "w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 text-sm bg-white",
+                    data: { device_redirect_target: "iosUrl" } %>
+            </div>
+
+            <!-- Desktop URL -->
+            <div class="space-y-1">
+              <label class="block text-sm font-medium text-gray-700">💻 Desktop用URL</label>
+              <%= form.url_field :desktop_url,
+                    placeholder: "https://example.com/desktop-version",
+                    class: "w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-200 text-sm bg-white",
+                    data: { device_redirect_target: "desktopUrl" } %>
+            </div>
+
+            <!-- 隠しフィールド -->
+            <%= form.hidden_field :device_redirects_enabled, value: "false", data: { device_redirect_target: "enabledField" } %>
+          </div>
+        </div>
+
 
       <% end %>
     </div>
