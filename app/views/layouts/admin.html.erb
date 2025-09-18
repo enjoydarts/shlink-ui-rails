@@ -12,18 +12,13 @@
     
     <!-- 管理者パネル専用のスタイル -->
     <style>
-      body { 
+      body {
         background-color: #f8fafc;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       }
       .admin-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      }
-      .admin-sidebar {
-        background: white;
-        box-shadow: 2px 0 4px rgba(0,0,0,0.1);
-        min-height: calc(100vh - 4rem);
       }
       .admin-content {
         background: white;
@@ -47,7 +42,7 @@
 
   <body class="bg-gray-50">
     <!-- 管理者ヘッダー -->
-    <header class="admin-header">
+    <header class="admin-header" data-controller="mobile-menu" data-action="click@window->mobile-menu#closeOnOutsideClick keydown@window->mobile-menu#closeOnEscape">
       <div class="mx-auto px-6 py-4">
         <div class="flex justify-between items-center">
           <div class="flex items-center space-x-4">
@@ -55,62 +50,112 @@
               🔧 管理者パネル
             <% end %>
           </div>
-          
-          <div class="flex items-center space-x-4">
-            <span class="text-white text-sm">
+
+          <!-- デスクトップナビゲーション -->
+          <div class="hidden md:flex items-center bg-white/10 backdrop-blur rounded-xl p-1 border border-white/20">
+            <%= link_to admin_dashboard_path,
+                class: "flex items-center px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 #{current_page?(admin_dashboard_path) ? 'bg-white text-gray-900' : 'text-white hover:bg-white/20'}" do %>
+              📊 ダッシュボード
+            <% end %>
+            <%= link_to admin_users_path,
+                class: "flex items-center px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 #{current_page?(admin_users_path) || controller_name == 'users' ? 'bg-white text-gray-900' : 'text-white hover:bg-white/20'}" do %>
+              👤 ユーザー管理
+            <% end %>
+            <%= link_to admin_settings_path,
+                class: "flex items-center px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 #{current_page?(admin_settings_path) ? 'bg-white text-gray-900' : 'text-white hover:bg-white/20'}" do %>
+              ⚙️ システム設定
+            <% end %>
+            <%= link_to admin_solid_queue_index_path,
+                class: "flex items-center px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 #{current_page?(admin_solid_queue_index_path) || controller_name == 'solid_queue' || controller_name == 'jobs' ? 'bg-white text-gray-900' : 'text-white hover:bg-white/20'}" do %>
+              🔄 ジョブ管理
+            <% end %>
+          </div>
+
+          <div class="flex items-center space-x-2 sm:space-x-4">
+            <span class="text-white text-xs sm:text-sm hidden lg:block">
               <%= current_user.display_name %>さん (管理者)
             </span>
-            <%= link_to root_path, 
-                class: "bg-white/10 hover:bg-white/20 backdrop-blur text-white px-4 py-2 rounded-lg text-sm font-medium border border-white/20 hover:border-white/30 transition-all duration-200 flex items-center space-x-2 shadow-sm hover:shadow-md" do %>
+            <%= link_to root_path,
+                class: "bg-white/10 hover:bg-white/20 backdrop-blur text-white px-2 py-2 sm:px-4 rounded-lg text-xs sm:text-sm font-medium border border-white/20 hover:border-white/30 transition-all duration-200 flex items-center space-x-1 sm:space-x-2 shadow-sm hover:shadow-md" do %>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
               </svg>
-              <span>サイトに戻る</span>
+              <span class="hidden sm:inline">サイトに戻る</span>
             <% end %>
             <%= link_to "ログアウト", destroy_user_session_path,
-                class: "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200",
-                data: { 
+                class: "hidden sm:inline-flex bg-red-600 hover:bg-red-700 text-white px-2 py-2 sm:px-4 rounded-lg text-xs sm:text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200",
+                data: {
                   confirm: "ログアウトしますか？",
                   turbo_method: :delete
                 } %>
+
+            <!-- モバイルハンバーガーボタン -->
+            <div class="md:hidden">
+              <button type="button"
+                      data-action="click->mobile-menu#toggle"
+                      class="inline-flex items-center justify-center p-2 rounded-md text-white hover:text-gray-200 hover:bg-white/20 transition-colors duration-200">
+                <span class="sr-only">メニューを開く</span>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- モバイルメニュー -->
+      <div class="md:hidden hidden opacity-0 -translate-y-2 transition-all duration-200 ease-out bg-white border-t border-gray-200" data-mobile-menu-target="menu">
+        <div class="px-4 py-3 space-y-3">
+          <!-- モバイルナビゲーションリンク -->
+          <div class="space-y-2">
+            <%= link_to admin_dashboard_path, class: "flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200" do %>
+              📊 <span class="font-medium">ダッシュボード</span>
+            <% end %>
+            <%= link_to admin_users_path, class: "flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200" do %>
+              👤 <span class="font-medium">ユーザー管理</span>
+            <% end %>
+            <%= link_to admin_settings_path, class: "flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200" do %>
+              ⚙️ <span class="font-medium">システム設定</span>
+            <% end %>
+            <%= link_to admin_solid_queue_index_path, class: "flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200" do %>
+              🔄 <span class="font-medium">ジョブ管理</span>
+            <% end %>
+            <%= link_to root_path, class: "flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200" do %>
+              🔙 <span class="font-medium">サイトに戻る</span>
+            <% end %>
+          </div>
+
+          <!-- モバイルユーザー情報 -->
+          <div class="border-t border-gray-200 pt-3">
+            <div class="flex items-center space-x-3 px-3 py-2">
+              <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                <span class="text-white font-semibold">
+                  <%= current_user.display_name.first.upcase %>
+                </span>
+              </div>
+              <div>
+                <p class="text-gray-900 font-medium"><%= current_user.display_name %></p>
+                <p class="text-gray-500 text-sm">管理者ユーザ</p>
+              </div>
+            </div>
+
+            <!-- モバイルログアウトボタン -->
+            <%= button_to destroy_user_session_path, method: :delete,
+                  class: "w-full flex items-center justify-center space-x-2 px-3 py-2 mt-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200",
+                  data: { confirm: "ログアウトしますか？" } do %>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+              </svg>
+              <span>ログアウト</span>
+            <% end %>
           </div>
         </div>
       </div>
     </header>
 
-    <div class="flex">
-      <!-- サイドバー -->
-      <nav class="admin-sidebar w-64 px-4 py-6">
-        <ul class="space-y-2">
-          <li>
-            <%= link_to admin_dashboard_path, 
-                class: "flex items-center px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 #{'bg-blue-100 text-blue-700' if current_page?(admin_dashboard_path)}" do %>
-              📊 ダッシュボード
-            <% end %>
-          </li>
-          <li>
-            <%= link_to admin_users_path, 
-                class: "flex items-center px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 #{'bg-blue-100 text-blue-700' if current_page?(admin_users_path) || controller_name == 'users'}" do %>
-              👤 ユーザー管理
-            <% end %>
-          </li>
-          <li>
-            <%= link_to admin_settings_path, 
-                class: "flex items-center px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 #{'bg-blue-100 text-blue-700' if current_page?(admin_settings_path)}" do %>
-              ⚙️ システム設定
-            <% end %>
-          </li>
-          <li>
-            <%= link_to admin_solid_queue_index_path,
-                class: "flex items-center px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 #{'bg-blue-100 text-blue-700' if current_page?(admin_solid_queue_index_path) || controller_name == 'solid_queue' || controller_name == 'jobs'}" do %>
-              🔄 ジョブ管理
-            <% end %>
-          </li>
-        </ul>
-      </nav>
-
       <!-- メインコンテンツ -->
-      <main class="flex-1 p-6">
+      <main class="p-3 sm:p-6 admin-main-content">
         <!-- フラッシュメッセージ -->
         <% if notice %>
           <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded" role="alert">
@@ -124,11 +169,8 @@
           </div>
         <% end %>
 
-        <div class="admin-content p-6">
-          <%= yield %>
-        </div>
+        <%= yield %>
       </main>
-    </div>
 
     <!-- フッター -->
     <footer class="bg-white border-t border-gray-200 py-4">
