@@ -382,6 +382,10 @@ main() {
     export GIT_COMMIT="$current_commit"
     log "INFO" "Current commit: $current_commit"
 
+    # ビルド時刻を設定
+    export BUILD_TIME=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+    log "INFO" "Build time: $BUILD_TIME"
+
     # 現在の状態をバックアップ
     create_backup
 
