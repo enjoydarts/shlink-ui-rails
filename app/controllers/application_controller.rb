@@ -59,9 +59,21 @@ class ApplicationController < ActionController::Base
           git_commit = ENV["GIT_COMMIT"].to_s.strip
           # コミットハッシュの形式を検証（7-40文字の英数字のみ）
           if git_commit.match?(/\A[a-f0-9]{7,40}\z/i)
-            commit_time = `git show -s --format=%ci #{git_commit} 2>/dev/null`.strip
-            commit_time.present? ? Time.parse(commit_time).in_time_zone("Asia/Tokyo") : Time.current
+            begin
+              # Open3で安全にコマンド実行
+              require "open3"
+              stdout, stderr, status = Open3.capture3("git", "show", "-s", "--format=%ci", git_commit)
+              if status.success? && stdout.present?
+                Time.parse(stdout.strip).in_time_zone("Asia/Tokyo")
+              else
+                Time.current
+              end
+            rescue => e
+              Rails.logger.warn "Failed to get commit time for #{git_commit}: #{e.message}"
+              Time.current
+            end
           else
+            Rails.logger.warn "Invalid GIT_COMMIT format: #{git_commit}"
             Time.current
           end
         else
@@ -70,8 +82,13 @@ class ApplicationController < ActionController::Base
       else
         # 開発環境：最新コミットの日時（セキュアに実行）
         begin
-          commit_time = `git show -s --format=%ci HEAD 2>/dev/null`.strip
-          commit_time.present? ? Time.parse(commit_time).in_time_zone("Asia/Tokyo") : Time.current
+          require "open3"
+          stdout, stderr, status = Open3.capture3("git", "show", "-s", "--format=%ci", "HEAD")
+          if status.success? && stdout.present?
+            Time.parse(stdout.strip).in_time_zone("Asia/Tokyo")
+          else
+            Time.current
+          end
         rescue => e
           Rails.logger.warn "Failed to get commit time: #{e.message}"
           Time.current
