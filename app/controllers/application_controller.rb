@@ -55,16 +55,27 @@ class ApplicationController < ActionController::Base
         if ENV["BUILD_TIME"].present?
           Time.parse(ENV["BUILD_TIME"]).in_time_zone("Asia/Tokyo")
         elsif ENV["GIT_COMMIT"].present?
-          # gitコマンドでコミット日時を取得
-          commit_time = `git show -s --format=%ci #{ENV["GIT_COMMIT"]} 2>/dev/null`.strip
-          commit_time.present? ? Time.parse(commit_time).in_time_zone("Asia/Tokyo") : Time.current
+          # gitコマンドでコミット日時を取得（セキュアに実行）
+          git_commit = ENV["GIT_COMMIT"].to_s.strip
+          # コミットハッシュの形式を検証（7-40文字の英数字のみ）
+          if git_commit.match?(/\A[a-f0-9]{7,40}\z/i)
+            commit_time = `git show -s --format=%ci #{git_commit} 2>/dev/null`.strip
+            commit_time.present? ? Time.parse(commit_time).in_time_zone("Asia/Tokyo") : Time.current
+          else
+            Time.current
+          end
         else
           Time.current
         end
       else
-        # 開発環境：最新コミットの日時
-        commit_time = `git show -s --format=%ci HEAD 2>/dev/null`.strip
-        commit_time.present? ? Time.parse(commit_time).in_time_zone("Asia/Tokyo") : Time.current
+        # 開発環境：最新コミットの日時（セキュアに実行）
+        begin
+          commit_time = `git show -s --format=%ci HEAD 2>/dev/null`.strip
+          commit_time.present? ? Time.parse(commit_time).in_time_zone("Asia/Tokyo") : Time.current
+        rescue => e
+          Rails.logger.warn "Failed to get commit time: #{e.message}"
+          Time.current
+        end
       end
     end
   end
