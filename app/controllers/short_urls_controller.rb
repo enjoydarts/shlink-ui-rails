@@ -30,7 +30,16 @@ class ShortUrlsController < ApplicationController
 
       # デバイス別リダイレクトルールを設定
       if @shorten.device_redirects_enabled && @shorten.device_redirect_rules.any?
-        set_device_redirect_rules(result["shortCode"], @shorten.device_redirect_rules)
+        success = set_device_redirect_rules(result["shortCode"], @shorten.device_redirect_rules)
+
+        # 成功した場合はローカルDBにも保存
+        if success
+          short_url = current_user.short_urls.find_by(short_code: result["shortCode"])
+          if short_url
+            short_url.device_redirect_rules = @shorten.device_redirect_rules
+            short_url.save!
+          end
+        end
       end
 
       @result = { short_url: result["shortUrl"] }
@@ -117,10 +126,22 @@ class ShortUrlsController < ApplicationController
 
         # デバイス別リダイレクトルールを更新
         if @edit_form.device_redirects_enabled
-          set_device_redirect_rules(short_code, @edit_form.device_redirect_rules)
+          success = set_device_redirect_rules(short_code, @edit_form.device_redirect_rules)
+
+          # 成功した場合はローカルDBにも保存
+          if success
+            @short_url.device_redirect_rules = @edit_form.device_redirect_rules
+            @short_url.save!
+          end
         else
           # デバイス別リダイレクトが無効化された場合はルールをクリア
-          clear_device_redirect_rules(short_code)
+          success = clear_device_redirect_rules(short_code)
+
+          # 成功した場合はローカルDBもクリア
+          if success
+            @short_url.device_redirect_rules = []
+            @short_url.save!
+          end
         end
 
         # ローカルDBも更新
@@ -267,15 +288,16 @@ class ShortUrlsController < ApplicationController
   end
 
   def set_device_redirect_rules(short_code, rules)
-    return if rules.empty?
+    return true if rules.empty?
 
     begin
       service = Shlink::SetRedirectRulesService.new
       service.call(short_code: short_code, redirect_rules: rules)
       Rails.logger.info "Successfully set device redirect rules for #{short_code}"
+      true
     rescue Shlink::Error => e
       Rails.logger.error "Failed to set device redirect rules for #{short_code}: #{e.message}"
-      # デバイス別リダイレクトの設定失敗は警告レベル（短縮URL自体は作成済み）
+      false
     end
   end
 
@@ -284,8 +306,10 @@ class ShortUrlsController < ApplicationController
       service = Shlink::SetRedirectRulesService.new
       service.call(short_code: short_code, redirect_rules: [])
       Rails.logger.info "Successfully cleared device redirect rules for #{short_code}"
+      true
     rescue Shlink::Error => e
       Rails.logger.error "Failed to clear device redirect rules for #{short_code}: #{e.message}"
+      false
     end
   end
 end

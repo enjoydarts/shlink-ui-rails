@@ -14,7 +14,7 @@ RSpec.describe Shlink::SetRedirectRulesService, type: :service do
       {
         longUrl: 'https://apps.apple.com/app/id123456789',
         conditions: [
-          { type: "device", matchValue: "iOS", matchKey: nil }
+          { type: "device", matchValue: "ios", matchKey: nil }
         ]
       }
     ]

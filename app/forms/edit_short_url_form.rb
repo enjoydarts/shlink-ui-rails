@@ -68,7 +68,7 @@ class EditShortUrlForm
       rules << {
         longUrl: ios_url,
         conditions: [
-          { type: "device", matchValue: "iOS", matchKey: nil }
+          { type: "device", matchValue: "ios", matchKey: nil }
         ]
       }
     end
