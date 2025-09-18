@@ -77,12 +77,8 @@ class WebauthnService
       # WebAuthn 3.4.1の正しいAPIを使用
       webauthn_credential = WebAuthn::Credential.from_create(credential_response)
 
-      # 検証を実行（必要なパラメータを明示的に指定）
-      webauthn_credential.verify(
-        challenge,
-        rp_id: rp_id,
-        origin: origin
-      )
+      # 検証を実行（設定されたRP IDとOriginを使用）
+      webauthn_credential.verify(challenge)
 
       # データベースに保存
       user.webauthn_credentials.create!(
@@ -131,13 +127,11 @@ class WebauthnService
       # WebAuthn 3.4.1の正しいAPIを使用
       webauthn_credential = WebAuthn::Credential.from_get(credential_response)
 
-      # 検証を実行（必要なパラメータを明示的に指定）
+      # 検証を実行（設定されたRP IDとOriginを使用）
       webauthn_credential.verify(
         challenge,
         public_key: stored_credential.public_key,
-        sign_count: stored_credential.sign_count,
-        rp_id: rp_id,
-        origin: origin
+        sign_count: stored_credential.sign_count
       )
 
       # 成功した場合、使用履歴を更新
