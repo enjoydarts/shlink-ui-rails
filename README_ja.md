@@ -493,6 +493,34 @@ EMAIL_SMTP_PASSWORD=your-app-password
 SECRET_KEY_BASE=your-secret-key
 ```
 
+## 📚 ドキュメント
+
+包括的なドキュメントが `/docs` ディレクトリに用意されています：
+
+### 🚀 はじめに
+- [開発環境セットアップ](docs/setup/development_ja.md) - 開発環境のセットアップ
+- [Development Setup](docs/setup/development.md) - Set up development environment (English)
+
+### 🚢 デプロイメント
+- [本番デプロイガイド](docs/deployment/production_ja.md) - 完全な本番デプロイガイド
+- [Production Deployment](docs/deployment/production.md) - Complete production deployment guide (English)
+
+### ⚙️ 設定
+- [設定ガイド](docs/configuration/settings_ja.md) - 詳細な設定オプション
+- [Configuration Settings](docs/configuration/settings.md) - Detailed configuration options (English)
+
+### 🔧 運用
+- [CI/CDシステム](docs/operations/cd-system_ja.md) - 自動デプロイとテスト
+- [監視・アラート](docs/operations/monitoring_ja.md) - アプリケーション監視設定
+- [CI/CD System](docs/operations/cd-system.md) - Automated deployment and testing (English)
+- [Monitoring & Alerting](docs/operations/monitoring.md) - Application monitoring setup (English)
+
+### 📋 クイックリファレンス
+- **開発**: `make setup` → `make up` → http://localhost:3000
+- **テスト**: `make test` (RSpec), `make lint` (RuboCop)
+- **本番**: Docker Compose + Caddy + 外部MySQL + Redis
+- **CI/CD**: GitHub Actions による本番環境への自動デプロイ
+
 ## 📄 ライセンス
 
 このプロジェクトはMITライセンスの下でライセンスされています - 詳細は [LICENSE](LICENSE) ファイルを参照してください。

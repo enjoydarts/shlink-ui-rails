@@ -537,6 +537,34 @@ EMAIL_SMTP_PASSWORD=your-app-password
 SECRET_KEY_BASE=your-secret-key
 ```
 
+## 📚 Documentation
+
+Comprehensive documentation is available in the `/docs` directory:
+
+### 🚀 Getting Started
+- [Development Setup](docs/setup/development.md) - Set up your development environment
+- [日本語版開発環境セットアップ](docs/setup/development_ja.md) - 開発環境セットアップ（日本語）
+
+### 🚢 Deployment
+- [Production Deployment](docs/deployment/production.md) - Complete production deployment guide
+- [本番デプロイガイド](docs/deployment/production_ja.md) - 本番環境デプロイ手順（日本語）
+
+### ⚙️ Configuration
+- [Configuration Settings](docs/configuration/settings.md) - Detailed configuration options
+- [設定ガイド](docs/configuration/settings_ja.md) - 詳細な設定オプション（日本語）
+
+### 🔧 Operations
+- [CI/CD System](docs/operations/cd-system.md) - Automated deployment and testing
+- [Monitoring & Alerting](docs/operations/monitoring.md) - Application monitoring setup
+- [CI/CDシステム](docs/operations/cd-system_ja.md) - 自動デプロイとテスト（日本語）
+- [監視・アラート](docs/operations/monitoring_ja.md) - アプリケーション監視設定（日本語）
+
+### 📋 Quick Reference
+- **Development**: `make setup` → `make up` → http://localhost:3000
+- **Testing**: `make test` (RSpec), `make lint` (RuboCop)
+- **Production**: Docker Compose + Caddy + External MySQL + Redis
+- **CI/CD**: GitHub Actions with automated deployment to production
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
