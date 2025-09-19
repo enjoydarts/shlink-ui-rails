@@ -1,0 +1,111 @@
+<div class="mb-6">
+  <h1 class="text-3xl font-bold text-gray-900 mb-2">法的文書管理</h1>
+  <p class="text-gray-600">利用規約とプライバシーポリシーを編集・管理できます</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <% @documents.each do |key, config| %>
+    <div class="bg-white rounded-lg shadow border border-gray-200 hover:shadow-lg transition-shadow duration-200">
+      <div class="p-6">
+        <div class="flex items-center mb-4">
+          <div class="flex-shrink-0">
+            <% if config[:icon] == "document-text" %>
+              <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
+            <% else %>
+              <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+              </div>
+            <% end %>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-lg font-semibold text-gray-900"><%= config[:title] %></h3>
+            <p class="text-sm text-gray-500"><%= config[:description] %></p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <!-- ステータス -->
+          <% setting = SystemSetting.find_by(key_name: config[:key]) %>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600">ステータス:</span>
+            <% if setting&.value.present? %>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                設定済み
+              </span>
+            <% else %>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                未設定
+              </span>
+            <% end %>
+          </div>
+
+          <!-- 文字数 -->
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600">文字数:</span>
+            <span class="text-sm text-gray-900"><%= setting&.value&.length || 0 %> 文字</span>
+          </div>
+
+          <!-- 最終更新 -->
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-600">最終更新:</span>
+            <span class="text-sm text-gray-900">
+              <%= setting&.updated_at&.strftime('%Y-%m-%d %H:%M') || '未更新' %>
+            </span>
+          </div>
+        </div>
+
+        <!-- アクション -->
+        <div class="mt-6 flex space-x-3">
+          <%= link_to admin_legal_document_path(key),
+              class: "flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200" do %>
+            プレビュー
+          <% end %>
+          <%= link_to edit_admin_legal_document_path(key),
+              class: "flex-1 bg-gray-600 hover:bg-gray-700 text-white text-center py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200" do %>
+            編集
+          <% end %>
+        </div>
+
+        <!-- 外部リンク -->
+        <div class="mt-3">
+          <% if key == :terms_of_service %>
+            <%= link_to terms_of_service_path,
+                target: "_blank",
+                class: "inline-flex items-center text-sm text-blue-600 hover:text-blue-800" do %>
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+              </svg>
+              公開ページを表示
+            <% end %>
+          <% else %>
+            <%= link_to privacy_policy_path,
+                target: "_blank",
+                class: "inline-flex items-center text-sm text-blue-600 hover:text-blue-800" do %>
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+              </svg>
+              公開ページを表示
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<!-- 戻るリンク -->
+<div class="mt-8">
+  <%= link_to admin_settings_path,
+      class: "inline-flex items-center text-blue-600 hover:text-blue-800" do %>
+    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+    </svg>
+    システム設定に戻る
+  <% end %>
+</div>

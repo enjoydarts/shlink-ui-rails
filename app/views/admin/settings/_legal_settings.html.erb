@@ -1,0 +1,107 @@
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center">
+      <div class="flex-shrink-0">
+        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-lg font-medium text-gray-900">法的文書設定</h3>
+        <p class="text-sm text-gray-500">利用規約とプライバシーポリシーの管理</p>
+      </div>
+    </div>
+
+    <div class="flex items-center space-x-3">
+      <%= link_to admin_legal_documents_path,
+          class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-2" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+        </svg>
+        <span>文書を編集・管理</span>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- 文書ステータス概要 -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <%
+      documents = {
+        "利用規約" => {
+          key: "legal.terms_of_service",
+          path: terms_of_service_path
+        },
+        "プライバシーポリシー" => {
+          key: "legal.privacy_policy",
+          path: privacy_policy_path
+        }
+      }
+    %>
+
+    <% documents.each do |title, config| %>
+      <% setting = @settings_by_category.dig("legal", config[:key]) %>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <div class="flex items-center justify-between mb-2">
+          <h4 class="text-sm font-medium text-gray-900"><%= title %></h4>
+          <% if setting&.value.present? %>
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              設定済み
+            </span>
+          <% else %>
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+              未設定
+            </span>
+          <% end %>
+        </div>
+        <div class="text-xs text-gray-500 space-y-1">
+          <div>文字数: <%= setting&.value&.length || 0 %> 文字</div>
+          <div>更新: <%= setting&.updated_at&.strftime('%m/%d %H:%M') || '未更新' %></div>
+        </div>
+        <div class="mt-2">
+          <%= link_to config[:path], target: "_blank",
+              class: "text-xs text-blue-600 hover:text-blue-800" do %>
+            公開ページを表示 ↗
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- 新規登録時の同意設定 -->
+  <div class="space-y-4">
+    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+      <div>
+        <%= form.label "settings[legal.require_agreement_on_registration]",
+            "新規登録時に同意を必須とする",
+            class: "text-sm font-medium text-gray-700" %>
+        <p class="text-xs text-gray-500 mt-1">
+          有効にすると、新規ユーザー登録時に利用規約とプライバシーポリシーへの同意が必須になります。
+        </p>
+      </div>
+      <div class="flex items-center ml-4">
+        <%= form.hidden_field "settings[legal.require_agreement_on_registration]", value: "false" %>
+        <%= form.check_box "settings[legal.require_agreement_on_registration]",
+            { checked: @settings_by_category.dig("legal", "legal.require_agreement_on_registration")&.typed_value,
+              class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" },
+            "true", "false" %>
+      </div>
+    </div>
+  </div>
+
+  <!-- ヘルプテキスト -->
+  <div class="mt-6 bg-blue-50 border border-blue-200 rounded-md p-4">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-blue-800">💡 おすすめ</h3>
+        <div class="mt-2 text-sm text-blue-700">
+          法的文書の編集は専用のリッチエディタを使用することをお勧めします。リアルタイムプレビュー、文字数カウント、Markdownガイドなどの便利な機能が利用できます。
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

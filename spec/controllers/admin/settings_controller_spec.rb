@@ -42,7 +42,7 @@ RSpec.describe Admin::SettingsController, type: :controller do
     it 'システム設定画面を表示すること' do
       get :show
       expect(response).to have_http_status(:success)
-      expect(assigns(:categories)).to eq(%w[shlink captcha rate_limit email performance security system])
+      expect(assigns(:categories)).to eq(%w[shlink captcha rate_limit email performance security system legal])
     end
   end
 

@@ -1,0 +1,421 @@
+<% content_for :title, @page_title %>
+
+<!-- Font Awesome -->
+<% content_for :head do %>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous">
+  <style>
+    /* ツールバーボタンの基本設定 */
+    .toolbar-btn {
+      position: relative;
+    }
+
+    /* デフォルト状態：Font Awesomeアイコンを表示、フォールバックテキストは非表示 */
+    .toolbar-btn i {
+      display: inline-block !important;
+    }
+    .toolbar-btn .fallback-text {
+      display: none !important;
+    }
+
+    /* Font Awesomeが読み込まれていない場合：アイコンを非表示、テキストを表示 */
+    .toolbar-btn:not(.fa-loaded) i {
+      display: none !important;
+    }
+    .toolbar-btn:not(.fa-loaded) .fallback-text {
+      display: inline-block !important;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+
+    /* ツールバーボタンのホバー効果 */
+    .toolbar-btn:hover {
+      background-color: #e5e7eb !important;
+      border-color: #9ca3af !important;
+    }
+
+    /* JavaScriptツールチップ用のスタイル */
+    .js-tooltip {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: normal;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      white-space: nowrap;
+      z-index: 1000;
+      pointer-events: none;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      line-height: 1.4;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .js-tooltip.show {
+      opacity: 1;
+    }
+
+    .js-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -4px;
+      border-width: 4px;
+      border-style: solid;
+      border-color: rgba(0, 0, 0, 0.9) transparent transparent transparent;
+    }
+  </style>
+  <script>
+    // Font Awesomeが読み込まれているかチェック
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        const testEl = document.createElement('i');
+        testEl.className = 'fas fa-home';
+        testEl.style.display = 'none';
+        document.body.appendChild(testEl);
+
+        const isLoaded = window.getComputedStyle(testEl, ':before').getPropertyValue('content') !== 'none';
+        document.body.removeChild(testEl);
+
+        if (!isLoaded) {
+          // Font Awesomeが読み込まれていない場合、すべてのツールバーボタンにクラスを追加
+          document.querySelectorAll('.toolbar-btn').forEach(btn => {
+            btn.classList.remove('fa-loaded');
+          });
+        } else {
+          document.querySelectorAll('.toolbar-btn').forEach(btn => {
+            btn.classList.add('fa-loaded');
+          });
+        }
+      }, 100);
+    });
+  </script>
+<% end %>
+
+<div class="mb-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2"><%= @page_title %></h1>
+      <p class="text-gray-600">Markdown形式で文書を作成・編集できます</p>
+    </div>
+    <div class="flex space-x-3">
+      <%= link_to admin_legal_document_path(@document_type),
+          class: "bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200",
+          onclick: "return confirmLeave()" do %>
+        プレビュー
+      <% end %>
+      <%= link_to admin_legal_documents_path,
+          class: "bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200",
+          onclick: "return confirmLeave()" do %>
+        一覧に戻る
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<%= form_with model: @setting, url: admin_legal_document_path(@document_type), method: :patch, local: true, class: "space-y-6" do |form| %>
+  <div class="bg-white rounded-lg shadow border border-gray-200">
+    <!-- ヘッダー -->
+    <div class="px-6 py-4 border-b border-gray-200">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-gray-900">文書編集</h2>
+        <div class="flex items-center space-x-4 text-sm text-gray-500">
+          <span id="char-count">0 文字</span>
+          <span id="word-count">0 語</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- シンプルなエディタ -->
+    <div class="p-6">
+      <div class="mb-4">
+        <div class="flex flex-wrap gap-1 p-2 bg-gray-50 rounded-t border border-gray-200">
+          <!-- 基本装飾 -->
+          <button type="button" onclick="event.preventDefault(); insertText('**', '**')"
+                  class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded hover:bg-gray-100 toolbar-btn"
+                  title="太字 (**文字**)">
+            <i class="fas fa-bold text-sm"></i>
+            <span class="fallback-text font-bold text-xs">B</span>
+          </button>
+          <button type="button" onclick="event.preventDefault(); insertText('*', '*')"
+                  class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded hover:bg-gray-100 toolbar-btn"
+                  title="斜体 (*文字*)">
+            <i class="fas fa-italic text-sm"></i>
+            <span class="fallback-text italic text-xs">I</span>
+          </button>
+          <button type="button" onclick="event.preventDefault(); insertText('~~', '~~')"
+                  class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded hover:bg-gray-100 toolbar-btn"
+                  title="取消線 (~~文字~~)">
+            <i class="fas fa-strikethrough text-sm"></i>
+            <span class="fallback-text text-xs line-through">S</span>
+          </button>
+
+          <div class="border-l border-gray-300 mx-1 self-stretch"></div>
+
+          <!-- 見出し -->
+          <button type="button" onclick="event.preventDefault(); insertText('# ', '')"
+                  class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded hover:bg-gray-100 toolbar-btn"
+                  title="見出し1 (# 文字)">
+            <i class="fas fa-heading text-sm"></i>
+            <span class="fallback-text text-xs font-bold">H1</span>
+          </button>
+          <button type="button" onclick="event.preventDefault(); insertText('## ', '')"
+                  class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded hover:bg-gray-100 toolbar-btn"
+                  title="見出し2 (## 文字)">
+            <i class="fas fa-heading text-sm"></i>
+            <span class="fallback-text text-xs font-bold">H2</span>
+          </button>
+          <button type="button" onclick="event.preventDefault(); insertText('### ', '')"
+                  class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded hover:bg-gray-100 toolbar-btn"
+                  title="見出し3 (### 文字)">
+            <i class="fas fa-heading text-sm"></i>
+            <span class="fallback-text text-xs font-bold">H3</span>
+          </button>
+
+          <div class="border-l border-gray-300 mx-1 self-stretch"></div>
+
+          <!-- リスト -->
+          <button type="button" onclick="event.preventDefault(); insertText('- ', '')"
+                  class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded hover:bg-gray-100 toolbar-btn"
+                  title="箇条書きリスト (- 項目)">
+            <i class="fas fa-list-ul text-sm"></i>
+            <span class="fallback-text text-xs">•</span>
+          </button>
+          <button type="button" onclick="event.preventDefault(); insertText('1. ', '')"
+                  class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded hover:bg-gray-100 toolbar-btn"
+                  title="番号リスト (1. 項目)">
+            <i class="fas fa-list-ol text-sm"></i>
+            <span class="fallback-text text-xs">1.</span>
+          </button>
+
+          <div class="border-l border-gray-300 mx-1 self-stretch"></div>
+
+          <!-- リンク・引用 -->
+          <button type="button" onclick="event.preventDefault(); insertText('[', '](URL)')"
+                  class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded hover:bg-gray-100 toolbar-btn"
+                  title="リンク ([文字](URL))">
+            <i class="fas fa-link text-sm"></i>
+            <span class="fallback-text text-xs">🔗</span>
+          </button>
+          <button type="button" onclick="event.preventDefault(); insertText('> ', '')"
+                  class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded hover:bg-gray-100 toolbar-btn"
+                  title="引用 (> 文字)">
+            <i class="fas fa-quote-left text-sm"></i>
+            <span class="fallback-text text-xs">"</span>
+          </button>
+
+          <div class="border-l border-gray-300 mx-1 self-stretch"></div>
+
+          <!-- テーブル・区切り線 -->
+          <button type="button" onclick="event.preventDefault(); insertTable()"
+                  class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded hover:bg-gray-100 toolbar-btn"
+                  title="表を挿入">
+            <i class="fas fa-table text-sm"></i>
+            <span class="fallback-text text-xs">⊞</span>
+          </button>
+          <button type="button" onclick="event.preventDefault(); insertText('\\n---\\n', '')"
+                  class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded hover:bg-gray-100 toolbar-btn"
+                  title="区切り線 (---)">
+            <i class="fas fa-minus text-sm"></i>
+            <span class="fallback-text text-xs">—</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="relative">
+        <%= form.text_area :value,
+            value: @content,
+            id: "markdown-editor",
+            class: "w-full h-96 p-4 border border-gray-200 rounded-b font-mono text-sm leading-relaxed focus:border-blue-500 focus:ring-1 focus:ring-blue-500",
+            placeholder: "Markdown形式で入力してください..." %>
+
+      </div>
+    </div>
+
+    <!-- ヘルプテキスト -->
+    <div class="px-6 pb-4">
+      <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+            </svg>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-blue-800">Markdownガイド</h3>
+            <div class="mt-2 text-sm text-blue-700">
+              <ul class="list-disc list-inside space-y-1">
+                <li><strong># 見出し1</strong>, <strong>## 見出し2</strong> - 見出しを作成</li>
+                <li><strong>**太字**</strong>, <strong>*斜体*</strong> - テキストの装飾</li>
+                <li><strong>- リスト</strong>, <strong>1. 番号付きリスト</strong> - リストを作成</li>
+                <li><strong>[リンクテキスト](URL)</strong> - リンクを作成</li>
+                <li><strong>`コード`</strong> - インラインコード</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- アクションボタン -->
+    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+      <div class="flex items-center justify-between">
+        <div class="flex space-x-3">
+          <%= link_to admin_legal_documents_path,
+              class: "bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200" do %>
+            キャンセル
+          <% end %>
+        </div>
+        <div class="flex space-x-3">
+          <button type="button"
+                  onclick="loadTemplate()"
+                  class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+            テンプレートを読み込み
+          </button>
+          <%= form.submit "保存",
+              class: "bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors duration-200" %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<script>
+// シンプルなMarkdownエディタ機能
+const editor = document.getElementById('markdown-editor');
+
+// テキスト挿入機能
+function insertText(before, after) {
+  editor.focus(); // 先にフォーカスを当てる
+
+  const start = editor.selectionStart;
+  const end = editor.selectionEnd;
+  const selectedText = editor.value.substring(start, end);
+  const newText = before + selectedText + after;
+
+  // テキストを挿入
+  editor.value = editor.value.substring(0, start) + newText + editor.value.substring(end);
+
+  // カーソル位置を適切に設定
+  let newCursorPos;
+  if (selectedText) {
+    // テキストが選択されていた場合、挿入したテキストの後ろにカーソルを置く
+    newCursorPos = start + newText.length;
+  } else {
+    // テキストが選択されていない場合、beforeとafterの間にカーソルを置く
+    newCursorPos = start + before.length;
+  }
+
+  editor.setSelectionRange(newCursorPos, newCursorPos);
+  editor.focus(); // 再度フォーカス
+
+  updateCounts();
+}
+
+// テーブル挿入機能
+function insertTable() {
+  const tableText = '\\n| 項目 | 内容 |\\n|------|------|\\n| 例1 | 説明1 |\\n| 例2 | 説明2 |\\n\\n';
+  const start = editor.selectionStart;
+
+  editor.value = editor.value.substring(0, start) + tableText + editor.value.substring(start);
+  editor.setSelectionRange(start + tableText.length, start + tableText.length);
+  editor.focus();
+  updateCounts();
+}
+
+// 文字数カウント
+function updateCounts() {
+  const text = editor.value;
+  const charCount = text.length;
+  const wordCount = text.split(/\s+/).filter(word => word.length > 0).length;
+
+  document.getElementById('char-count').textContent = charCount + ' 文字';
+  document.getElementById('word-count').textContent = wordCount + ' 語';
+}
+
+// テンプレート読み込み
+function loadTemplate() {
+  if (confirm('現在の内容を破棄してテンプレートを読み込みますか？')) {
+    fetch('/admin/legal_documents/<%= @document_type %>/template')
+      .then(response => response.text())
+      .then(template => {
+        editor.value = template;
+        updateCounts();
+      })
+      .catch(error => {
+        console.error('Template loading failed:', error);
+        alert('テンプレートの読み込みに失敗しました。');
+      });
+  }
+}
+
+// ページ離脱確認
+function confirmLeave() {
+  const currentContent = editor.value;
+  const originalContent = '<%= j(@content) %>';
+
+  if (currentContent !== originalContent) {
+    return confirm('編集内容が保存されていません。このページを離れますか？');
+  }
+  return true;
+}
+
+// ツールチップ機能
+function initTooltips() {
+  const buttons = document.querySelectorAll('.toolbar-btn[title]');
+
+  buttons.forEach(button => {
+    button.addEventListener('mouseenter', function() {
+      const title = this.getAttribute('title');
+      if (!title) return;
+
+      // 既存のツールチップを削除
+      const existingTooltip = document.querySelector('.js-tooltip');
+      if (existingTooltip) existingTooltip.remove();
+
+      // 新しいツールチップを作成
+      const tooltip = document.createElement('div');
+      tooltip.className = 'js-tooltip';
+      tooltip.textContent = title;
+      tooltip.style.position = 'fixed';
+      tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+      tooltip.style.color = 'white';
+      tooltip.style.padding = '8px 12px';
+      tooltip.style.borderRadius = '6px';
+      tooltip.style.fontSize = '14px';
+      tooltip.style.whiteSpace = 'nowrap';
+      tooltip.style.zIndex = '9999';
+      tooltip.style.pointerEvents = 'none';
+      tooltip.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3)';
+
+      document.body.appendChild(tooltip);
+
+      // 位置を計算
+      const rect = this.getBoundingClientRect();
+      const tooltipRect = tooltip.getBoundingClientRect();
+
+      const left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+      const top = rect.top - tooltipRect.height - 8;
+
+      tooltip.style.left = left + 'px';
+      tooltip.style.top = top + 'px';
+      tooltip.style.opacity = '1';
+    });
+
+    button.addEventListener('mouseleave', function() {
+      const tooltip = document.querySelector('.js-tooltip');
+      if (tooltip) tooltip.remove();
+    });
+  });
+}
+
+// 初期化
+document.addEventListener('DOMContentLoaded', function() {
+  updateCounts();
+  editor.addEventListener('input', updateCounts);
+  initTooltips();
+});
+</script>

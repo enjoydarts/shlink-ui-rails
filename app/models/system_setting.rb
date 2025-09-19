@@ -10,7 +10,8 @@ class SystemSetting < ApplicationRecord
     email: "email",
     performance: "performance",
     security: "security",
-    system: "system"
+    system: "system",
+    legal: "legal"
   }.freeze
 
   validates :category, inclusion: { in: CATEGORIES.values }, allow_blank: true
@@ -314,6 +315,26 @@ class SystemSetting < ApplicationRecord
         type: "integer",
         category: "shlink",
         description: "API接続リトライ回数"
+      },
+
+      # 法的文書設定
+      "legal.terms_of_service" => {
+        value: load_legal_template("terms_of_service.md"),
+        type: "string",
+        category: "legal",
+        description: "利用規約（Markdown形式で記載）"
+      },
+      "legal.privacy_policy" => {
+        value: load_legal_template("privacy_policy.md"),
+        type: "string",
+        category: "legal",
+        description: "プライバシーポリシー（Markdown形式で記載）"
+      },
+      "legal.require_agreement_on_registration" => {
+        value: "true",
+        type: "boolean",
+        category: "legal",
+        description: "新規登録時に利用規約・プライバシーポリシーへの同意を必須とする"
       }
     }
 
@@ -497,6 +518,27 @@ class SystemSetting < ApplicationRecord
       Rails.logger.debug "Config gem access error for key '#{key}': #{e.message}"
       fallback_value
     end
+  end
+
+  # 法的文書テンプレートを読み込み
+  def self.load_legal_template(filename)
+    template_path = Rails.root.join("config", "legal_templates", filename)
+    if File.exist?(template_path)
+      File.read(template_path).strip
+    else
+      # テンプレートファイルが存在しない場合のフォールバック
+      case filename
+      when "terms_of_service.md"
+        "# 利用規約\n\n当サービスの利用規約を記載してください。\n\n## 1. サービスの利用について\n\n..."
+      when "privacy_policy.md"
+        "# プライバシーポリシー\n\n当サービスのプライバシーポリシーを記載してください。\n\n## 1. 収集する情報について\n\n..."
+      else
+        "法的文書テンプレートが見つかりません。"
+      end
+    end
+  rescue => e
+    Rails.logger.error "Legal template loading error for '#{filename}': #{e.message}"
+    "テンプレート読み込みエラー: #{e.message}"
   end
 
   private

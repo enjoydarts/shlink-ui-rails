@@ -1,0 +1,110 @@
+<footer class="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 mt-auto">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <!-- サービス情報 -->
+      <div class="col-span-1 md:col-span-2">
+        <div class="flex items-center space-x-2 mb-4">
+          <div class="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.102m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+            </svg>
+          </div>
+          <span class="text-xl font-bold text-gray-900 dark:text-white">Shlink-UI-Rails</span>
+        </div>
+        <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-4">
+          シンプルで使いやすい短縮URL管理サービス。<br>
+          高度な統計機能とカスタマイズ可能な設定で、あなたのリンク管理をサポートします。
+        </p>
+        <div class="text-xs text-gray-500 dark:text-gray-500">
+          <p>Version: <%= current_version %></p>
+          <p>Updated: <%= deploy_time.strftime("%Y-%m-%d %H:%M") %> JST</p>
+        </div>
+      </div>
+
+      <!-- 法的文書リンク -->
+      <div>
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">法的文書</h3>
+        <ul class="space-y-3">
+          <li>
+            <%= link_to terms_of_service_path,
+                class: "text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 flex items-center space-x-2" do %>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              <span>利用規約</span>
+            <% end %>
+          </li>
+          <li>
+            <%= link_to privacy_policy_path,
+                class: "text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 flex items-center space-x-2" do %>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+              </svg>
+              <span>プライバシーポリシー</span>
+            <% end %>
+          </li>
+        </ul>
+      </div>
+
+      <!-- クイックリンク -->
+      <div>
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">クイックリンク</h3>
+        <ul class="space-y-3">
+          <% if user_signed_in? %>
+            <li>
+              <%= link_to dashboard_path,
+                  class: "text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 flex items-center space-x-2" do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                <span>URL作成</span>
+              <% end %>
+            </li>
+            <li>
+              <%= link_to mypage_path,
+                  class: "text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 flex items-center space-x-2" do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                <span>マイページ</span>
+              <% end %>
+            </li>
+          <% else %>
+            <li>
+              <%= link_to new_user_registration_path,
+                  class: "text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 flex items-center space-x-2" do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                </svg>
+                <span>新規登録</span>
+              <% end %>
+            </li>
+            <li>
+              <%= link_to new_user_session_path,
+                  class: "text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 flex items-center space-x-2" do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                </svg>
+                <span>ログイン</span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 底部のコピーライト -->
+    <div class="border-t border-gray-200 dark:border-gray-700 mt-8 pt-6">
+      <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          © 2025 Shlink-UI-Rails. All rights reserved.
+        </p>
+        <div class="flex items-center space-x-4 text-xs text-gray-400 dark:text-gray-500">
+          <span>Powered by Rails <%= Rails.version %></span>
+          <span>•</span>
+          <span>Built with ❤️</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
