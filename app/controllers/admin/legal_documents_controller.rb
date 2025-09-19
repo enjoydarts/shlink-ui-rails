@@ -1,7 +1,7 @@
 class Admin::LegalDocumentsController < Admin::AdminController
   include MarkdownHelper
 
-  before_action :set_document_type, only: [:show, :edit, :update]
+  before_action :set_document_type, only: [ :show, :edit, :update ]
 
   def index
     @documents = {

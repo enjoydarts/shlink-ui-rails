@@ -44,14 +44,14 @@ module MarkdownHelper
 
     # 許可するアトリビュート
     allowed_attributes = {
-      'a' => %w[href title],
-      'input' => %w[type disabled checked],
-      'th' => %w[align],
-      'td' => %w[align],
-      'table' => %w[],
-      'thead' => %w[],
-      'tbody' => %w[],
-      'tr' => %w[],
+      "a" => %w[href title],
+      "input" => %w[type disabled checked],
+      "th" => %w[align],
+      "td" => %w[align],
+      "table" => %w[],
+      "thead" => %w[],
+      "tbody" => %w[],
+      "tr" => %w[]
     }
 
     # 許可するプロトコル（リンク用）
@@ -63,8 +63,8 @@ module MarkdownHelper
       protocols: allowed_protocols,
       remove_contents: %w[script style],
       whitespace_elements: {
-        'pre' => :remove,
-        'code' => :remove
+        "pre" => :remove,
+        "code" => :remove
       }
     )
   end
