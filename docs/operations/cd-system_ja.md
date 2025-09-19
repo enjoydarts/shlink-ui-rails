@@ -57,7 +57,7 @@ GitHub Actions Workflow
 - GitHub Container Registry (ghcr.io) へのプッシュ
 - 高速ビルドのためのレイヤーキャッシュ
 
-**レジストリ**: `ghcr.io/enjoydarts/shlink-ui-rails`
+**レジストリ**: `ghcr.io/yourusername/shlink-ui-rails`
 
 ### 4. 本番デプロイ
 
@@ -71,7 +71,7 @@ GitHub Actions Workflow
 - アプリケーションサービスの再起動
 - コンテナ起動の検証
 
-**対象サーバー**: `app.kty.at`
+**対象サーバー**: `yourdomain.com`
 
 ### 5. ヘルスチェック・検証
 
@@ -199,11 +199,11 @@ GET /health/redis
 ### 手動ロールバック
 ```bash
 # 本番サーバーにSSH接続
-ssh user@app.kty.at
+ssh user@yourdomain.com
 
 # 前バージョンにロールバック
 docker-compose -f docker-compose.prod.yml down
-docker tag ghcr.io/enjoydarts/shlink-ui-rails:previous ghcr.io/enjoydarts/shlink-ui-rails:latest
+docker tag ghcr.io/yourusername/shlink-ui-rails:previous ghcr.io/yourusername/shlink-ui-rails:latest
 docker-compose -f docker-compose.prod.yml up -d
 
 # ロールバック確認
@@ -223,7 +223,7 @@ docker-compose logs app
 docker-compose ps
 
 # 手動ヘルスチェック
-curl -f https://app.kty.at/health
+curl -f https://yourdomain.com/health
 ```
 
 #### SSH接続問題
@@ -262,7 +262,7 @@ docker ps
 journalctl -u docker -f
 
 # アプリケーションヘルス確認
-curl -i https://app.kty.at/health
+curl -i https://yourdomain.com/health
 ```
 
 #### パフォーマンス監視

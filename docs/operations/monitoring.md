@@ -77,9 +77,9 @@ export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
       "color": "good",
       "fields": [
         {"title": "Project", "value": "Shlink-UI-Rails", "short": true},
-        {"title": "Environment", "value": "Production (app.kty.at)", "short": true},
+        {"title": "Environment", "value": "Production (yourdomain.com)", "short": true},
         {"title": "Commit", "value": "abc1234", "short": true},
-        {"title": "Image", "value": "ghcr.io/enjoydarts/shlink-ui-rails:latest", "short": true}
+        {"title": "Image", "value": "ghcr.io/yourusername/shlink-ui-rails:latest", "short": true}
       ],
       "footer": "Deployment System",
       "ts": 1640995200
@@ -105,9 +105,9 @@ export DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/YOUR/DISCORD/WEBHOO
       "color": 3066993,
       "fields": [
         {"name": "Project", "value": "Shlink-UI-Rails", "inline": true},
-        {"name": "Environment", "value": "Production (app.kty.at)", "inline": true},
+        {"name": "Environment", "value": "Production (yourdomain.com)", "inline": true},
         {"name": "Commit", "value": "`abc1234`", "inline": true},
-        {"name": "Image", "value": "ghcr.io/enjoydarts/shlink-ui-rails:latest", "inline": false}
+        {"name": "Image", "value": "ghcr.io/yourusername/shlink-ui-rails:latest", "inline": false}
       ],
       "timestamp": "2024-01-01T00:00:00.000Z"
     }
@@ -129,9 +129,9 @@ export NOTIFICATION_EMAIL="admin@example.com"
 ```
 🚀 **Deployment Completed**
 **Project:** Shlink-UI-Rails
-**Environment:** Production (app.kty.at)
+**Environment:** Production (yourdomain.com)
 **Commit:** `abc1234` - Feature update
-**Image:** `ghcr.io/enjoydarts/shlink-ui-rails:latest`
+**Image:** `ghcr.io/yourusername/shlink-ui-rails:latest`
 **Duration:** 2m 34s
 **Health Check:** ✅ Passed
 **Time:** 2024-01-01 14:30:00 JST
@@ -141,9 +141,9 @@ export NOTIFICATION_EMAIL="admin@example.com"
 ```
 🚨 **Deployment Failed**
 **Project:** Shlink-UI-Rails
-**Environment:** Production (app.kty.at)
+**Environment:** Production (yourdomain.com)
 **Commit:** `abc1234` - Feature update
-**Image:** `ghcr.io/enjoydarts/shlink-ui-rails:latest`
+**Image:** `ghcr.io/yourusername/shlink-ui-rails:latest`
 **Duration:** 1m 45s
 **Error Stage:** Health Check
 **Error:** Health check failed after 10 attempts (HTTP 500)
@@ -159,7 +159,7 @@ export NOTIFICATION_EMAIL="admin@example.com"
 ```
 🔄 **Automatic Rollback Completed**
 **Project:** Shlink-UI-Rails
-**Environment:** Production (app.kty.at)
+**Environment:** Production (yourdomain.com)
 **Failed Commit:** `abc1234`
 **Restored Commit:** `def5678`
 **Rollback Duration:** 45s

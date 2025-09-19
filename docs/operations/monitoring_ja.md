@@ -77,9 +77,9 @@ export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
       "color": "good",
       "fields": [
         {"title": "プロジェクト", "value": "Shlink-UI-Rails", "short": true},
-        {"title": "環境", "value": "Production (app.kty.at)", "short": true},
+        {"title": "環境", "value": "Production (yourdomain.com)", "short": true},
         {"title": "コミット", "value": "abc1234", "short": true},
-        {"title": "イメージ", "value": "ghcr.io/enjoydarts/shlink-ui-rails:latest", "short": true}
+        {"title": "イメージ", "value": "ghcr.io/yourusername/shlink-ui-rails:latest", "short": true}
       ],
       "footer": "デプロイシステム",
       "ts": 1640995200
@@ -105,9 +105,9 @@ export DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/YOUR/DISCORD/WEBHOO
       "color": 3066993,
       "fields": [
         {"name": "プロジェクト", "value": "Shlink-UI-Rails", "inline": true},
-        {"name": "環境", "value": "Production (app.kty.at)", "inline": true},
+        {"name": "環境", "value": "Production (yourdomain.com)", "inline": true},
         {"name": "コミット", "value": "`abc1234`", "inline": true},
-        {"name": "イメージ", "value": "ghcr.io/enjoydarts/shlink-ui-rails:latest", "inline": false}
+        {"name": "イメージ", "value": "ghcr.io/yourusername/shlink-ui-rails:latest", "inline": false}
       ],
       "timestamp": "2024-01-01T00:00:00.000Z"
     }
@@ -129,9 +129,9 @@ export NOTIFICATION_EMAIL="admin@example.com"
 ```
 🚀 **デプロイ完了**
 **プロジェクト:** Shlink-UI-Rails
-**環境:** Production (app.kty.at)
+**環境:** Production (yourdomain.com)
 **コミット:** `abc1234` - 機能更新
-**イメージ:** `ghcr.io/enjoydarts/shlink-ui-rails:latest`
+**イメージ:** `ghcr.io/yourusername/shlink-ui-rails:latest`
 **所要時間:** 2分34秒
 **ヘルスチェック:** ✅ 成功
 **時刻:** 2024-01-01 14:30:00 JST
@@ -141,9 +141,9 @@ export NOTIFICATION_EMAIL="admin@example.com"
 ```
 🚨 **デプロイ失敗**
 **プロジェクト:** Shlink-UI-Rails
-**環境:** Production (app.kty.at)
+**環境:** Production (yourdomain.com)
 **コミット:** `abc1234` - 機能更新
-**イメージ:** `ghcr.io/enjoydarts/shlink-ui-rails:latest`
+**イメージ:** `ghcr.io/yourusername/shlink-ui-rails:latest`
 **所要時間:** 1分45秒
 **失敗段階:** ヘルスチェック
 **エラー:** 10回試行後もヘルスチェックが失敗 (HTTP 500)
@@ -159,7 +159,7 @@ export NOTIFICATION_EMAIL="admin@example.com"
 ```
 🔄 **自動ロールバック完了**
 **プロジェクト:** Shlink-UI-Rails
-**環境:** Production (app.kty.at)
+**環境:** Production (yourdomain.com)
 **失敗コミット:** `abc1234`
 **復旧コミット:** `def5678`
 **ロールバック時間:** 45秒

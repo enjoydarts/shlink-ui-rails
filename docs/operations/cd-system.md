@@ -57,7 +57,7 @@ GitHub Actions Workflow
 - Push to GitHub Container Registry (ghcr.io)
 - Cache layers for faster builds
 
-**Registry**: `ghcr.io/enjoydarts/shlink-ui-rails`
+**Registry**: `ghcr.io/yourusername/shlink-ui-rails`
 
 ### 4. Production Deployment
 
@@ -71,7 +71,7 @@ GitHub Actions Workflow
 - Restart application services
 - Verify container startup
 
-**Target Server**: `app.kty.at`
+**Target Server**: `yourdomain.com`
 
 ### 5. Health Check & Verification
 
@@ -199,11 +199,11 @@ For urgent deployments that need to skip tests:
 ### Manual Rollback
 ```bash
 # SSH to production server
-ssh user@app.kty.at
+ssh user@yourdomain.com
 
 # Rollback to previous image
 docker-compose -f docker-compose.prod.yml down
-docker tag ghcr.io/enjoydarts/shlink-ui-rails:previous ghcr.io/enjoydarts/shlink-ui-rails:latest
+docker tag ghcr.io/yourusername/shlink-ui-rails:previous ghcr.io/yourusername/shlink-ui-rails:latest
 docker-compose -f docker-compose.prod.yml up -d
 
 # Verify rollback
@@ -223,7 +223,7 @@ docker-compose logs app
 docker-compose ps
 
 # Manual health check
-curl -f https://app.kty.at/health
+curl -f https://yourdomain.com/health
 ```
 
 #### SSH Connection Issues
@@ -262,7 +262,7 @@ docker ps
 journalctl -u docker -f
 
 # Check application health
-curl -i https://app.kty.at/health
+curl -i https://yourdomain.com/health
 ```
 
 #### Performance Monitoring
