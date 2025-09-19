@@ -10,25 +10,20 @@
 
 ### アプリケーションヘルスエンドポイント
 
-アプリケーションは複数のヘルスチェックエンドポイントを提供します：
+アプリケーションは以下のヘルスチェックエンドポイントを提供します：
 
 ```bash
-# メインヘルスチェック
+# メインヘルスチェック（Rails標準のヘルスエンドポイント）
 GET /health
-レスポンス: {"status": "ok", "timestamp": "2024-01-01T00:00:00Z"}
+GET /up
+レスポンス: {"status": "up"}
 
-# データベースヘルス
-GET /health/database
-レスポンス: {"status": "ok", "connection": "active", "query_time": "0.002s"}
-
-# Redisヘルス
-GET /health/redis
-レスポンス: {"status": "ok", "connection": "active", "ping_time": "0.001s"}
-
-# Shlink APIヘルス
-GET /health/shlink
-レスポンス: {"status": "ok", "api_version": "3.0.0", "response_time": "0.150s"}
+# アプリケーションバージョン情報
+GET /version
+レスポンス: {"version": "1.2.0", "commit": "abc1234", "timestamp": "2024-01-01T00:00:00Z"}
 ```
+
+**注意**: データベース、Redis、Shlink API接続の追加ヘルスエンドポイントは、管理ダッシュボード（`/admin/dashboard`）で監視できます。
 
 ### システム監視
 

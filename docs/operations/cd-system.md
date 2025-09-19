@@ -169,14 +169,12 @@ on:
 
 ### Health Endpoints
 ```bash
-# Application health
+# Application health (Rails standard)
 GET /health
+GET /up
 
-# Database health
-GET /health/database
-
-# Redis health
-GET /health/redis
+# Application version
+GET /version
 ```
 
 ### Metrics Collection

@@ -169,14 +169,12 @@ on:
 
 ### ヘルスエンドポイント
 ```bash
-# アプリケーションヘルス
+# アプリケーションヘルス（Rails標準）
 GET /health
+GET /up
 
-# データベースヘルス
-GET /health/database
-
-# Redisヘルス
-GET /health/redis
+# アプリケーションバージョン
+GET /version
 ```
 
 ### メトリクス収集

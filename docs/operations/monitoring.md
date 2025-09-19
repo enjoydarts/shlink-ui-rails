@@ -10,25 +10,20 @@ The monitoring system provides comprehensive visibility into application health,
 
 ### Application Health Endpoints
 
-The application provides several health check endpoints:
+The application provides the following health check endpoints:
 
 ```bash
-# Main health check
+# Main health check (Rails standard health endpoint)
 GET /health
-Response: {"status": "ok", "timestamp": "2024-01-01T00:00:00Z"}
+GET /up
+Response: {"status": "up"}
 
-# Database health
-GET /health/database
-Response: {"status": "ok", "connection": "active", "query_time": "0.002s"}
-
-# Redis health
-GET /health/redis
-Response: {"status": "ok", "connection": "active", "ping_time": "0.001s"}
-
-# Shlink API health
-GET /health/shlink
-Response: {"status": "ok", "api_version": "3.0.0", "response_time": "0.150s"}
+# Application version info
+GET /version
+Response: {"version": "1.2.0", "commit": "abc1234", "timestamp": "2024-01-01T00:00:00Z"}
 ```
+
+**Note**: Additional health endpoints for database, Redis, and Shlink API connections can be monitored through the admin dashboard at `/admin/dashboard`.
 
 ### System Monitoring
 
