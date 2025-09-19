@@ -43,7 +43,8 @@ RSpec.describe WebauthnService, type: :service do
 
       result = described_class.authentication_options(user)
 
-      expect(result).to eq(mock_options)
+      expected_result = mock_options.merge('rpId' => 'localhost')
+      expect(result).to eq(expected_result)
       expect(WebAuthn::Credential).to have_received(:options_for_get)
     end
   end

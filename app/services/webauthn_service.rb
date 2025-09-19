@@ -60,8 +60,10 @@ class WebauthnService
         timeout: Settings.webauthn.timeout
       )
 
-      # Rails controllerでJSONレンダリング可能な形式で返す
-      options.as_json
+      # rpIdを明示的に追加
+      result = options.as_json
+      result["rpId"] = rp_id
+      result
     end
 
     # クレデンシャルを登録
