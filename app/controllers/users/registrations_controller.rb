@@ -6,10 +6,18 @@ class Users::RegistrationsController < Devise::RegistrationsController
   before_action :configure_account_update_params, only: [ :update ]
   before_action :configure_account_delete_params, only: [ :destroy ]
 
-  # Override create to add CAPTCHA verification
+  # Override create to add CAPTCHA verification and legal agreement check
   def create
     # CAPTCHA検証を実行
     unless verify_captcha
+      self.resource = resource_class.new(sign_up_params)
+      resource.validate # バリデーションエラーを表示するため
+      render :new, status: :unprocessable_entity
+      return
+    end
+
+    # 利用規約・プライバシーポリシーの同意検証
+    unless verify_legal_agreement
       self.resource = resource_class.new(sign_up_params)
       resource.validate # バリデーションエラーを表示するため
       render :new, status: :unprocessable_entity
@@ -141,6 +149,27 @@ class Users::RegistrationsController < Devise::RegistrationsController
     resource.respond_to?(:pending_reconfirmation?) &&
       resource.pending_reconfirmation? &&
       previous_unconfirmed_email != resource.unconfirmed_email
+  end
+
+  # 利用規約・プライバシーポリシーの同意検証
+  def verify_legal_agreement
+    # 設定で同意が必須でない場合はスキップ
+    return true unless SystemSetting.get("legal.require_agreement_on_registration", true)
+
+    # 利用規約とプライバシーポリシーの同意をチェック
+    terms_agreed = params[:terms_agreement] == "1"
+    privacy_agreed = params[:privacy_agreement] == "1"
+
+    unless terms_agreed && privacy_agreed
+      missing_agreements = []
+      missing_agreements << "利用規約" unless terms_agreed
+      missing_agreements << "プライバシーポリシー" unless privacy_agreed
+
+      flash.now[:alert] = "#{missing_agreements.join('・')}への同意が必要です。"
+      return false
+    end
+
+    true
   end
 
   # Turboキャッシュ無効化

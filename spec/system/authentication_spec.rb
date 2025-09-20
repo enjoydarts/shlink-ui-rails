@@ -37,6 +37,12 @@ RSpec.describe 'ユーザー認証機能', type: :system do
       fill_in 'user[password]', with: 'Password123!'
       fill_in 'user[password_confirmation]', with: 'Password123!'
 
+      # 利用規約とプライバシーポリシーに同意（設定で有効な場合）
+      if page.has_field?('terms_agreement')
+        check 'terms_agreement'
+        check 'privacy_agreement'
+      end
+
       click_button '新規登録'
 
       expect(page).to have_content('確認リンクを記載したメールを送信しました')

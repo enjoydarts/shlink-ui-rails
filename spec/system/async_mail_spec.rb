@@ -21,6 +21,9 @@ RSpec.describe 'Async Mail', type: :system do
         fill_in 'user_email', with: 'test@example.com'
         fill_in 'user_password', with: 'Password123!'
         fill_in 'user_password_confirmation', with: 'Password123!'
+        # 利用規約・プライバシーポリシーの同意チェックボックスをチェック
+        check 'terms_agreement'
+        check 'privacy_agreement'
         click_button '🚀 新規登録'
       }.to have_enqueued_job(DeviseMailerJob)
         .with(:confirmation_instructions, anything, anything, anything)

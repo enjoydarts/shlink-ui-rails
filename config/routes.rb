@@ -90,6 +90,9 @@ Rails.application.routes.draw do
       end
     end
 
+    # 法的文書編集
+    resources :legal_documents, only: [ :index, :show, :edit, :update ]
+
 
     # Solid Queue 詳細ダッシュボード
     resources :solid_queue, only: [ :index, :destroy ] do
@@ -106,6 +109,10 @@ Rails.application.routes.draw do
       end
     end
   end
+
+  # Legal pages
+  get "terms", to: "legal#terms_of_service", as: :terms_of_service
+  get "privacy", to: "legal#privacy_policy", as: :privacy_policy
 
   # Public pages
   get "home", to: "pages#home"

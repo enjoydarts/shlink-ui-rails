@@ -7,7 +7,7 @@ class Admin::SettingsController < Admin::AdminController
                                           .group_by(&:category)
                                           .transform_values { |settings| settings.index_by(&:key_name) }
 
-    @categories = %w[shlink captcha rate_limit email performance security system]
+    @categories = %w[shlink captcha rate_limit email performance security system legal]
   end
 
   def update

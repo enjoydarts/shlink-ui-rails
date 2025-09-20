@@ -1,0 +1,144 @@
+<% content_for :title, @page_title %>
+
+<div class="mb-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2"><%= @page_title %> - プレビュー</h1>
+      <p class="text-gray-600">公開ページでの表示を確認できます</p>
+    </div>
+    <div class="flex space-x-3">
+      <%= link_to edit_admin_legal_document_path(@document_type),
+          class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200" do %>
+        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+        </svg>
+        編集
+      <% end %>
+      <% if @document_type == "terms_of_service" %>
+        <%= link_to terms_of_service_path,
+            target: "_blank",
+            class: "bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200" do %>
+          <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+          </svg>
+          公開ページを表示
+        <% end %>
+      <% else %>
+        <%= link_to privacy_policy_path,
+            target: "_blank",
+            class: "bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200" do %>
+          <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+          </svg>
+          公開ページを表示
+        <% end %>
+      <% end %>
+      <%= link_to admin_legal_documents_path,
+          class: "bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200" do %>
+        一覧に戻る
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+  <!-- メインプレビュー -->
+  <div class="lg:col-span-3">
+    <div class="bg-white rounded-lg shadow border border-gray-200">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-900">プレビュー</h2>
+      </div>
+      <div class="px-8 py-6">
+        <% if @content.present? %>
+          <div class="prose prose-gray max-w-none">
+            <%= markdown_to_html(@content) %>
+          </div>
+        <% else %>
+          <div class="text-center py-12">
+            <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">文書が未設定です</h3>
+            <p class="text-gray-500 mb-4"><%= @document_config[:title] %>の内容が設定されていません。</p>
+            <%= link_to edit_admin_legal_document_path(@document_type),
+                class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200" do %>
+              今すぐ編集
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- サイドバー -->
+  <div class="lg:col-span-1">
+    <div class="space-y-6">
+      <!-- 文書情報 -->
+      <div class="bg-white rounded-lg shadow border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">文書情報</h3>
+        <dl class="space-y-3">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">文字数</dt>
+            <dd class="text-sm text-gray-900"><%= @content&.length || 0 %> 文字</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">語数</dt>
+            <dd class="text-sm text-gray-900"><%= @content&.split(/\s+/)&.length || 0 %> 語</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">最終更新</dt>
+            <dd class="text-sm text-gray-900">
+              <%= @setting&.updated_at&.strftime('%Y-%m-%d %H:%M') || '未更新' %>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">ステータス</dt>
+            <dd>
+              <% if @content.present? %>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  公開中
+                </span>
+              <% else %>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                  未設定
+                </span>
+              <% end %>
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- クイックアクション -->
+      <div class="bg-white rounded-lg shadow border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">クイックアクション</h3>
+        <div class="space-y-3">
+          <%= link_to edit_admin_legal_document_path(@document_type),
+              class: "w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 block" do %>
+            編集
+          <% end %>
+          <% if @document_type == "terms_of_service" %>
+            <%= link_to terms_of_service_path,
+                target: "_blank",
+                class: "w-full bg-green-600 hover:bg-green-700 text-white text-center py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 block" do %>
+              公開ページを表示
+            <% end %>
+          <% else %>
+            <%= link_to privacy_policy_path,
+                target: "_blank",
+                class: "w-full bg-green-600 hover:bg-green-700 text-white text-center py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 block" do %>
+              公開ページを表示
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- ヘルプ -->
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h3 class="text-sm font-semibold text-blue-900 mb-2">💡 ヒント</h3>
+        <p class="text-sm text-blue-700">
+          編集後は必ずプレビューで内容を確認し、公開ページでユーザーがどのように見るかをチェックしましょう。
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

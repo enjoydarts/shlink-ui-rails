@@ -1,0 +1,22 @@
+<% content_for :title, @page_title %>
+
+<div class="max-w-4xl mx-auto py-8 px-6">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+    <div class="px-8 py-6 border-b border-gray-200 dark:border-gray-700">
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white"><%= @page_title %></h1>
+    </div>
+
+    <div class="px-8 py-6">
+      <div class="prose prose-gray dark:prose-invert max-w-none">
+        <%= markdown_to_html(@content) %>
+      </div>
+    </div>
+
+    <div class="px-8 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600 rounded-b-lg">
+      <div class="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
+        <span>最終更新: <%= Date.current.strftime('%Y年%m月%d日') %></span>
+        <%= link_to "戻る", :back, class: "text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors" %>
+      </div>
+    </div>
+  </div>
+</div>

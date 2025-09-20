@@ -21,6 +21,7 @@ RSpec.describe Users::RegistrationsController, type: :request do
     context 'CAPTCHA検証が成功する場合' do
       before do
         allow_any_instance_of(described_class).to receive(:verify_captcha).and_return(true)
+        allow_any_instance_of(described_class).to receive(:verify_legal_agreement).and_return(true)
       end
 
       it 'ユーザーを作成すること' do

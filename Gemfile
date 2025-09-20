@@ -69,6 +69,9 @@ gem "rotp"        # TOTP generation and verification
 gem "rqrcode"     # QR code generation
 gem "webauthn", "~> 3.4.1"    # FIDO2/WebAuthn for physical security keys
 
+# Markdown rendering
+gem "commonmarker"   # Modern CommonMark compliant Markdown parser
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri mingw mswin x64_mingw ], require: "debug/prelude"
