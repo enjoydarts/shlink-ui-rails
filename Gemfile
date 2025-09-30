@@ -67,7 +67,7 @@ gem "net-smtp", require: false
 # Two-Factor Authentication
 gem "rotp"        # TOTP generation and verification
 gem "rqrcode"     # QR code generation
-gem "webauthn", "~> 3.4.1"    # FIDO2/WebAuthn for physical security keys
+gem "webauthn", "~> 3.4.2"    # FIDO2/WebAuthn for physical security keys
 
 # Markdown rendering
 gem "commonmarker"   # Modern CommonMark compliant Markdown parser
