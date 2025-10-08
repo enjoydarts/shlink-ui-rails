@@ -31,8 +31,8 @@ class Admin::SettingsController < Admin::AdminController
     # システム設定変更後はキャッシュをクリア
     refresh_system_settings!
 
-    # 統一設定システムを再読み込み
-    ApplicationConfig.reload!
+    # 統一設定システムを再読み込み（SMTP設定含む全設定）
+    ApplicationConfig.reload_all_settings!
 
     redirect_to admin_settings_path, notice: "システム設定を更新しました。"
   rescue ActiveRecord::RecordInvalid => e
@@ -73,8 +73,8 @@ class Admin::SettingsController < Admin::AdminController
       # システム設定変更後はキャッシュをクリア
       refresh_system_settings!
 
-      # 統一設定システムを再読み込み
-      ApplicationConfig.reload!
+      # 統一設定システムを再読み込み（SMTP設定含む全設定）
+      ApplicationConfig.reload_all_settings!
 
       redirect_to admin_settings_path, notice: "#{category}設定をデフォルト値にリセットしました。"
     else
