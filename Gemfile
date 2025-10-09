@@ -3,7 +3,7 @@ source "https://rubygems.org"
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.0.3"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
-gem "propshaft"
+gem "propshaft", ">= 1.3.0"
 # Use mysql as the database for Active Record
 gem "mysql2", "~> 0.5"
 # Use the Puma web server [https://github.com/puma/puma]
@@ -39,7 +39,7 @@ gem "faraday_middleware"
 
 # Authentication and authorization
 gem "devise"
-gem "omniauth"
+gem "omniauth", ">= 2.1.4"
 gem "omniauth-google-oauth2"
 gem "omniauth-rails_csrf_protection"
 
