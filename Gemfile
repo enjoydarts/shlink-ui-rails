@@ -100,7 +100,7 @@ group :test do
   gem "vcr", "~> 6.2"
   gem "shoulda-matchers", "~> 6.0"
   gem "capybara", "~> 3.40"
-  gem "selenium-webdriver", "~> 4.26"
+  gem "selenium-webdriver", "~> 4.36"
 
   # CI/CD レポート用
   gem "rspec_junit_formatter", "~> 0.6"
