@@ -18,7 +18,7 @@ gem "jbuilder"
 gem "tzinfo-data", platforms: %i[ mingw mswin x64_mingw jruby ]
 
 # Use the database-backed adapters for Rails.cache, Active Job, and Action Cable
-gem "solid_cache"
+gem "solid_cache", ">= 1.0.8"
 gem "solid_queue"
 # gem "solid_cable"  # WebSocket未使用のためコメントアウト
 
@@ -53,7 +53,7 @@ gem "config"
 gem "kaminari"
 
 # Rate limiting
-gem "rack-attack"
+gem "rack-attack", ">= 6.8.0"
 
 # Redis for caching and rate limiting
 gem "redis"
