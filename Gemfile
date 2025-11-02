@@ -117,9 +117,9 @@ end
 
 gem "importmap-rails", "~> 2.2"
 
-gem "turbo-rails", "~> 2.0"
+gem "turbo-rails", "~> 2.0", ">= 2.0.19"
 
 gem "stimulus-rails", "~> 1.3"
 
-gem "tailwindcss-rails", "~> 4.3"
+gem "tailwindcss-rails", "~> 4.4", ">= 4.4.0"
 gem "tailwindcss-ruby", "~> 4.1"
