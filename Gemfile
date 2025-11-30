@@ -41,7 +41,7 @@ gem "faraday_middleware"
 gem "devise"
 gem "omniauth"
 gem "omniauth-google-oauth2"
-gem "omniauth-rails_csrf_protection"
+gem "omniauth-rails_csrf_protection", ">= 2.0.0"
 
 # DB schema management
 gem "ridgepole"
