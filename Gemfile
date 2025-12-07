@@ -85,7 +85,7 @@ group :development, :test do
   # N+1 query detection [https://github.com/flyerhzm/bullet]
   gem "bullet"
 
-  gem "dotenv-rails"
+  gem "dotenv-rails", ">= 3.2.0"
 
   # RSpec for testing
   gem "rspec-rails", "~> 8.0"
