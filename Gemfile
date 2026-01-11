@@ -115,7 +115,7 @@ group :development do
   gem "letter_opener_web"
 end
 
-gem "importmap-rails", "~> 2.2"
+gem "importmap-rails", "~> 2.2", ">= 2.2.3"
 
 gem "turbo-rails", "~> 2.0"
 
